@@ -1,0 +1,48 @@
+{
+  "name": "composr-core",
+  "version": "0.0.1",
+  "description": "CompoSR core functions",
+  "main": "src/composr-core.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "composr",
+    "corbel",
+    "corbel-js",
+    "composr-core",
+    "bq"
+  ],
+  "dependencies": {
+    "ascii-art": "0.0.2-alpha",
+    "atob": "^1.1.2",
+    "corbel-js": "0.0.11",
+    "lodash": "^3.8.0",
+    "mkdirp": "^0.5.1",
+    "q": "^1.2.0",
+    "request": "^2.60.0",
+    "tripwire": "^0.10.0",
+    "uuid": "~2.0.1",
+    "winston": "^1.0.1",
+    "xregexp": "^2.0.0"
+  },
+  "devDependencies": {
+    "chai": "^2.1.1",
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "^0.11.0",
+    "grunt-madge": "0.0.5",
+    "grunt-mocha-test": "~0.12.7",
+    "jshint-stylish": "^2.0.1",
+    "load-grunt-tasks": "~3.1.0",
+    "madge": "^0.5.0",
+    "mocha": "~2.2.1",
+    "sinon": "^1.14.1",
+    "supertest": "^1.0.0",
+    "time-grunt": "^1.2.1"
+  },
+  "author": "Rafael Pedrola",
+  "license": "ISC"
+}
