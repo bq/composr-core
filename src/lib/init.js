@@ -1,15 +1,13 @@
 'use strict';
 
-var corbel = require('corbel-js');
 var q = require('q');
 
-function init(credentials, config) {
+function init(options) {
   /*jshint validthis:true */
   var dfd = q.defer();
+  var module = this;
 
-  this.credentials = credentials;
-
-  this.config = this.bindConfiguration(config);
+  this.config = this.bindConfiguration(options);
 
   //Corbel collections  
   this.resources = {
@@ -23,19 +21,19 @@ function init(credentials, config) {
     snippets: null
   };
 
-  //corbelDriver
-  this.corbelDriver = corbel.getDriver(credentials);
-
   //Do the stuff
-  this.logClient()
-    .then(function() {
-      return this.fetchData();
+  this.initCorbelDriver()
+    .then(function(){
+      return module.logClient();
     })
     .then(function() {
-      return this.registerData();
+      return module.fetchData();
     })
     .then(function() {
-      this.events.emit('init:ok');
+      return module.registerData();
+    })
+    .then(function() {
+      module.events.emit('init:ok');
       dfd.resolve();
     })
     .catch(function(err) {
