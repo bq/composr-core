@@ -1,4 +1,5 @@
 require('./specs/composr.test.js');
+require('./specs/logClient.test.js');
 /*require('./specs/snippetsBundler.js');
 require('./specs/composerError.js');
 require('./specs/phraseManager.js');
