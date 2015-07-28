@@ -1,5 +1,6 @@
 var composr = require('../../src/composr-core'),
   logClient = require('../../src/lib/logClient'),
+  ComposrError = require('../../src/lib/ComposrError'),
   corbel = require('corbel-js');
   chai = require('chai'),
   sinon = require('sinon'),
@@ -9,6 +10,29 @@ var utilsPromises = require('../utils/promises');
 
 describe('logClient', function() {
 
+  /*var badCredentials = [{
+    clientId : 'wa',
+    clientSecret: 'we',
+    scopes : 'asd',
+    urlBase : 'as'
+  },
+  {
+    clientId : '567b0e87',
+    clientSecret: 'aa776bdcdb2bb3e1ea967520022af436fc4764b7c2d82b16810691edcdb75710',
+    scopes : 'apps-sandbox-composr',
+    urlBase : ''
+  },{
+    clientId : '567b0e87',
+    clientSecret: 'we',
+    scopes : 'apps-sandbox-composr',
+    urlBase : 'https://{{module}}-int.bqws.io/v1.0/'
+  },{
+    clientId : '',
+    clientSecret: 'aa776bdcdb2bb3e1ea967520022af436fc4764b7c2d82b16810691edcdb75710',
+    scopes : 'apps-sandbox-composr',
+    urlBase : 'https://{{module}}-int.bqws.io/v1.0/'
+  }];*/
+
   it('fails if bad credentials are provided', function(done) {
     var options = {
       credentials : {
@@ -16,7 +40,32 @@ describe('logClient', function() {
         clientSecret: 'we',
         scopes : 'asd',
         urlBase : 'as'
-      },
+      }
+    }
+
+    var corbelDriver = corbel.getDriver(options.credentials);
+
+    logClient.bind({
+      corbelDriver : corbelDriver
+    })()
+    .then(function(){
+      done('Failing');
+    })
+    .catch(function(err){
+      expect(err).to.exist;
+      expect(err).to.be.an.instanceof(ComposrError);
+      done();
+    });
+  });
+
+  it('passes if good credentials are provided', function(done) {
+    var options = {
+      credentials : {
+      "clientId": "567b0e87",
+      "clientSecret": "aa776bdcdb2bb3e1ea967520022af436fc4764b7c2d82b16810691edcdb75710",
+      "scopes": "apps-sandbox-composr",
+      "urlBase": "https://{{module}}-int.bqws.io/v1.0/"
+      }
     }
 
     var corbelDriver = corbel.getDriver(options.credentials);
@@ -28,79 +77,9 @@ describe('logClient', function() {
       done();
     })
     .catch(function(err){
-      expect(err).to.exist;
-      //expect to be instance of instanceof  composerError
-      done();
+      console.log(err);
+      done(err);
     });
   });
 
 });
-/*
-describe('Config initialization', function() {
-
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubFetchData;
-
-  before(function() {
-    stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-    stubLogClient = sinon.stub(composr, 'logClient', utilsPromises.resolvedPromise);
-    stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-    stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
-  });
-
-  after(function() {
-    stubInitCorbelDriver.restore();
-    stubLogClient.restore();
-    stubFetchData.restore();
-    stubRegisterData.restore();
-  });
-
-  it('Creates the config object', function(done) {
-    var options = {};
-
-    composr.init(options)
-      .then(function() {
-        expect(composr).to.have.property('config');
-        expect(composr.config).to.have.property('credentials');
-        expect(composr.config).to.have.property('timeout');
-        expect(composr.config).to.have.property('urlBase');
-        done();
-      })
-      .catch(function(err) {
-        console.log(err);
-      })
-  });
-
-  it('Config is correctly initialized', function(done) {
-    var options = {
-      credentials : {
-        clientId : 'demo',
-        clientSecret : 'demo',
-        scopes : 'demo'
-      },
-      urlBase : 'demo',
-      timeout: 3000
-    };
-
-    composr.init(options)
-      .then(function() {
-        expect(composr).to.have.property('config');
-        expect(composr.config).to.have.property('credentials');
-        expect(composr.config).to.have.property('timeout');
-        expect(composr.config).to.have.property('urlBase');
-
-        expect(composr.config.credentials).to.have.property('clientId');
-        expect(composr.config.credentials).to.have.property('clientSecret');
-        expect(composr.config.credentials).to.have.property('scopes');
-
-        expect(composr.config.credentials.clientId).to.equals('demo');
-        expect(composr.config.credentials.clientSecret).to.equals('demo');
-        expect(composr.config.credentials.scopes).to.equals('demo');
-        expect(composr.config.urlBase).to.equals('demo');
-        expect(composr.config.timeout).to.equals(3000);
-        done();
-      })
-      .catch(function(err) {
-        console.log(err);
-      })
-  });
-});*/

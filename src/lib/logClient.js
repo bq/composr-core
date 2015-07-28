@@ -1,6 +1,8 @@
 'use strict';
 
 var q = require('q');
+var ComposrError = require('./ComposrError');
+
 
 function logClient() {
   /*jshint validthis:true */
@@ -10,10 +12,10 @@ function logClient() {
     if(response.data){
       dfd.resolve();
     }else{
-      dfd.reject('not logged');
+      dfd.reject(new ComposrError('error:invalid:credentials', '', 401));
     }
   }).catch(function(error) {
-    dfd.reject(error);
+    dfd.reject(new ComposrError(error, '', 401));
     //TODO: take into account that this error and this succes may be logged and notified to pmx
   });
 
@@ -27,7 +29,7 @@ function logClient() {
   }).catch(function(error) {
     logger.error('error:composer:corbel:token', error.response.body);
     pmx.notify('error:composer:corbel:token', error.response.body);
-    throw new ComposerError('error:composer:corbel:token', '', 401);
+    throw new ComposrError('error:composer:corbel:token', '', 401);
   });
 }*/
 

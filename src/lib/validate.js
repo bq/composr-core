@@ -1,6 +1,6 @@
 'use strict';
 
-var ComposerError = require('./composerError'),
+var ComposrError = require('./ComposrError'),
   regexpGenerator = require('./regexpGenerator'),
   XRegExp = require('xregexp').XRegExp;
 /**
@@ -14,7 +14,7 @@ var isDefined = function(value, errorCode) {
   var isUndefined = value === undefined;
 
   if (isUndefined && errorCode) {
-    throw new ComposerError(errorCode, 'isDefined undefined: ' + value, 422);
+    throw new ComposrError(errorCode, 'isDefined undefined: ' + value, 422);
   }
   return !isUndefined;
 };
@@ -30,7 +30,7 @@ var failIfIsDefined = function(value, errorCode) {
   var isDefined = value !== undefined;
 
   if (isDefined && errorCode) {
-    throw new ComposerError(errorCode, 'failIfIsDefined undefined: ' + value, 422);
+    throw new ComposrError(errorCode, 'failIfIsDefined undefined: ' + value, 422);
   }
   return !isDefined;
 };
@@ -46,7 +46,7 @@ var isNotNull = function(value, errorCode) {
   var isNull = value === null;
 
   if (isNull && errorCode) {
-    throw new ComposerError(errorCode, 'isNotNull undefined: ' + value, 422);
+    throw new ComposrError(errorCode, 'isNotNull undefined: ' + value, 422);
   }
   return !isNull;
 };
@@ -74,7 +74,7 @@ var isGreaterThan = function(value, greaterThan, errorCode) {
   var gt = this.isValue(value) && value > greaterThan;
 
   if (!gt && errorCode) {
-    throw new ComposerError(errorCode, 'isGreaterThan undefined: ' + value, 422);
+    throw new ComposrError(errorCode, 'isGreaterThan undefined: ' + value, 422);
   }
   return gt;
 };
@@ -91,7 +91,7 @@ var isGreaterThanOrEqual = function(value, isGreaterThanOrEqual, errorCode) {
   var gte = this.isValue(value) && value >= isGreaterThanOrEqual;
 
   if (!gte && errorCode) {
-    throw new ComposerError(errorCode, 'isGreaterThanOrEqual undefined: ' + value, 422);
+    throw new ComposrError(errorCode, 'isGreaterThanOrEqual undefined: ' + value, 422);
   }
   return gte;
 };
@@ -110,7 +110,7 @@ var isValidUrl = function(url, errorCode) {
     XRegExp.test('test', regexp);
   } catch (e) {
     if (errorCode) {
-      throw new ComposerError(errorCode, 'malformedUrl: ' + url, 422);
+      throw new ComposrError(errorCode, 'malformedUrl: ' + url, 422);
     }
   }
   return regexp;
@@ -127,7 +127,7 @@ var isValidBase64 = function(codehash, errorCode) {
   var isValid = base64.test(codehash);
 
   if (!isValid && errorCode) {
-    throw new ComposerError(errorCode, 'isValidBase64 undefined: ' + codehash, 422);
+    throw new ComposrError(errorCode, 'isValidBase64 undefined: ' + codehash, 422);
   }
   return isValid;
 };

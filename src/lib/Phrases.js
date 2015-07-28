@@ -10,7 +10,7 @@ var validate = require('./validate'),
   XRegExp = require('xregexp').XRegExp,
   _ = require('lodash'),
   q = require('q'),
-  ComposerError = require('./composerError');
+  ComposrError = require('./ComposrError');
 
 
 /**********************************
@@ -51,7 +51,7 @@ PhraseManager.prototype.executePhrase = function executePhrase(context, compoSR,
 
 
 PhraseManager.prototype.evaluateCode = function evaluePhrase(phraseBody, params) {
-  var phraseParams = params ? params : ['req', 'res', 'next', 'corbelDriver', 'corbel', 'ComposerError', 'domain', '_', 'q', 'request', 'compoSR'];
+  var phraseParams = params ? params : ['req', 'res', 'next', 'corbelDriver', 'corbel', 'ComposrError', 'domain', '_', 'q', 'request', 'compoSR'];
   var result = {
     fn: null,
     error: false
@@ -260,7 +260,7 @@ PhraseManager.prototype.run = function run(domain, phrasePath, req, res, next) {
     next: next,
     corbelDriver: corbelDriver,
     corbel: corbel,
-    ComposerError: ComposerError,
+    ComposrError: ComposrError,
     domain: domain,
     _: _,
     q: q,
