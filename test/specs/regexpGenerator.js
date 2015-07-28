@@ -1,6 +1,6 @@
 'use strict';
 
-var regexpGenerator = require('../../../src/lib/regexpGenerator.js'),
+var regexpGenerator = require('../../src/lib/regexpGenerator.js'),
   chai = require('chai'),
   expect = chai.expect,
   XRegExp = require('xregexp').XRegExp;

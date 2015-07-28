@@ -1,7 +1,7 @@
 'use strict';
 
-var regexpGenerator = require('../../../src/lib/regexpGenerator.js'),
-  paramsExtractor = require('../../../src/lib/paramsExtractor.js'),
+var regexpGenerator = require('../../src/lib/regexpGenerator.js'),
+  paramsExtractor = require('../../src/lib/paramsExtractor.js'),
   XRegExp = require('xregexp').XRegExp,
   chai = require('chai'),
   expect = chai.expect;
