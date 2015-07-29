@@ -1,12 +1,18 @@
 var q = require('q');
 
 
-var resolvedPromise = function(){
-  var args = Array.prototype.slice.call(arguments);
-
-  return q.resolve(args);
+var resolvedPromise = function(arg){
+  return q.resolve(arg);
 };
 
+function resolvedCurriedPromise(arg){
+  
+  return function(){
+    return resolvedPromise(arg);
+  }
+}
+
 module.exports = {
-  resolvedPromise : resolvedPromise
+  resolvedPromise : resolvedPromise,
+  resolvedCurriedPromise : resolvedCurriedPromise
 };
