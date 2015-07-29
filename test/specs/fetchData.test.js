@@ -35,3 +35,26 @@ describe('fetchData method', function() {
   });
 
 });
+
+describe('fail fetchData', function(){
+  var stubFetchPhrases, stubFetchSnippets;
+
+  it('fails if loadPhrases fails', function(done){
+    stubFetchPhrases = sinon.stub(composr, 'loadPhrases', utilsPromises.rejectedPromise);
+    stubFetchSnippets = sinon.stub(composr, 'loadSnippets', utilsPromises.resolvedCurriedPromise(['test']));
+
+    composr.fetchData().should.be.rejected.notify(done);
+  });
+
+  it('fails if loadSnippets fails', function(done){
+    stubFetchPhrases = sinon.stub(composr, 'loadPhrases', utilsPromises.resolvedCurriedPromise(['test']));
+    stubFetchSnippets = sinon.stub(composr, 'loadSnippets', utilsPromises.rejectedPromise);
+
+    composr.fetchData().should.be.rejected.notify(done);
+  });
+
+  afterEach(function() {
+    stubFetchPhrases.restore();
+    stubFetchSnippets.restore();
+  });
+});
