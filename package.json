@@ -19,7 +19,7 @@
   "dependencies": {
     "ascii-art": "0.0.2-alpha",
     "atob": "^1.1.2",
-    "corbel-js": "0.0.11",
+    "corbel-js": "0.0.14",
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",

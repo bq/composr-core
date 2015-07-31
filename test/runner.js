@@ -1,6 +1,7 @@
 require('./specs/composr.test.js');
 require('./specs/logClient.test.js');
 require('./specs/fetchData.test.js');
+require('./specs/registerData.test.js');
 require('./specs/regexpGenerator.test.js');
 require('./specs/paramsExtractor.test.js');
 
