@@ -31,6 +31,7 @@ CompoSR.prototype.events = require('./lib/events');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.Phrases = require('./lib/Phrases');
 CompoSR.prototype.Snippets = require('./lib/Snippets');
+CompoSR.prototype.Publisher = require('./lib/Publisher');
 CompoSR.prototype._logger = require('./lib/logger');
 
 module.exports = new CompoSR();

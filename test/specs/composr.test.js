@@ -12,17 +12,15 @@ describe('CompoSR core API', function() {
     expect(composr).to.respondTo('initCorbelDriver');
     expect(composr).to.respondTo('logClient');
     expect(composr).to.respondTo('registerData');
-    expect(composr).to.respondTo('init');
+    expect(composr).to.respondTo('loadPhrases');
+    expect(composr).to.respondTo('loadSnippets');
+    expect(composr).to.respondTo('bindConfiguration');
     expect(composr).to.have.property('Phrases');
     expect(composr).to.have.property('Snippets');
-    //expect(composr.Phrases).to.respondTo('validate');
-    //expect(composr.Phrases).to.respondTo('compile');
-    //expect(composr.Phrases).to.respondTo('run');
-    //expect(composr.Phrases).to.respondTo('get');
-    //expect(composr.Phrases).to.respondTo('publish');
-    //expect(composr.Phrases).to.respondTo('remove');
-    //expect(composr.Phrases).to.respondTo('register');
-    //expect(composr.Phrases).to.respondTo('unregister');
+    expect(composr).to.have.property('Publisher');
+    expect(composr).to.have.property('events');
+    expect(composr).to.have.property('utils');
+    expect(composr).to.have.property('_logger');
   });
 
 });
