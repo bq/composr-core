@@ -10,7 +10,7 @@ var q = require('q');
  * @param  {promise} promise
  * @return {List}
  */
-var getAllRecursively = function getAllRecursively(caller, items, pageNumber, pageSize, promise) {
+var getAllRecursively = function getAllRecursively(caller, pageNumber, pageSize, items, promise) {
   items = items || [];
   pageNumber = pageNumber || 0;
   pageSize = pageSize || 20;
@@ -25,7 +25,7 @@ var getAllRecursively = function getAllRecursively(caller, items, pageNumber, pa
         if (response.data.length < pageSize) {
           return items;
         } else {
-          return getAllRecursively(caller, items, pageNumber + 1, pageSize, promise);
+          return getAllRecursively(caller, pageNumber + 1, pageSize, items, promise);
         }
       } else {
         promise.reject('error:get:books');

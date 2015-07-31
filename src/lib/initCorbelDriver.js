@@ -11,6 +11,7 @@ function initCorbelDriver() {
     this.corbelDriver = corbel.getDriver(this.config.credentials);
     dfd.resolve();
   }catch(e){
+    this.corbelDriver = null;
     dfd.reject(e);
   }
 

@@ -15,12 +15,6 @@ function init(options) {
     snippetsCollection: 'composr:Snippets'
   };
 
-  //Loaded resources
-  this.data = {
-    phrases: null,
-    snippets: null
-  };
-
   //Do the stuff
   this.initCorbelDriver()
     .then(function(){
