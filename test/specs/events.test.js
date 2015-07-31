@@ -12,34 +12,58 @@ describe('events', function() {
     });
   });
 
-  describe('emit', function(){
+  describe('emit', function() {
 
     var stub;
 
-    beforeEach(function(){
+    beforeEach(function() {
       stub = sinon.stub();
       events.on('test', 'testComponent', stub);
     });
 
-    afterEach(function(){
+    afterEach(function() {
       events.resetSuscriptions();
     });
 
-    it('Does include the callback on the stack of suscriptions', function(){
+    it('Does include the callback on the stack of suscriptions', function() {
       events.emit('test');
       expect(stub.callCount).to.equals(1);
     });
 
-    it('Does receive the passed argument', function(){
+    it('Does receive the passed argument', function() {
       events.emit('test', 'Hola');
       expect(stub.callCount).to.equals(1);
       expect(stub.calledWith('Hola')).to.equals(true);
     });
 
-    it('Does receive multiple arguments', function(){
+    it('Does receive multiple arguments', function() {
       events.emit('test', 'Hola', 'Test');
       expect(stub.callCount).to.equals(1);
       expect(stub.calledWith('Hola', 'Test')).to.equals(true);
+    });
+  });
+
+  describe('Multiple suscriptions', function() {
+    var maxStubs = 10;
+    var stubs = [];
+
+    before(function() {
+      for (var i = 0; i < maxStubs; i++) {
+        stubs.push(sinon.stub());
+      }
+
+      for (var i = 0; i < maxStubs; i++) {
+        events.on('testMultiple', 'testComponent' + i, stubs[i]);
+      }
+    });
+
+    it('Generates multiple emitions', function() {
+      events.emit('testMultiple', ':)');
+
+      for (var i = 0; i < maxStubs; i++) {
+        expect(stubs[i].callCount).to.equals(1);
+        expect(stubs[i].calledWith(':)')).to.equals(true);
+      }
     });
   });
 });
