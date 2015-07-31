@@ -42,4 +42,28 @@ describe('events', function() {
       expect(stub.calledWith('Hola', 'Test')).to.equals(true);
     });
   });
+
+  describe('Multiple suscriptions', function(){
+    var maxStubs = 10;
+    var stubs = [];
+    
+    before(function(){
+      for(var i = 0; i < maxStubs; i++){
+        stubs.push(sinon.stub());
+      }
+
+      for(var i = 0; i < maxStubs; i++){
+        events.on('testMultiple', 'testComponent'+i, stubs[i]);
+      }
+    });
+
+    it('Generates multiple emitions', function(){
+      events.emit('testMultiple', ':)');
+
+      for(var i = 0; i < maxStubs; i++){
+        expect(stubs[i].callCount).to.equals(1);
+        expect(stubs[i].calledWith(':)')).to.equals(true);
+      }
+    });
+  });
 });
