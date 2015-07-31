@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "preversion": "npm test",
+    "coverage": "istanbul cover node_modules/.bin/_mocha -- -R dot"
   },
   "keywords": [
     "composr",
@@ -36,6 +38,7 @@
     "grunt-contrib-jshint": "^0.11.0",
     "grunt-madge": "0.0.5",
     "grunt-mocha-test": "~0.12.7",
+    "istanbul": "^0.3.17",
     "jshint-stylish": "^2.0.1",
     "load-grunt-tasks": "~3.1.0",
     "madge": "^0.5.0",
