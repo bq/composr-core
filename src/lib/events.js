@@ -42,8 +42,8 @@ function resetSuscriptions() {
   });
 }
 
-function emit(fnName, args) {
-  eventEmitter.emit(fnName, args);
+function emit() {
+  eventEmitter.emit.apply(eventEmitter, arguments);
 }
 
 module.exports = {
