@@ -69,13 +69,13 @@ var isValidEndpoint = function(url) {
     var regexp = XRegExp(regexpGenerator.regexpUrl(url)); //jshint ignore : line
     //if it throws an error then the regular expression that was formed was invalid and it's not a composr compilant endpoint
     XRegExp.test('test', regexp);
-  
+
     //Now try to ensure that the url is well formed
     var regexpUrlString = '^\/?([\\w-._:?#@]+\/?)+';
-    var xregexpUrl = XRegExp(regexpUrlString);//jshint ignore:line
+    var xregexpUrl = XRegExp(regexpUrlString); //jshint ignore:line
 
     return XRegExp.test(url, xregexpUrl);
-    
+
   } catch (e) {
     return false;
   }
