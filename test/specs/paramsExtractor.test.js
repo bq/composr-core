@@ -103,7 +103,7 @@ describe('in paramsExtractor module', function() {
       urls.forEach(function(urlData) {
         var params = paramsExtractor.extract(urlData.callee, urlData.regexpReference);
 
-        Object.keys(urlData.test).forEach(function(key){
+        Object.keys(urlData.test).forEach(function(key) {
           expect(params[key]).to.equals(urlData.test[key]);
         });
 

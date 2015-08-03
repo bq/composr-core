@@ -15,4 +15,33 @@ describe('== Phrases ==', function() {
     });
   });
 
+  describe('Phrases validation', function(){
+
+    it('Validates correct models', function(){
+      var goodPhraseModel = {
+        url: 'test',
+        get: {
+            code: 'res.render(\'index\', {title: \'test\'});'
+        }
+      };
+
+      expect(Phrases.validate(goodPhraseModel)).to.be.an('object');
+      expect(Phrases.validate(goodPhraseModel).valid).to.equals(true);
+    });
+
+    it('Denies invalid models', function(){
+      var badPhraseModel = {
+        url: '',
+        get: {
+            code: 'res.render(\'index\', {title: \'test\'});'
+        }
+      };
+
+      expect(Phrases.validate(badPhraseModel)).to.be.an('object');
+      expect(Phrases.validate(badPhraseModel).valid).to.equals(false);
+      expect(Phrases.validate(badPhraseModel).errors).to.be.an('array');
+      expect(Phrases.validate(badPhraseModel).errors.length).to.equals(1);
+    });
+  });
+
 });
