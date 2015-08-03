@@ -62,12 +62,30 @@ describe('in regexpGenerator module', function() {
       testfail: [],
       regexp: '\/?user\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?$',
       params: ['arg']
+    }, {
+      url: 'https://google.com',
+      test: ['https://google.com'],
+      testfail: ['https:', 'https://google.'],
+      params: []
+    }, {
+      url: '////a',
+      test: ['////a','////a/'],
+      testfail: ['////a:', '//a', '/a', '////a/s'],
+      params: []
+    }, {
+      url: '!!a',
+      test: ['!!a','!!a/'],
+      testfail: ['!!a:',  '/', '!!a/s'],
+      params: []
     }];
 
-    it('Parses correctly all the url types', function() {
+    it('Parses correctly all the url types and matches with their callees', function() {
       urls.forEach(function(urlData) {
         var regexpString = regexpGenerator.regexpUrl(urlData.url);
-        expect(regexpString).to.equals(urlData.regexp);
+
+        if(urlData.regexp){
+          expect(regexpString).to.equals(urlData.regexp);
+        }
 
         var regexp = XRegExp(regexpString);
 
