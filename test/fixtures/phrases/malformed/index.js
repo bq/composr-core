@@ -2,8 +2,10 @@
 
 
 module.exports = [
-  /*require('./missingUrl.js'),
-  require('./missingCode.js'),
-  require('./missingVerbs.js'),
-  require('./malformedCode.js')*/
+  require('./missingUrl.json'),
+  require('./missingCode.json'),
+  require('./missingVerb.json'),
+  require('./malformedCode.json'),
+  require('./malformedCodeHash.json'),
+  require('./incorrectCodeInCodeHash.json')
 ];
