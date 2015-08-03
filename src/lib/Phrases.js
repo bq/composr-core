@@ -15,7 +15,7 @@ var Phrases = {
     },
     validate : function(model){
       
-      var errors = phraseValidator.validate(model);
+      var errors = phraseValidator(model);
       if(errors.length > 0){
         return {
           valid : false,

@@ -8,7 +8,7 @@ require('./specs/utils.test.js');
 require('./specs/events.test.js');
 require('./specs/validators/validate.utils.test.js');
 require('./specs/validators/phrase.validator.test.js');
-//require('./specs/Phrases.test.js');
+require('./specs/Phrases.test.js');
 require('./specs/Publisher.test.js');
 require('./specs/regexpGenerator.test.js');
 require('./specs/paramsExtractor.test.js');

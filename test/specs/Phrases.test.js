@@ -15,13 +15,14 @@ describe('== Phrases ==', function() {
     });
   });
 
-  describe('Phrases validation', function(){
+  describe('Phrases validation', function() {
 
-    it('Validates correct models', function(){
+    it('Validates correct models', function() {
       var goodPhraseModel = {
         url: 'test',
         get: {
-            code: 'res.render(\'index\', {title: \'test\'});'
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: 'asd'
         }
       };
 
@@ -29,11 +30,12 @@ describe('== Phrases ==', function() {
       expect(Phrases.validate(goodPhraseModel).valid).to.equals(true);
     });
 
-    it('Denies invalid models', function(){
+    it('Denies invalid models', function() {
       var badPhraseModel = {
         url: '',
         get: {
-            code: 'res.render(\'index\', {title: \'test\'});'
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: ''
         }
       };
 

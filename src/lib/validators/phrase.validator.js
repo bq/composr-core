@@ -10,6 +10,7 @@ function validationErrorsAcc(errors) {
     if (!ok) {
       errors.push(err);
     }
+    return ok;
   };
 }
 
@@ -28,23 +29,34 @@ function validate(phrase) {
   ['get', 'post', 'put', 'delete', 'options'].forEach(function(method) {
     if (phrase[method]) {
 
+      var code;
+
       if (!phrase[method].codehash) {
-        errorAccumulator(vUtils.isValue, phrase[method].code, 'undefined:phrase:' + method + ':code');
+        var isCandidate = errorAccumulator(vUtils.isValue, phrase[method].code, 'undefined:phrase:' + method + ':code');
+        if (isCandidate) {
+          code = phrase[method].code;
+        }
       }
 
       if (!phrase[method].code) {
-        errorAccumulator(vUtils.isValue, phrase[method].codehash, 'undefined:phrase:' + method + ':codehash');
-        errorAccumulator(vUtils.isValidBase64, phrase[method].codehash, 'invalid:phrase:' + method + ':codehash');
+        var isValue = errorAccumulator(vUtils.isValue, phrase[method].codehash, 'undefined:phrase:' + method + ':codehash');
+        var isValidBase64 = errorAccumulator(vUtils.isValidBase64, phrase[method].codehash, 'invalid:phrase:' + method + ':codehash');
+
+        if (isValue && isValidBase64) {
+          code = new Buffer(phrase[method].codehash, 'base64').toString('utf8');
+        }
       }
 
       errorAccumulator(vUtils.isValue, phrase[method].doc, 'undefined:phrase:' + method + ':doc');
 
-      var code = phrase[method].code ? phrase[method].code : new Buffer(phrase[method].codehash, 'base64').toString('utf8');
-
-      var funct = new Function('req', 'res', 'next', 'corbelDriver', code);//jshint ignore:line
-      var error = check(funct);
-      if (error) {
-        errors.push('error:phrase:syntax');
+      try {
+        var funct = new Function('req', 'res', 'next', 'corbelDriver', code); //jshint ignore:line
+        var error = check(funct);
+        if (error) {
+          errors.push('error:phrase:syntax');
+        }
+      } catch (e) {
+        errors.push('error:phrase:syntax:' + e);
       }
 
       methodPresent = true;
