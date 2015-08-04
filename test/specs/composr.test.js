@@ -23,7 +23,7 @@ describe('CompoSR core API', function() {
     expect(composr).to.have.property('Publisher');
     expect(composr).to.have.property('events');
     expect(composr).to.have.property('utils');
-    expect(composr).to.have.property('_logger');
+    //expect(composr).to.have.property('_logger');
   });
 
 });

@@ -17,9 +17,7 @@ require('./specs/paramsExtractor.test.js');
 require('./specs/Publisher.test.js');
 require('./specs/Phrases.test.js');
 
-/*require('./specs/snippetsBundler.js');
+/*
+require('./specs/snippetsBundler.js');
 require('./specs/composerError.js');
-require('./specs/phraseManager.js');
-require('./specs/docBuilder.js');
-require('./specs/phraseValidator.js');
 */

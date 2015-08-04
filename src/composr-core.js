@@ -20,6 +20,8 @@ CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.Phrases = require('./lib/Phrases');
 CompoSR.prototype.Snippets = require('./lib/Snippets');
 CompoSR.prototype.Publisher = require('./lib/Publisher');
-CompoSR.prototype._logger = require('./lib/logger');
+//CompoSR.prototype._logger = require('./lib/logger');
+//TODO: load integrations, integrations with load a logger that will suscribe to the debug, warn , error and info events and log them
+//All the integrations will be handled by the events module.
 
 module.exports = new CompoSR();
