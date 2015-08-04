@@ -1,5 +1,6 @@
 require('./specs/composr.test.js');
 require('./specs/init.test.js');
+require('./specs/initCorbelDriver.test.js');
 require('./specs/bindConfiguration.test.js');
 require('./specs/logClient.test.js');
 require('./specs/fetchData.test.js');
