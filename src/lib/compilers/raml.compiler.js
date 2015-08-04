@@ -36,18 +36,7 @@ var buildPhraseDefinition = function(phrase) {
   return doc;
 };
 
-/**
- * Builds a raml definition from the doc contained into a phrase
- * @param  {String} domain
- * @param  {Object} phrase
- * @return {String}
- */
-var compile = function(phrases, urlBase, domain) {
-  var dfd = q.defer();
-
-  urlBase = urlBase || 'http://test.com';
-  domain = domain || 'test-domain';
-
+function transform(phrases, urlBase, domain) {
   var doc = {};
 
   phrases.forEach(function(phrase) {
@@ -91,6 +80,23 @@ var compile = function(phrases, urlBase, domain) {
     YAML.stringify(doc, 4)
   ].join('\n');
 
+  return definition;
+}
+
+/**
+ * Builds a raml definition from the doc contained into a phrase
+ * @param  {String} domain
+ * @param  {Object} phrase
+ * @return {String}
+ */
+var compile = function(phrases, urlBase, domain) {
+  var dfd = q.defer();
+
+  urlBase = urlBase || 'http://test.com';
+  domain = domain || 'test-domain';
+
+  var definition = transform(phrases, urlBase, domain);
+
   //Use the raml.load to parse the formed raml
   raml.load(definition)
     .then(dfd.resolve, dfd.reject);
@@ -98,5 +104,5 @@ var compile = function(phrases, urlBase, domain) {
   return dfd.promise;
 };
 
-
+module.exports.transform = transform;
 module.exports.compile = compile;

@@ -10,22 +10,21 @@ var raml2html = require('raml2html');
  * @param  {Object} phrases
  * @return {String}
  */
-function documentation(phrases, domain){
+function documentation(phrases, domain) {
   /*jshint validthis:true */
   var dfd = q.defer();
 
   var urlBase = this.config.urlBase.replace('{{module}}', 'composr').replace('/v1.0', '');
-  
-  ramlCompiler.compile(phrases, urlBase, domain)
-    .then(function(data){
-      var config = raml2html.getDefaultConfig(true);
-      raml2html.render(data, config, function(result) {
-        dfd.resolve(result);
-      }, function(error) {  
-        dfd.reject(error);
-      });
-    })
-    .catch(dfd.reject);
+
+  var data = ramlCompiler.transform(phrases, urlBase, domain);
+
+  var config = raml2html.getDefaultConfig(true);
+
+  raml2html.render(data, config, function(result) {
+    dfd.resolve(result);
+  }, function(error) {
+    dfd.reject(error);
+  });
 
   return dfd.promise;
 }
