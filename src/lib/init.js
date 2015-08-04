@@ -11,7 +11,7 @@ function init(options) {
 
   //Do the stuff
   this.initCorbelDriver()
-    .then(function(){
+    .then(function() {
       return module.logClient();
     })
     .then(function() {
