@@ -66,4 +66,8 @@ describe('== Phrases ==', function() {
     });
   });
 
+  describe('Phrases registration', function(){
+
+  });
+
 });
