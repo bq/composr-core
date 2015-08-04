@@ -1,6 +1,7 @@
 var utils = require('../../src/lib/utils'),
   chai = require('chai'),
   q = require('q'),
+  corbel = require('corbel-js'),
   expect = chai.expect;
 
 
@@ -54,5 +55,21 @@ describe('utils', function() {
         });
     });
 
+  });
+
+  describe('Extract domain', function(){
+    var credentials = {
+      'iss': '1',
+      'domainId' : 'test',
+      'aud' : '2',
+      'scope' : '3'
+    };
+
+    var accesToken = corbel.jwt.generate(credentials, 'secret');
+
+    it('extracts the correct domain', function(){
+      var domain = utils.extractDomain(accesToken);
+      expect(domain).to.equals('test');
+    });
   });
 });

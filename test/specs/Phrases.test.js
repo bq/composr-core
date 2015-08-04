@@ -17,20 +17,30 @@ describe('== Phrases ==', function() {
 
   describe('Phrases validation', function() {
 
-    it('Validates correct models', function() {
+    it('Validates correct models', function(done) {
       var goodPhraseModel = {
         url: 'test',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
-          doc: 'asd'
+          doc: {
+          }
         }
       };
 
-      expect(Phrases.validate(goodPhraseModel)).to.be.an('object');
-      expect(Phrases.validate(goodPhraseModel).valid).to.equals(true);
+      Phrases.validate(goodPhraseModel)
+        .then(function(result){
+          expect(result).to.be.an('object');
+          expect(result.valid).to.equals(true);
+          done();
+        })
+        .catch(function(err){
+          console.log(err);
+          done(err);
+        });
+
     });
 
-    it('Denies invalid models', function() {
+    it('Denies invalid models', function(done) {
       var badPhraseModel = {
         url: '',
         get: {
@@ -39,10 +49,20 @@ describe('== Phrases ==', function() {
         }
       };
 
-      expect(Phrases.validate(badPhraseModel)).to.be.an('object');
-      expect(Phrases.validate(badPhraseModel).valid).to.equals(false);
-      expect(Phrases.validate(badPhraseModel).errors).to.be.an('array');
-      expect(Phrases.validate(badPhraseModel).errors.length).to.equals(1);
+      Phrases.validate(badPhraseModel)
+        .then(function(){
+          done('Error');
+        })
+        .catch(function(result){
+          //console.log(result);
+          expect(result).to.be.an('object');
+          expect(result.valid).to.equals(false);
+          expect(result.errors).to.be.an('array');
+          expect(result.errors.length).to.equals(2);
+      
+          done();
+        });
+
     });
   });
 

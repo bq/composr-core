@@ -1,6 +1,8 @@
 'use strict';
 
 var check = require('syntax-error'),
+  ramlCompiler = require('../compilers/raml.compiler'),
+  q = require('q'),
   vUtils = require('./validate.utils');
 
 
@@ -14,8 +16,9 @@ function validationErrorsAcc(errors) {
   };
 }
 
-
 function validate(phrase) {
+  var dfd = q.defer();
+
   var errors = [];
 
   var errorAccumulator = validationErrorsAcc(errors);
@@ -67,7 +70,21 @@ function validate(phrase) {
     errors.push('undefined:phrase:http_method');
   }
 
-  return errors;
+  ramlCompiler.compile([phrase])
+    .then(function(){
+      if(errors.length > 0){
+        dfd.reject(errors);
+      }else{
+        dfd.resolve();
+      }
+    })
+    .catch(function(){
+      errors.push('error:not-raml-compilant');
+      dfd.reject(errors);
+    });
+
+
+  return dfd.promise;
 }
 
 module.exports = validate;

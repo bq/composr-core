@@ -1,6 +1,8 @@
 'use strict';
 
 var q = require('q');
+var corbel = require('corbel-js');
+
 /**
  * Recursivelly fetch all the items for a list
  * @param  {Function} caller     function that returns a promise with fetched items
@@ -34,6 +36,12 @@ var getAllRecursively = function getAllRecursively(caller, pageNumber, pageSize,
   });
 };
 
+/* Extracts a domain from an acces token */
+function extractDomain(accessToken) {
+  return corbel.jwt.decode(accessToken.replace('Bearer ', '')).domainId;
+}
+
 module.exports = {
-  getAllRecursively : getAllRecursively
+  getAllRecursively : getAllRecursively,
+  extractDomain : extractDomain
 };
