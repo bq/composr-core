@@ -9,12 +9,6 @@ function init(options) {
 
   this.config = this.bindConfiguration(options);
 
-  //Corbel collections  
-  this.resources = {
-    phrasesCollection: 'composr:Phrase',
-    snippetsCollection: 'composr:Snippets'
-  };
-
   //Do the stuff
   this.initCorbelDriver()
     .then(function(){
@@ -27,10 +21,13 @@ function init(options) {
       return module.registerData();
     })
     .then(function() {
-      module.events.emit('init:ok');
+      module.events.emit('debug', 'success:initializing');
       dfd.resolve();
     })
     .catch(function(err) {
+      //something failed, then reset the module to it's original state
+      module.events.emit('error', 'error:initializing', err);
+      module.reset();
       dfd.reject(err);
     });
 

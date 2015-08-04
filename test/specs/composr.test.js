@@ -14,6 +14,9 @@ describe('CompoSR core API', function() {
     expect(composr).to.respondTo('registerData');
     expect(composr).to.respondTo('loadPhrases');
     expect(composr).to.respondTo('loadSnippets');
+    expect(composr).to.respondTo('documentation');
+    expect(composr).to.respondTo('reset');
+    expect(composr).to.respondTo('status');
     expect(composr).to.respondTo('bindConfiguration');
     expect(composr).to.have.property('Phrases');
     expect(composr).to.have.property('Snippets');

@@ -1,22 +1,7 @@
-
 'use strict';
 
-function CompoSR(){
-  this.config = null;
-
-  //Corbel collections  
-  this.resources = {
-    phrasesCollection: 'composr:Phrase',
-    snippetsCollection: 'composr:Snippets'
-  };
-
-  //Loaded resources
-  this.data = {
-    phrases: null,
-    snippets: null
-  };
-
-  this.corbelDriver = null;
+function CompoSR() {
+  this.reset();
 }
 
 CompoSR.prototype.init = require('./lib/init');
@@ -27,6 +12,9 @@ CompoSR.prototype.loadPhrases = require('./lib/loadPhrases');
 CompoSR.prototype.loadSnippets = require('./lib/loadSnippets');
 CompoSR.prototype.fetchData = require('./lib/fetchData');
 CompoSR.prototype.registerData = require('./lib/registerData');
+CompoSR.prototype.documentation = require('./lib/doc/documentation');
+CompoSR.prototype.reset = require('./lib/reset');
+CompoSR.prototype.status = require('./lib/status');
 CompoSR.prototype.events = require('./lib/events');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.Phrases = require('./lib/Phrases');
