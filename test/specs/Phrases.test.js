@@ -1,8 +1,12 @@
 var Phrases = require('../../src/lib/Phrases'),
+  _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
-  _ = require('lodash'),
-  expect = chai.expect;
+  chaiAsPromised = require('chai-as-promised'),
+  expect = chai.expect,
+  should = chai.should();
+
+chai.use(chaiAsPromised);
 
 var phrasesFixtures = require('../fixtures/phrases');
 
@@ -13,6 +17,7 @@ describe('== Phrases ==', function() {
       expect(Phrases).to.respondTo('validate');
       expect(Phrases).to.respondTo('run');
       expect(Phrases).to.respondTo('get');
+      expect(Phrases).to.respondTo('register');
       expect(Phrases).to.respondTo('_register');
       expect(Phrases).to.respondTo('_unregister');
       expect(Phrases).to.respondTo('compile');
@@ -91,7 +96,8 @@ describe('== Phrases ==', function() {
       expect(result).to.include.keys(
         'url',
         'regexpReference',
-        'codes'
+        'codes',
+        'id'
       );
 
       expect(result.regexpReference).to.be.an('object');
@@ -158,23 +164,7 @@ describe('== Phrases ==', function() {
 
   });
 
-  xdescribe('Get phrases', function() {
-
-    it('should return all the registered phrases if no id is passed', function() {
-
-    });
-
-    it('should return the specified phrase by id', function() {
-
-    });
-
-    it('should not return any phrase if id is wrong', function() {
-
-    });
-
-  });
-
-  xdescribe('Phrases registration', function() {
+  describe('Phrases registration', function() {
 
     it('should allow to register an array of phrase models', function() {
 
@@ -188,7 +178,15 @@ describe('== Phrases ==', function() {
 
     });
 
-    it('should validate the phrase prior to registration', function() {
+    it('should validate the phrase prior to registration', function(done) {
+      var spy = sinon.spy(Phrases, 'validate');
+
+      Phrases.register(phrasesFixtures.correct[0])
+      .then(function(){
+        expect(spy.callCount).to.equals(1);
+      })
+      .should.be.fulfilled.notify(done);
+
 
     });
 
@@ -205,6 +203,23 @@ describe('== Phrases ==', function() {
     });
 
   });
+
+  xdescribe('Get phrases', function() {
+
+    it('should return all the registered phrases if no id is passed', function() {
+
+    });
+
+    it('should return the specified phrase by id', function() {
+
+    });
+
+    it('should not return any phrase if id is wrong', function() {
+
+    });
+
+  });
+
 
   xdescribe('Phrases unregistration', function() {
 
@@ -245,6 +260,27 @@ describe('== Phrases ==', function() {
     });
 
   });
+
+  describe('Domain extraction', function() {
+
+    var testItems = [{
+      id: 'booqs:demo!loginuser',
+      value: 'booqs:demo'
+    }, {
+      id: 'test-client!myphrase!:parameter',
+      value: 'test-client'
+    }, {
+      id: 'booqs:demo!bookWarehouseDetailMock!:id',
+      value: 'booqs:demo'
+    }];
+
+    it('Extracts all the domains correctly', function() {
+      testItems.forEach(function(phrase) {
+        expect(Phrases._extractPhraseDomain(phrase)).to.equals(phrase.value);
+      });
+    });
+
+  })
 
 
 });
