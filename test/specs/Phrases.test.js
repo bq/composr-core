@@ -1,10 +1,15 @@
 var Phrases = require('../../src/lib/Phrases'),
+  _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
-  _ = require('lodash'),
-  expect = chai.expect;
+  chaiAsPromised = require('chai-as-promised'),
+  expect = chai.expect,
+  should = chai.should();
+
+chai.use(chaiAsPromised);
 
 var phrasesFixtures = require('../fixtures/phrases');
+var utilsPromises = require('../utils/promises');
 
 describe('== Phrases ==', function() {
 
@@ -13,6 +18,7 @@ describe('== Phrases ==', function() {
       expect(Phrases).to.respondTo('validate');
       expect(Phrases).to.respondTo('run');
       expect(Phrases).to.respondTo('get');
+      expect(Phrases).to.respondTo('register');
       expect(Phrases).to.respondTo('_register');
       expect(Phrases).to.respondTo('_unregister');
       expect(Phrases).to.respondTo('compile');
@@ -74,12 +80,10 @@ describe('== Phrases ==', function() {
 
     beforeEach(function() {
       stubEvents = sinon.stub();
-      //Mock the composr external methods
-      Phrases.compile = Phrases.compile.bind(_.extend(Phrases, {
-        events: {
-          emit: stubEvents
-        }
-      }));
+
+      Phrases.events = {
+        emit: stubEvents
+      };
 
     });
 
@@ -91,7 +95,8 @@ describe('== Phrases ==', function() {
       expect(result).to.include.keys(
         'url',
         'regexpReference',
-        'codes'
+        'codes',
+        'id'
       );
 
       expect(result.regexpReference).to.be.an('object');
@@ -158,6 +163,144 @@ describe('== Phrases ==', function() {
 
   });
 
+  describe('Phrases registration', function() {
+    var stubEvents;
+
+    beforeEach(function() {
+      stubEvents = sinon.stub();
+      //Mock the composr external methods
+      Phrases.events = {
+        emit: stubEvents
+      };
+
+      //Reset phrases for each test
+      Phrases.__phrases = [];
+    });
+
+    it('should allow to register an array of phrase models', function(done) {
+      var phrases = phrasesFixtures.correct;
+
+      Phrases.register(phrases)
+        .then(function(result) {
+          expect(result).to.be.an('array');
+          expect(result.length).to.equals(1);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should allow to register a single phrase model', function(done) {
+      var phrase = phrasesFixtures.correct[0];
+
+      Phrases.register(phrase)
+        .then(function(result) {
+          expect(result).to.be.an('object');
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should return the registered state when it registers correctly', function(done) {
+      var phrase = phrasesFixtures.correct[0];
+
+      Phrases.register(phrase)
+        .then(function(result) {
+          expect(result).to.be.an('object');
+          expect(result).to.include.keys(
+            'registered',
+            'id',
+            'error'
+          );
+          expect(result.id).to.equals(phrase.id);
+          expect(result.error).to.equals(null);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should return the registered state when it does not register', function(done) {
+      var phrase = phrasesFixtures.malformed[0];
+
+      Phrases.register(phrase)
+        .then(function(result) {
+          expect(result).to.be.an('object');
+          expect(result).to.include.keys(
+            'registered',
+            'id',
+            'error'
+          );
+          expect(result.id).to.equals(phrase.id);
+          expect(result.error).not.to.equals(null);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    describe('Secure methods called', function() {
+      var spyCompile, spyValidate, spy_compile;
+
+      beforeEach(function() {
+        spyCompile = sinon.spy(Phrases, 'compile');
+        spyValidate = sinon.spy(Phrases, 'validate');
+        spy_compile = sinon.spy(Phrases, '_compile');
+      });
+
+      afterEach(function() {
+        spyCompile.restore();
+        spyValidate.restore();
+        spy_compile.restore();
+      });
+
+      it('should call the compilation and validation methods when registering a phrase', function(done) {
+
+        Phrases.register(phrasesFixtures.correct[0])
+          .then(function() {
+            expect(spyCompile.callCount).to.equals(1);
+            expect(spy_compile.callCount).to.equals(1);
+            expect(spyValidate.callCount).to.equals(1);
+          })
+          .should.be.fulfilled.notify(done);
+      });
+
+    });
+
+    it('should emit a debug event when the phrase has been registered', function(done) {
+      Phrases.register(phrasesFixtures.correct[0])
+        .then(function() {
+          expect(stubEvents.callCount).to.be.above(0);
+          expect(stubEvents.calledWith('debug', 'phrase:registered')).to.equals(true);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should emit an error when the registering fails because the validation fails', function(done) {
+      Phrases.register(phrasesFixtures.malformed[0])
+        .then(function() {
+          expect(stubEvents.callCount).to.be.above(0);
+          expect(stubEvents.calledWith('phrase:not:registered')).to.equals(true);
+        })
+        .should.be.rejected.notify(done);
+    });
+
+    describe('Compilation fail', function() {
+      var stubCompile;
+
+      beforeEach(function() {
+        stubCompile = sinon.stub(Phrases, 'compile', utilsPromises.rejectedPromise);
+      });
+
+      afterEach(function() {
+        stubCompile.restore();
+      });
+
+      it('should emit an error when the registering fails because the compilation fails', function(done) {
+        Phrases.register(phrasesFixtures.correct[0])
+          .then(function() {
+            expect(stubEvents.callCount).to.be.above(0);
+            expect(stubEvents.calledWith('phrase:not:registered')).to.equals(true);
+          })
+          .should.be.rejected.notify(done);
+      });
+    });
+
+  });
+
   xdescribe('Get phrases', function() {
 
     it('should return all the registered phrases if no id is passed', function() {
@@ -174,37 +317,6 @@ describe('== Phrases ==', function() {
 
   });
 
-  xdescribe('Phrases registration', function() {
-
-    it('should allow to register an array of phrase models', function() {
-
-    });
-
-    it('should allow to register a single phrase model', function() {
-
-    });
-
-    it('should return the registered phrase model registered', function() {
-
-    });
-
-    it('should validate the phrase prior to registration', function() {
-
-    });
-
-    it('should call the compilation methods when registering a phrase', function() {
-
-    });
-
-    it('should emit a debug event when the phrase has been registered', function() {
-
-    });
-
-    it('should emit an error when the registering fails', function() {
-
-    });
-
-  });
 
   xdescribe('Phrases unregistration', function() {
 
@@ -245,6 +357,27 @@ describe('== Phrases ==', function() {
     });
 
   });
+
+  describe('Domain extraction', function() {
+
+    var testItems = [{
+      id: 'booqs:demo!loginuser',
+      value: 'booqs:demo'
+    }, {
+      id: 'test-client!myphrase!:parameter',
+      value: 'test-client'
+    }, {
+      id: 'booqs:demo!bookWarehouseDetailMock!:id',
+      value: 'booqs:demo'
+    }];
+
+    it('Extracts all the domains correctly', function() {
+      testItems.forEach(function(phrase) {
+        expect(Phrases._extractPhraseDomain(phrase)).to.equals(phrase.value);
+      });
+    });
+
+  })
 
 
 });
