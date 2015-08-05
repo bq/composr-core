@@ -13,8 +13,8 @@ describe('register data method', function() {
       phrases : [],
       snippets : []
     };
-    spyRegisterPhrases = sinon.spy(composr.Phrases, '_register');
-    spyRegisterSnippets = sinon.spy(composr.Snippets, '_register');
+    spyRegisterPhrases = sinon.spy(composr.Phrases, 'register');
+    spyRegisterSnippets = sinon.spy(composr.Snippets, 'register');
   });
 
   it('Invokes the register methods on the Phrases and Snippets objects', function(done){
