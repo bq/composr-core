@@ -174,15 +174,17 @@ describe('== Phrases ==', function() {
       };
 
       //Reset phrases for each test
-      Phrases.__phrases = [];
+      Phrases.__phrases = {};
     });
 
     it('should allow to register an array of phrase models', function(done) {
       var phrases = phrasesFixtures.correct;
 
       Phrases.register(phrases)
+        .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('array');
+          expect('polla').to.be.equals('polla');
           expect(result.length).to.equals(1);
         })
         .should.be.fulfilled.notify(done);
@@ -192,16 +194,17 @@ describe('== Phrases ==', function() {
       var phrase = phrasesFixtures.correct[0];
 
       Phrases.register(phrase)
+        .should.be.fulfilled.notify(done)
         .then(function(result) {
           expect(result).to.be.an('object');
-        })
-        .should.be.fulfilled.notify(done);
+        });
     });
 
     it('should return the registered state when it registers correctly', function(done) {
       var phrase = phrasesFixtures.correct[0];
 
       Phrases.register(phrase)
+        .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
           expect(result).to.include.keys(
@@ -227,6 +230,7 @@ describe('== Phrases ==', function() {
       var phrase = phrasesFixtures.malformed[0];
 
       Phrases.register(phrase)
+        .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
           expect(result).to.include.keys(
@@ -260,6 +264,7 @@ describe('== Phrases ==', function() {
       it('should call the compilation and validation methods when registering a phrase', function(done) {
 
         Phrases.register(phrasesFixtures.correct[0])
+          .should.be.fulfilled
           .then(function() {
             expect(spyCompile.callCount).to.equals(1);
             expect(spy_compile.callCount).to.equals(1);
@@ -272,6 +277,7 @@ describe('== Phrases ==', function() {
 
     it('should emit a debug event when the phrase has been registered', function(done) {
       Phrases.register(phrasesFixtures.correct[0])
+        .should.be.fulfilled
         .then(function() {
           expect(stubEvents.callCount).to.be.above(0);
           expect(stubEvents.calledWith('debug', 'phrase:registered')).to.equals(true);
@@ -279,20 +285,34 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled.notify(done);
     });
 
-    it('should emit an error when the registering fails because the validation fails', function(done) {
-      Phrases.register(phrasesFixtures.malformed[0])
-        .then(function() {
-          expect(stubEvents.callCount).to.be.above(0);
-          expect(stubEvents.calledWith('phrase:not:registered')).to.equals(true);
-        })
-        .should.be.rejected.notify(done);
+    describe('Validation fail', function() {
+
+      it('should emit an error when the registering fails because the validation fails', function(done) {
+        Phrases.register(phrasesFixtures.malformed[0])
+          .should.be.fulfilled
+          .then(function() {
+            expect(stubEvents.callCount).to.be.above(0);
+            expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
+          })
+          .should.be.fulfilled.notify(done);
+      });
+
+      it('should return not registered when the registering fails because the validation fails', function(done) {
+        Phrases.register(phrasesFixtures.malformed[0])
+          .should.be.fulfilled
+          .then(function(result) {
+            expect(result.registered).to.equals(false);
+          })
+          .should.be.fulfilled.notify(done);
+      });
+
     });
 
     describe('Compilation fail', function() {
       var stubCompile;
 
       beforeEach(function() {
-        stubCompile = sinon.stub(Phrases, 'compile', function(){
+        stubCompile = sinon.stub(Phrases, 'compile', function() {
           return false;
         });
       });
@@ -312,16 +332,51 @@ describe('== Phrases ==', function() {
 
       it('should return the unregistered state when the compilation fails', function(done) {
         Phrases.register(phrasesFixtures.correct[0])
+          .should.be.fulfilled
           .then(function(result) {
             expect(result.registered).to.equals(false);
           })
-          .should.be.fulfilled.notify(done);
+          .should.notify(done);
       });
     });
 
   });
 
+  describe('Reset phrases', function(){
+    before(function(){
+      Phrases.__phrases = {
+        'testdomain' : {
+          'loginclient!:id' : {},
+          'loginclient2!:id' : {},
+          'loginclient3!:id' : {}
+        }
+      };
+    });
+
+    after(function(){
+      Phrases.__phrases = {};
+    });
+
+    it('Has all the phrases initially', function(){
+      expect(Object.keys(Phrases.__phrases).length).to.be.above(0);
+    });
+
+    it('Resets the phrases', function(){
+      Phrases.resetPhrases();
+      expect(Object.keys(Phrases.__phrases).length).to.equals(0);
+    });
+
+  });
+
   xdescribe('Get phrases', function() {
+
+    beforeEach(function(){
+
+    });
+
+    afterEach(function(){
+      Phrases.resetPhrases();
+    });
 
     it('should return all the registered phrases if no id is passed', function() {
 

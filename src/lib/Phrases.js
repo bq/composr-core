@@ -9,6 +9,10 @@ var Phrases = {
   prototype: {
     __phrases: {},
 
+    resetPhrases: function() {
+      this.__phrases = {};
+    },
+
     //Register accepts either a single object or an array
     register: function(phraseOrPhrases, domain) {
       var dfd = q.defer();
@@ -32,14 +36,14 @@ var Phrases = {
       // - Or not register anyone if some one fails? Thats a bit dangerous though
       q.allSettled(promises)
         .then(function(results) {
-          
+
           //result has => value === resolved/ state === 'fulfilled' / reason === error
-          results = results.map(function(result, index){
+          results = results.map(function(result, index) {
             var returnedInfo = {
-              registered : result.state === 'fulfilled',
-              id : phraseOrPhrases[index].id,
-              compiled : result.state === 'fulfilled' ? result.value : null,
-              error : result.reason ? result.reason : null
+              registered: result.state === 'fulfilled',
+              id: phraseOrPhrases[index].id,
+              compiled: result.state === 'fulfilled' ? result.value : null,
+              error: result.reason ? result.reason : null
             };
 
             return returnedInfo;
@@ -80,7 +84,7 @@ var Phrases = {
 
         })
         .catch(function(err) {
-          module.events.emit('warn', 'phrase:not:valid', phrase.id, err);
+          module.events.emit('warn', 'phrase:not:registered', 'phrase:not:valid', phrase.id, err);
           dfd.reject(err);
         });
 
