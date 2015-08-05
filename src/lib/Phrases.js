@@ -207,8 +207,20 @@ var Phrases = {
     },
 
     //Returns one or all the phrases
-    get: function() {
+    get: function(domain, id) {
+      if(!domain){
+        return this.__phrases;
+      }
 
+      if(domain && !id){
+        return this.__phrases[domain] ? this.__phrases[domain] : null;
+      }
+
+      if(domain && id){
+        var domainPhrases = this.__phrases[domain] ? this.__phrases[domain] : null;
+
+        return domainPhrases && domainPhrases[id] ? domainPhrases[id] : null;
+      }
     },
 
     //Extracts the domain from a phrase

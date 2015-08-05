@@ -368,26 +368,76 @@ describe('== Phrases ==', function() {
 
   });
 
-  xdescribe('Get phrases', function() {
+  describe('Get phrases', function() {
 
     beforeEach(function(){
-
+      Phrases.__phrases = {
+        'testdomain' : {
+          'loginclient!:id!:name' : 'loginclient phrase',
+          'user' : 'user phrase'
+        },
+        'other:domain' : {
+          'test-endpoint-a' : 'test endpoint',
+          'register/user/:email' : 'another endpoint'
+        }
+      }
     });
 
     afterEach(function(){
       Phrases.resetPhrases();
     });
 
-    it('should return all the registered phrases if no id is passed', function() {
+    it('should return all the phrases if no domain is specified', function(){
+      var phrasesObtained = Phrases.get();
 
+      expect(phrasesObtained).to.include.keys(
+        'testdomain',
+        'other:domain'
+      );
+
+      expect(phrasesObtained.testdomain).to.include.keys(
+        'loginclient!:id!:name',
+        'user'
+      );
+
+      expect(phrasesObtained['other:domain']).to.include.keys(
+        'test-endpoint-a',
+        'register/user/:email'
+      );
+
+    });
+
+    it('should return all the registered phrases for a domain if no id is passed', function() {
+      var phrasesObtained = Phrases.get('other:domain');
+
+      expect(phrasesObtained).to.include.keys(
+        'test-endpoint-a',
+        'register/user/:email'
+      );
+    });
+
+    it('should not return phrases if the domain is wrong', function(){
+      var phrasesObtained = Phrases.get('my-domain-not-existing');
+
+      expect(phrasesObtained).to.be.a('null');
     });
 
     it('should return the specified phrase by id', function() {
+      var phraseObtained = Phrases.get('other:domain', 'test-endpoint-a');
 
+      expect(phraseObtained).to.equals('test endpoint');
     });
 
     it('should not return any phrase if id is wrong', function() {
+      var phraseObtained = Phrases.get('other:domain', 'test-test-test');
 
+      expect(phraseObtained).to.be.a('null');
+    });
+
+    it('should not return any phrase if domain is wrong and id is OK', function() {
+      var phraseObtained = Phrases.get('other:domain:no:existing', 'test-endpoint-a');
+
+      expect(phraseObtained).to.be.a('null');
     });
 
   });
