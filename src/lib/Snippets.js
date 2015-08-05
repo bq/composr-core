@@ -2,6 +2,9 @@
 
 var SnippetsManager = {
   prototype: {
+    register: function(){
+
+    },
     _register: function(){
 
     }
