@@ -223,6 +223,15 @@ var Phrases = {
       }
     },
 
+    //Counts all the loaded phrases
+    count: function(){
+      var module = this;
+      var count = Object.keys(this.__phrases).reduce(function(prev, next){
+        return prev + Object.keys(module.__phrases[next]).length;
+      }, 0);
+      return count;
+    },
+
     //Extracts the domain from a phrase
     _extractPhraseDomain: function(phrase) {
       return phrase.id.split('!')[0];

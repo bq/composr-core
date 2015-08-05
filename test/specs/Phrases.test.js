@@ -342,26 +342,26 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Reset phrases', function(){
-    before(function(){
+  describe('Reset phrases', function() {
+    before(function() {
       Phrases.__phrases = {
-        'testdomain' : {
-          'loginclient!:id' : {},
-          'loginclient2!:id' : {},
-          'loginclient3!:id' : {}
+        'testdomain': {
+          'loginclient!:id': {},
+          'loginclient2!:id': {},
+          'loginclient3!:id': {}
         }
       };
     });
 
-    after(function(){
+    after(function() {
       Phrases.__phrases = {};
     });
 
-    it('Has all the phrases initially', function(){
+    it('Has all the phrases initially', function() {
       expect(Object.keys(Phrases.__phrases).length).to.be.above(0);
     });
 
-    it('Resets the phrases', function(){
+    it('Resets the phrases', function() {
       Phrases.resetPhrases();
       expect(Object.keys(Phrases.__phrases).length).to.equals(0);
     });
@@ -370,24 +370,24 @@ describe('== Phrases ==', function() {
 
   describe('Get phrases', function() {
 
-    beforeEach(function(){
+    beforeEach(function() {
       Phrases.__phrases = {
-        'testdomain' : {
-          'loginclient!:id!:name' : 'loginclient phrase',
-          'user' : 'user phrase'
+        'testdomain': {
+          'loginclient!:id!:name': 'loginclient phrase',
+          'user': 'user phrase'
         },
-        'other:domain' : {
-          'test-endpoint-a' : 'test endpoint',
-          'register/user/:email' : 'another endpoint'
+        'other:domain': {
+          'test-endpoint-a': 'test endpoint',
+          'register/user/:email': 'another endpoint'
         }
       }
     });
 
-    afterEach(function(){
+    afterEach(function() {
       Phrases.resetPhrases();
     });
 
-    it('should return all the phrases if no domain is specified', function(){
+    it('should return all the phrases if no domain is specified', function() {
       var phrasesObtained = Phrases.get();
 
       expect(phrasesObtained).to.include.keys(
@@ -416,7 +416,7 @@ describe('== Phrases ==', function() {
       );
     });
 
-    it('should not return phrases if the domain is wrong', function(){
+    it('should not return phrases if the domain is wrong', function() {
       var phrasesObtained = Phrases.get('my-domain-not-existing');
 
       expect(phrasesObtained).to.be.a('null');
@@ -438,6 +438,31 @@ describe('== Phrases ==', function() {
       var phraseObtained = Phrases.get('other:domain:no:existing', 'test-endpoint-a');
 
       expect(phraseObtained).to.be.a('null');
+    });
+
+  });
+
+  describe('Count phrases', function() {
+
+    beforeEach(function() {
+      Phrases.__phrases = {
+        'testdomain': {
+          'loginclient!:id!:name': 'loginclient phrase',
+          'user': 'user phrase'
+        },
+        'other:domain': {
+          'test-endpoint-a': 'test endpoint',
+          'register/user/:email': 'another endpoint'
+        }
+      }
+    });
+
+    afterEach(function() {
+      Phrases.resetPhrases();
+    });
+
+    it('Should count all the phrases', function() {
+      expect(Phrases.count()).to.equals(4);
     });
 
   });
