@@ -14,7 +14,7 @@ var Phrases = {
     },
 
     //Register accepts either a single object or an array
-    register: function(phraseOrPhrases, domain) {
+    register: function(phraseOrPhrases, phrasesDomain) {
       var dfd = q.defer();
 
       var module = this;
@@ -26,7 +26,7 @@ var Phrases = {
       }
 
       var promises = phraseOrPhrases.map(function(phrase) {
-        return module._register(phrase, domain);
+        return module._register(phrase, phrasesDomain);
       });
 
       //TODO: think if reject the promise or not. 
@@ -60,21 +60,19 @@ var Phrases = {
     },
 
     //Stores the phrases in memory on a list by domain
-    _register: function(phrase, domain) {
+    _register: function(phrase, phrasesDomain) {
       var dfd = q.defer();
 
       var module = this;
 
       this.validate(phrase)
         .then(function() {
-          var phraseDomain = domain ? domain : module._extractPhraseDomain(phrase);
-
-          module.__phrases[phraseDomain] = module.__phrases[phraseDomain] || {};
+          var phraseDomain = phrasesDomain ? phrasesDomain : module._extractPhraseDomain(phrase);
 
           var compiled = module.compile(phrase);
 
           if (compiled) {
-            module.__phrases[phraseDomain][compiled.id] = compiled;
+            module._addToList(phraseDomain, compiled);
             module.events.emit('debug', 'phrase:registered', phrase.id);
             dfd.resolve(compiled);
           } else {
@@ -88,17 +86,23 @@ var Phrases = {
           dfd.reject(err);
         });
 
-      //var exists = this.getPhraseIndexById(domain, phrase.id);
-
-      /*if (exists !== -1) {
-        this._logger.debug('phrase_manager:register_phrase:update', domain);
-        this.list[domain][exists] = phrase;
-      } else {
-        this._logger.debug('phrase_manager:register_phrase:add', domain);
-        this.list[domain].push(phrase);
-      }*/
-
       return dfd.promise;
+    },
+
+    //Modifies the internal __phrases list
+    _addToList: function(phraseDomain, phraseCompiled) {
+      if (!phraseDomain || !phraseCompiled) {
+        return false;
+      }
+
+      if (typeof(phraseCompiled) !== 'object' || phraseCompiled.hasOwnProperty('id') === false || !phraseCompiled.id) {
+        return false;
+      }
+
+      this.__phrases[phraseDomain] = this.__phrases[phraseDomain] || {};
+      this.__phrases[phraseDomain][phraseCompiled.id] = phraseCompiled;
+
+      return true;
     },
 
     //Removes phrases from memory
@@ -208,15 +212,15 @@ var Phrases = {
 
     //Returns one or all the phrases
     get: function(domain, id) {
-      if(!domain){
+      if (!domain) {
         return this.__phrases;
       }
 
-      if(domain && !id){
+      if (domain && !id) {
         return this.__phrases[domain] ? this.__phrases[domain] : null;
       }
 
-      if(domain && id){
+      if (domain && id) {
         var domainPhrases = this.__phrases[domain] ? this.__phrases[domain] : null;
 
         return domainPhrases && domainPhrases[id] ? domainPhrases[id] : null;
@@ -224,9 +228,9 @@ var Phrases = {
     },
 
     //Counts all the loaded phrases
-    count: function(){
+    count: function() {
       var module = this;
-      var count = Object.keys(this.__phrases).reduce(function(prev, next){
+      var count = Object.keys(this.__phrases).reduce(function(prev, next) {
         return prev + Object.keys(module.__phrases[next]).length;
       }, 0);
       return count;

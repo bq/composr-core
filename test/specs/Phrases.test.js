@@ -164,7 +164,7 @@ describe('== Phrases ==', function() {
   });
 
   describe('Reset phrases', function() {
-    before(function() {
+    beforeEach(function() {
       Phrases.__phrases = {
         'testdomain': {
           'loginclient!:id': {},
@@ -174,7 +174,7 @@ describe('== Phrases ==', function() {
       };
     });
 
-    after(function() {
+    afterEach(function() {
       Phrases.__phrases = {};
     });
 
@@ -186,6 +186,8 @@ describe('== Phrases ==', function() {
       Phrases.resetPhrases();
       expect(Object.keys(Phrases.__phrases).length).to.equals(0);
     });
+
+    //TODO: emit an event when reseting the phrases, for debug purposes.
 
   });
 
@@ -288,6 +290,50 @@ describe('== Phrases ==', function() {
 
   });
 
+  describe('Add to list', function() {
+
+    afterEach(function() {
+      Phrases.resetPhrases();
+    });
+
+    it('Adds a phrase with a domain', function() {
+      var added = Phrases._addToList('addtolist:domain', {
+        id: 'serious-phrase',
+        value: 'serious'
+      });
+
+      expect(Object.keys(Phrases.get('addtolist:domain')).length).to.equals(1);
+      expect(Phrases.get('addtolist:domain', 'serious-phrase')).to.be.an('object');
+      expect(Phrases.get('addtolist:domain', 'serious-phrase')).to.include.keys(
+        'id',
+        'value'
+      );
+      expect(added).to.equals(true);
+    });
+
+    it('Does not add an empty phrase', function() {
+      var added = Phrases._addToList('addtolist:domain', null);
+
+      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+    it('Does not add non objects', function() {
+      var added = Phrases._addToList('addtolist:domain', 'Hey');
+
+      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+    it('Does not add a phrase without id', function() {
+      var added = Phrases._addToList('addtolist:domain', {});
+
+      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+  });
+
   describe('Phrases registration', function() {
     var stubEvents;
 
@@ -309,7 +355,6 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('array');
-          expect('polla').to.be.equals('polla');
           expect(result.length).to.equals(1);
         })
         .should.be.fulfilled.notify(done);
@@ -408,18 +453,22 @@ describe('== Phrases ==', function() {
     });
 
     describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile;
+      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
 
       beforeEach(function() {
+        spyRegister = sinon.spy(Phrases, '_register');
         spyCompile = sinon.spy(Phrases, 'compile');
         spyValidate = sinon.spy(Phrases, 'validate');
         spy_compile = sinon.spy(Phrases, '_compile');
+        spyAddToList = sinon.spy(Phrases, '_addToList');
       });
 
       afterEach(function() {
+        spyRegister.restore();
         spyCompile.restore();
         spyValidate.restore();
         spy_compile.restore();
+        spyAddToList.restore();
       });
 
       it('should call the compilation and validation methods when registering a phrase', function(done) {
@@ -430,6 +479,28 @@ describe('== Phrases ==', function() {
             expect(spyCompile.callCount).to.equals(1);
             expect(spy_compile.callCount).to.equals(1);
             expect(spyValidate.callCount).to.equals(1);
+          })
+          .should.be.fulfilled.notify(done);
+      });
+
+      it('should call the _register method with the domain', function(done) {
+
+        Phrases.register(phrasesFixtures.correct[0], 'testingdomain:test')
+          .should.be.fulfilled
+          .then(function() {
+            expect(spyRegister.callCount).to.equals(1);
+            expect(spyRegister.calledWith(phrasesFixtures.correct[0], 'testingdomain:test')).to.equals(true);
+          })
+          .should.be.fulfilled.notify(done);
+      });
+
+      it('should call the _addToList method with the domain', function(done) {
+
+        Phrases.register(phrasesFixtures.correct[0], 'testingdomain:test')
+          .should.be.fulfilled
+          .then(function() {
+            expect(spyAddToList.callCount).to.equals(1);
+            expect(spyAddToList.calledWith('testingdomain:test')).to.equals(true);
           })
           .should.be.fulfilled.notify(done);
       });
@@ -491,12 +562,53 @@ describe('== Phrases ==', function() {
       });
     });
 
+    describe('Domain registration', function() {
+      var existingPhraseId = phrasesFixtures.correct[0].id;
+
+      beforeEach(function(done) {
+        Phrases.register(phrasesFixtures.correct, 'mydomain')
+          .then(function(res) {
+            done();
+          });
+      });
+
+      afterEach(function() {
+        Phrases.resetPhrases();
+      });
+
+      it('should not return any phrase from other domain', function() {
+        console.log(Phrases.get());
+        var phraseObtained = Phrases.get('other:domain', existingPhraseId);
+
+        expect(phraseObtained).to.be.a('null');
+      });
+
+      it('should return the phrase from my domain', function() {
+        var phraseObtained = Phrases.get('mydomain', existingPhraseId);
+
+        expect(phraseObtained).to.include.keys(
+          'url',
+          'regexpReference',
+          'codes',
+          'id'
+        );
+      });
+    });
+
   });
 
   xdescribe('Phrases unregistration', function() {
+    beforeEach(function(done) {
+      Phrases.register(phrasesFixtures.correct)
+        .should.be.fulfilled.notify(done);
+    });
+
+    afterEach(function() {
+      Phrases.resetPhrases();
+    });
 
     it('should not remove an unregistered phrase', function() {
-
+      Phrases.unregister(phrasesFixtures.correct[0].id)
     });
 
     it('should unregister a registered phrase', function() {
