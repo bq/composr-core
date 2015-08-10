@@ -2,6 +2,7 @@
 
 var q = require('q');
 var ramlCompiler = require('../compilers/raml.compiler');
+var phraseValidator = require('../validators/phrase.validator');
 var raml2html = require('raml2html');
 
 /**
@@ -13,19 +14,39 @@ var raml2html = require('raml2html');
 function documentation(phrases, domain) {
   /*jshint validthis:true */
   var dfd = q.defer();
+  var module = this;
 
   var urlBase = this.config.urlBase.replace('{{module}}', 'composr').replace('/v1.0', '');
 
-  var data = ramlCompiler.transform(phrases, urlBase, domain);
-
-  var config = raml2html.getDefaultConfig();
-  
-  raml2html.render(data, config)
-  .then(function(result) {
-    dfd.resolve(result);
-  }, function(error) {
-    dfd.reject(error);
+  var validationPromises = phrases.map(function(phrase) {
+    return phraseValidator(phrase);
   });
+
+  var correctPhrases = [];
+  var incorrectPhrases = [];
+
+  q.allSettled(validationPromises)
+    .then(function(results) {
+      results.forEach(function(result, index) {
+        if (result.state === 'fulfilled') {
+          correctPhrases.push(result.value);
+        } else {
+          var phrase = phrases[index];
+          module.events.emit('warn', 'generating:documentation:invalid-phrase', 'phrase:id: ' + phrase.id, result.reason);
+          incorrectPhrases.push(result.reason);
+        }
+      });
+      var data = ramlCompiler.transform(correctPhrases, urlBase, domain);
+      var config = raml2html.getDefaultConfig();
+      return raml2html.render(data, config);
+    })
+    .then(function(result) {
+      dfd.resolve(result);
+    }, function(error) {
+      dfd.reject(error);
+    });
+
+
 
   return dfd.promise;
 }

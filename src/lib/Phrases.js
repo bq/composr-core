@@ -206,7 +206,12 @@ var Phrases = {
     },
 
     //Executes a phrase
-    run: function() {
+    runById: function() {
+
+    },
+
+    //Executes a phrase matching a path
+    runByPath: function() {
 
     },
 

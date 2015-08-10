@@ -75,7 +75,7 @@ function validate(phrase) {
       if(errors.length > 0){
         dfd.reject(errors);
       }else{
-        dfd.resolve();
+        dfd.resolve(phrase);
       }
     })
     .catch(function(){

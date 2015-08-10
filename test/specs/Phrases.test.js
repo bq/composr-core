@@ -16,7 +16,8 @@ describe('== Phrases ==', function() {
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
       expect(Phrases).to.respondTo('validate');
-      expect(Phrases).to.respondTo('run');
+      expect(Phrases).to.respondTo('runById'); 
+      expect(Phrases).to.respondTo('runByPath');
       expect(Phrases).to.respondTo('get');
       expect(Phrases).to.respondTo('register');
       expect(Phrases).to.respondTo('_register');
@@ -577,7 +578,6 @@ describe('== Phrases ==', function() {
       });
 
       it('should not return any phrase from other domain', function() {
-        console.log(Phrases.get());
         var phraseObtained = Phrases.get('other:domain', existingPhraseId);
 
         expect(phraseObtained).to.be.a('null');
