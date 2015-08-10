@@ -12,7 +12,7 @@ describe('Config initialization', function() {
 
   before(function() {
     stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-    stubLogClient = sinon.stub(composr, 'logClient', utilsPromises.resolvedPromise);
+    stubLogClient = sinon.stub(composr.loginManager, 'logClient', utilsPromises.resolvedPromise);
     stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
     stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
   });

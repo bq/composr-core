@@ -6,7 +6,7 @@ function CompoSR() {
 
 CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
-CompoSR.prototype.logClient = require('./lib/logClient');
+CompoSR.prototype.loginManager = require('./lib/loginManager');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
 CompoSR.prototype.loadPhrases = require('./lib/loadPhrases');
 CompoSR.prototype.loadSnippets = require('./lib/loadSnippets');
