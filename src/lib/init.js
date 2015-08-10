@@ -12,7 +12,7 @@ function init(options) {
   //Do the stuff
   this.initCorbelDriver()
     .then(function() {
-      return module.logClient();
+      return module.loginManager.clientLogin();
     })
     .then(function() {
       return module.fetchData();
