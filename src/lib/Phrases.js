@@ -1,6 +1,8 @@
 'use strict';
 var phraseValidator = require('./validators/phrase.validator.js');
 var regexpGenerator = require('./regexpGenerator');
+var utils = require('./utils');
+
 var q = require('q');
 
 var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'corbel', 'ComposrError', 'domain', '_', 'q', 'request', 'compoSR'];
@@ -69,11 +71,16 @@ var Phrases = {
         .then(function() {
           var phraseDomain = phrasesDomain ? phrasesDomain : module._extractPhraseDomain(phrase);
 
+          var phraseId = module._generateId(phrase.url, phraseDomain);
+          if(!phrase.id){
+            phrase.id = phraseId;
+          }
+
           var compiled = module.compile(phrase);
 
           if (compiled) {
-            module._addToList(phraseDomain, compiled);
-            module.events.emit('debug', 'phrase:registered', phrase.id);
+            var added = module._addToList(phraseDomain, compiled);
+            module.events.emit('debug', 'phrase:registered', added, phrase.id);
             dfd.resolve(compiled);
           } else {
             module.events.emit('warn', 'phrase:not:registered', phrase.id);
@@ -136,8 +143,7 @@ var Phrases = {
         var compiled = {};
 
         compiled.url = phrase.url;
-        compiled.id = phrase.id || phrase.url;
-
+        compiled.id = phrase.id;
         //The regexp reference dictaminates the routing mechanisms
         compiled.regexpReference = regexpGenerator.regexpReference(phrase.url);
 
@@ -148,7 +154,8 @@ var Phrases = {
         //Create in memory functions with the evaluation of the codes
         methods.forEach(function(method) {
           if (phrase[method] && (phrase[method].code || phrase[method].codehash)) {
-            module.events.emit('debug', 'phrase_manager:evaluatecode:', method, phrase.id);
+            var phraseIdentifier = phrase.id ? phrase.id : phrase.url;
+            module.events.emit('debug', 'phrase_manager:evaluatecode:', method, phraseIdentifier);
 
             var code = phrase[method].code ? phrase[method].code : new Buffer(phrase[method].codehash, 'base64').toString('utf8');
             compiled.codes[method] = module._evaluateCode(code);
@@ -216,7 +223,7 @@ var Phrases = {
     },
 
     //Returns one or all the phrases
-    get: function(domain, id) {
+    getById: function(domain, id) {
       if (!domain) {
         return this.__phrases;
       }
@@ -232,6 +239,49 @@ var Phrases = {
       }
     },
 
+    getByMatchingPath : function(domain, path, verb){
+      var candidate = null;
+
+      domain = utils.values.isNully(domain) ? null : domain;
+      
+      this.events.emit('debug', 'phrase:getByMatchingPath:' + domain + ':' + path);
+      
+      if(domain === null){
+        this.events.emit('warn', 'phrase:getByMatchingPath:noDomain:matchingAgainstAll');
+      }
+
+      if(utils.values.isNully(path)){
+        this.events.emit('error', 'phrase:getByMatchingPath:path:undefined');
+        return candidate;
+      }
+      //this.events.emit('warn', 'phrase_manager:evaluatecode:wrong_code', e);
+      var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
+
+      path = path.replace(queryParamsString, '');
+      console.log(verb);
+
+      /*
+      
+      TODO: continue reimplementing this full method:
+      
+      var domainPhrases = this.getPhrases(domain);
+
+      if (!domainPhrases || domainPhrases.length === 0) {
+        logger.debug('phrase_manager:get_phrase:no_phrases');
+        return null;
+      }
+
+      var candidates = _.filter(domainPhrases, function(phrase) {
+        var regexp = XRegExp(phrase.regexpReference.regexp); //jshint ignore:line
+
+        return XRegExp.test(path, regexp);
+      });
+
+      logger.debug('phrase_manager:get_phrase_by_name:candidates', candidates.length);
+
+      return candidates.length > 0 ? candidates[0] : null;*/
+    },
+
     //Counts all the loaded phrases
     count: function() {
       var module = this;
@@ -239,6 +289,11 @@ var Phrases = {
         return prev + Object.keys(module.__phrases[next]).length;
       }, 0);
       return count;
+    },
+
+    //Generates a PhraseID from a url an a domain
+    _generateId : function(url, domain){
+      return domain + '!' + url.replace(/\//g, '!');
     },
 
     //Extracts the domain from a phrase

@@ -41,7 +41,15 @@ function extractDomain(accessToken) {
   return corbel.jwt.decode(accessToken.replace('Bearer ', '')).domainId;
 }
 
+/* Returns true if a value is nullable : null, false, undefined, 0 */
+function isNully(value){
+  return !value;
+}
+
 module.exports = {
   getAllRecursively : getAllRecursively,
-  extractDomain : extractDomain
+  extractDomain : extractDomain,
+  values : {
+    isNully : isNully
+  }
 };

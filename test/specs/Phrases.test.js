@@ -16,9 +16,11 @@ describe('== Phrases ==', function() {
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
       expect(Phrases).to.respondTo('validate');
+      expect(Phrases).to.respondTo('_generateId'); 
       expect(Phrases).to.respondTo('runById'); 
       expect(Phrases).to.respondTo('runByPath');
-      expect(Phrases).to.respondTo('get');
+      expect(Phrases).to.respondTo('getById');
+      expect(Phrases).to.respondTo('getByMatchingPath');
       expect(Phrases).to.respondTo('register');
       expect(Phrases).to.respondTo('_register');
       expect(Phrases).to.respondTo('_unregister');
@@ -72,8 +74,32 @@ describe('== Phrases ==', function() {
 
           done();
         });
-
     });
+
+  });
+
+  describe('Phrase id generation', function(){
+    var urlfixtures = [{
+      url : 'test',
+      domain : 'mydomain',
+      expected : 'mydomain!test'
+    },{
+      url : 'test/:user',
+      domain : 'mydomain',
+      expected : 'mydomain!test!:user'
+    },{
+      url : 'test/:path/:path/:path/:path?/user',
+      domain : 'anotherdomain',
+      expected : 'anotherdomain!test!:path!:path!:path!:path?!user'
+    }];
+
+    it('Generates the correct ids for each phrase url', function(){
+      urlfixtures.forEach(function(value){
+        var idGenerated = Phrases._generateId(value.url, value.domain);
+        expect(idGenerated).to.equals(value.expected);
+      });
+    });
+
   });
 
   describe('Compile phrases', function() {
@@ -88,16 +114,15 @@ describe('== Phrases ==', function() {
 
     });
 
-
     it('should compile a well formed phrase', function() {
       var phrase = phrasesFixtures.correct[0];
       var result = Phrases.compile(phrase);
 
       expect(result).to.include.keys(
+        'id',
         'url',
         'regexpReference',
-        'codes',
-        'id'
+        'codes'
       );
 
       expect(result.regexpReference).to.be.an('object');
@@ -192,7 +217,7 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Get phrases', function() {
+  describe('Get phrases by id', function() {
 
     beforeEach(function() {
       Phrases.__phrases = {
@@ -212,7 +237,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should return all the phrases if no domain is specified', function() {
-      var phrasesObtained = Phrases.get();
+      var phrasesObtained = Phrases.getById();
 
       expect(phrasesObtained).to.include.keys(
         'testdomain',
@@ -232,7 +257,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should return all the registered phrases for a domain if no id is passed', function() {
-      var phrasesObtained = Phrases.get('other:domain');
+      var phrasesObtained = Phrases.getById('other:domain');
 
       expect(phrasesObtained).to.include.keys(
         'test-endpoint-a',
@@ -241,25 +266,25 @@ describe('== Phrases ==', function() {
     });
 
     it('should not return phrases if the domain is wrong', function() {
-      var phrasesObtained = Phrases.get('my-domain-not-existing');
+      var phrasesObtained = Phrases.getById('my-domain-not-existing');
 
       expect(phrasesObtained).to.be.a('null');
     });
 
     it('should return the specified phrase by id', function() {
-      var phraseObtained = Phrases.get('other:domain', 'test-endpoint-a');
+      var phraseObtained = Phrases.getById('other:domain', 'test-endpoint-a');
 
       expect(phraseObtained).to.equals('test endpoint');
     });
 
     it('should not return any phrase if id is wrong', function() {
-      var phraseObtained = Phrases.get('other:domain', 'test-test-test');
+      var phraseObtained = Phrases.getById('other:domain', 'test-test-test');
 
       expect(phraseObtained).to.be.a('null');
     });
 
     it('should not return any phrase if domain is wrong and id is OK', function() {
-      var phraseObtained = Phrases.get('other:domain:no:existing', 'test-endpoint-a');
+      var phraseObtained = Phrases.getById('other:domain:no:existing', 'test-endpoint-a');
 
       expect(phraseObtained).to.be.a('null');
     });
@@ -303,9 +328,9 @@ describe('== Phrases ==', function() {
         value: 'serious'
       });
 
-      expect(Object.keys(Phrases.get('addtolist:domain')).length).to.equals(1);
-      expect(Phrases.get('addtolist:domain', 'serious-phrase')).to.be.an('object');
-      expect(Phrases.get('addtolist:domain', 'serious-phrase')).to.include.keys(
+      expect(Object.keys(Phrases.getById('addtolist:domain')).length).to.equals(1);
+      expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.be.an('object');
+      expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.include.keys(
         'id',
         'value'
       );
@@ -315,21 +340,21 @@ describe('== Phrases ==', function() {
     it('Does not add an empty phrase', function() {
       var added = Phrases._addToList('addtolist:domain', null);
 
-      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
     it('Does not add non objects', function() {
       var added = Phrases._addToList('addtolist:domain', 'Hey');
 
-      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
     it('Does not add a phrase without id', function() {
       var added = Phrases._addToList('addtolist:domain', {});
 
-      expect(Phrases.get('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
@@ -337,6 +362,11 @@ describe('== Phrases ==', function() {
 
   describe('Phrases registration', function() {
     var stubEvents;
+    var spyGenerateId;
+
+    before(function(){
+      spyGenerateId = sinon.spy(Phrases, '_generateId');
+    });
 
     beforeEach(function() {
       stubEvents = sinon.stub();
@@ -349,6 +379,10 @@ describe('== Phrases ==', function() {
       Phrases.resetPhrases();
     });
 
+    after(function(){
+      spyGenerateId.restore();
+    });
+
     it('should allow to register an array of phrase models', function(done) {
       var phrases = phrasesFixtures.correct;
 
@@ -357,6 +391,7 @@ describe('== Phrases ==', function() {
         .then(function(result) {
           expect(result).to.be.an('array');
           expect(result.length).to.equals(1);
+          expect(spyGenerateId.callCount).to.be.above(0);
         })
         .should.be.fulfilled.notify(done);
     });
@@ -365,10 +400,42 @@ describe('== Phrases ==', function() {
       var phrase = phrasesFixtures.correct[0];
 
       Phrases.register(phrase)
-        .should.be.fulfilled.notify(done)
+        .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
-        });
+        })
+        .should.notify(done);
+    });
+
+    it('should generate an id for a phrase without id', function(done) {
+      var phrase = {
+        url : 'thephrase/without/:id',
+        get : {
+          code : 'console.log(a);',
+          doc : {}
+        }
+      };
+
+      Phrases.register(phrase, 'simpledomain')
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('object');
+          expect(result).to.include.keys(
+            'id',
+            'registered',
+            'compiled'
+          );
+          expect(result.registered).to.equals(true);
+          expect(result.id).to.equals('simpledomain!thephrase!without!:id');
+          expect(result.compiled).to.include.keys(
+            'url',
+            'regexpReference',
+            'codes'
+          );
+          expect(result.compiled.url).to.equals(phrase.url);
+          expect(result.compiled.id).to.equals('simpledomain!thephrase!without!:id');
+        })
+        .should.notify(done);
     });
 
     it('should emit a debug event when the phrase has been registered', function(done) {
@@ -399,12 +466,11 @@ describe('== Phrases ==', function() {
           expect(result.compiled).to.include.keys(
             'url',
             'regexpReference',
-            'codes',
-            'id'
+            'codes'
           );
           expect(result.error).to.equals(null);
         })
-        .should.be.fulfilled.notify(done);
+        .should.notify(done);
     });
 
     it('should return the registered state when it does NOT register', function(done) {
@@ -436,11 +502,11 @@ describe('== Phrases ==', function() {
         .then(function(result) {
           expect(result.registered).to.equals(true);
 
-          var candidates = Phrases.get('mydomain');
+          var candidates = Phrases.getById('mydomain');
 
           expect(Object.keys(candidates).length).to.equals(1);
 
-          var sureCandidate = Phrases.get('mydomain', phraseId);
+          var sureCandidate = Phrases.getById('mydomain', phraseId);
 
           expect(sureCandidate).to.include.keys(
             'url',
@@ -578,13 +644,13 @@ describe('== Phrases ==', function() {
       });
 
       it('should not return any phrase from other domain', function() {
-        var phraseObtained = Phrases.get('other:domain', existingPhraseId);
+        var phraseObtained = Phrases.getById('other:domain', existingPhraseId);
 
         expect(phraseObtained).to.be.a('null');
       });
 
       it('should return the phrase from my domain', function() {
-        var phraseObtained = Phrases.get('mydomain', existingPhraseId);
+        var phraseObtained = Phrases.getById('mydomain', existingPhraseId);
 
         expect(phraseObtained).to.include.keys(
           'url',

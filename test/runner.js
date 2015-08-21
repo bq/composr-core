@@ -16,6 +16,7 @@ require('./specs/paramsExtractor.test.js');
 
 require('./specs/Publisher.test.js');
 require('./specs/Phrases.test.js');
+require('./specs/phrases/phrases.getbymatchingpath.test.js');
 
 /*
 require('./specs/snippetsBundler.js');
