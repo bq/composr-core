@@ -74,10 +74,27 @@ describe('Phrases -> getByMatchingPath', function() {
       expect(found).to.equals(null);
     });
 
+    it('should return null if the verb does not match', function() {
+      var found = Phrases.getByMatchingPath('mydomain', 'test', 'delete');
+      expect(found).to.equals(null);
+    });
+
     it('returns the correct phrase for path "test"', function() {
       var found = Phrases.getByMatchingPath('mydomain', 'test');
       expect(found.url).to.equals('test');
       expect(found.id).to.equals('mydomain!test');
+      expect(found).to.include.keys(
+        'id',
+        'url',
+        'regexpReference',
+        'codes'
+      );
+    });
+
+    it('returns the correct phrase for path "user/one" and verb put', function() {
+      var found = Phrases.getByMatchingPath('mydomain', 'user/one', 'put');
+      expect(found.url).to.equals('user/:id');
+      expect(found.id).to.equals('mydomain!user!:id');
       expect(found).to.include.keys(
         'id',
         'url',
