@@ -116,8 +116,17 @@ var Phrases = {
         return false;
       }
 
-      this.__phrases[phraseDomain] = this.__phrases[phraseDomain] || {};
-      this.__phrases[phraseDomain][phraseCompiled.id] = phraseCompiled;
+      if (!this.__phrases[phraseDomain]) {
+        this.__phrases[phraseDomain] = [];
+      }
+
+      var index = this._getPhraseIndexById(phraseDomain, phraseCompiled.id);
+
+      if (index === -1) {
+        this.__phrases[phraseDomain].push(phraseCompiled);
+      } else {
+        this.__phrases[phraseDomain][index] = phraseCompiled;
+      }
 
       return true;
     },
@@ -248,30 +257,45 @@ var Phrases = {
 
       if (utils.values.isNully(domain)) {
         list = _.flatten(Object.keys(this.__phrases).map(function(key) {
-          return _.values(module.__phrases[key]);
+          return module.__phrases[key];
         }));
       } else if (this.__phrases[domain]) {
-        list = _.values(this.__phrases[domain]);
+        list = this.__phrases[domain];
       }
 
       return list;
     },
 
-    //Returns one or all the phrases
+    //Returns one phrase matching the id
     getById: function(domain, id) {
+      var candidates = this._getPhrasesAsList(domain);
+      var index = this._getPhraseIndexById(domain, id);
+
+      return index !== -1 ? candidates[index] : null;
+    },
+
+    //Returns the index of a phrase that matches by id
+    _getPhraseIndexById: function(domain, id) {
+      var candidates = this._getPhrasesAsList(domain);
+      var index = -1;
+
+      for (var i = 0; i < candidates.length; i++) {
+        if (candidates[i].id === id) {
+          index = i;
+          break;
+        }
+      }
+
+      return index;
+    },
+
+    //Get all the phrases, or all the phrases for one domain
+    getPhrases: function(domain) {
       if (!domain) {
-        return this.__phrases;
+        return this._getPhrasesAsList();
       }
 
-      if (domain && !id) {
-        return this.__phrases[domain] ? this.__phrases[domain] : null;
-      }
-
-      if (domain && id) {
-        var domainPhrases = this.__phrases[domain] ? this.__phrases[domain] : null;
-
-        return domainPhrases && domainPhrases[id] ? domainPhrases[id] : null;
-      }
+      return this.__phrases[domain] ? this.__phrases[domain] : null;
     },
 
     /** 
@@ -328,11 +352,7 @@ var Phrases = {
 
     //Counts all the loaded phrases
     count: function() {
-      var module = this;
-      var count = Object.keys(this.__phrases).reduce(function(prev, next) {
-        return prev + Object.keys(module.__phrases[next]).length;
-      }, 0);
-      return count;
+      return this._getPhrasesAsList().length;
     },
 
     //Generates a PhraseID from a url an a domain

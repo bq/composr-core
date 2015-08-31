@@ -21,6 +21,8 @@ describe('== Phrases ==', function() {
       expect(Phrases).to.respondTo('runByPath');
       expect(Phrases).to.respondTo('_filterByRegexp');
       expect(Phrases).to.respondTo('_getPhrasesAsList');
+      expect(Phrases).to.respondTo('_getPhraseIndexById');
+      expect(Phrases).to.respondTo('getPhrases');
       expect(Phrases).to.respondTo('getById');
       expect(Phrases).to.respondTo('getByMatchingPath');
       expect(Phrases).to.respondTo('register');
@@ -194,11 +196,13 @@ describe('== Phrases ==', function() {
   describe('Reset phrases', function() {
     beforeEach(function() {
       Phrases.__phrases = {
-        'testdomain': {
-          'loginclient!:id': {},
-          'loginclient2!:id': {},
-          'loginclient3!:id': {}
-        }
+        'testdomain': [{
+          id: '1'
+        }, {
+          id: '2'
+        }, {
+          id: '3'
+        }]
       };
     });
 
@@ -207,7 +211,7 @@ describe('== Phrases ==', function() {
     });
 
     it('Has all the phrases initially', function() {
-      expect(Object.keys(Phrases.__phrases).length).to.be.above(0);
+      expect(Object.keys(Phrases.__phrases).length).to.equals(1);
     });
 
     it('Resets the phrases', function() {
@@ -219,75 +223,145 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Get phrases by id', function() {
-
+  describe('Get phrases', function() {
     beforeEach(function() {
       Phrases.__phrases = {
-        'testdomain': {
-          'loginclient!:id!:name': 'loginclient phrase',
-          'user': 'user phrase'
-        },
-        'other:domain': {
-          'test-endpoint-a': 'test endpoint',
-          'register/user/:email': 'another endpoint'
-        }
-      }
+        'testdomain': [{
+          id: 'loginclient!:id!:name'
+        }, {
+          id: 'user'
+        }],
+        'other:domain': [{
+          id: 'test-endpoint-a'
+        }, {
+          id: 'register/user/:email'
+        }, {
+          id: 'register/user/:email/2'
+        }]
+      };
     });
 
     afterEach(function() {
       Phrases.resetPhrases();
     });
 
-    it('should return all the phrases if no domain is specified', function() {
-      var phrasesObtained = Phrases.getById();
-
-      expect(phrasesObtained).to.include.keys(
-        'testdomain',
-        'other:domain'
-      );
-
-      expect(phrasesObtained.testdomain).to.include.keys(
-        'loginclient!:id!:name',
-        'user'
-      );
-
-      expect(phrasesObtained['other:domain']).to.include.keys(
-        'test-endpoint-a',
-        'register/user/:email'
-      );
-
+    it('returns all the phrases for all the domains if no domain is provided', function() {
+      var candidates = Phrases.getPhrases();
+      expect(candidates.length).to.equals(5);
     });
 
-    it('should return all the registered phrases for a domain if no id is passed', function() {
-      var phrasesObtained = Phrases.getById('other:domain');
+    it('returns all the phrases for a single domain', function() {
+      var candidates = Phrases.getPhrases('other:domain');
+      expect(candidates.length).to.equals(3);
+    });
 
-      expect(phrasesObtained).to.include.keys(
-        'test-endpoint-a',
-        'register/user/:email'
-      );
+  });
+
+  describe('Get phrase index by id', function() {
+
+    beforeEach(function() {
+      Phrases.__phrases = {
+        'testdomain': [{
+          id: 'test-endpoint-a',
+          url: 'url-a'
+        }, {
+          id: 'loginclient!:id!:name',
+          url: 'url-a'
+        }, {
+          id: 'user',
+          url: 'url-a'
+        }],
+        'other:domain': [{
+          id: 'register/user/:email',
+          url: 'url-b'
+        }, {
+          id: 'test-endpoint-a',
+          url: 'url-b'
+        }]
+      };
+    });
+
+    afterEach(function() {
+      Phrases.resetPhrases();
+    });
+
+    it('should return -1 if the phrase is not found', function() {
+      var result = Phrases._getPhraseIndexById('testdomain', 'asdfg');
+      expect(result).to.equals(-1);
+    });
+
+    it('should return the index of the phrase in the domain list', function() {
+      var result = Phrases._getPhraseIndexById('testdomain', 'test-endpoint-a');
+      expect(result).to.equals(0);
+    });
+
+    it('should return the index of the phrase on another domain', function() {
+      var result = Phrases._getPhraseIndexById('other:domain', 'test-endpoint-a');
+      expect(result).to.equals(1);
+    });
+
+  });
+
+  describe('Get phrases by id', function() {
+
+    beforeEach(function() {
+      Phrases.__phrases = {
+        'testdomain': [{
+          id: 'test-endpoint-a',
+          url: 'url-a'
+        }, {
+          id: 'loginclient!:id!:name',
+          url: 'url-a'
+        }, {
+          id: 'user',
+          url: 'url-a'
+        }],
+        'other:domain': [{
+          id: 'test-endpoint-a',
+          url: 'url-b'
+        }, {
+          id: 'register/user/:email',
+          url: 'url-b'
+        }]
+      };
+    });
+
+    afterEach(function() {
+      Phrases.resetPhrases();
+    });
+
+
+    it('should return null if no domain and no id is passed', function() {
+      var phrase = Phrases.getById();
+      expect(phrase).to.equals(null);
+    });
+
+    it('should return null if no id is passed', function() {
+      var phrase = Phrases.getById('other:domain');
+      expect(phrase).to.equals(null);
+    });
+
+    it('should return the first matching phrase if no domain is passed', function() {
+      var phrase = Phrases.getById('', 'test-endpoint-a');
+      expect(phrase).to.be.an('object');
+      expect(phrase.id).to.equals('test-endpoint-a');
+      expect(phrase.url).to.equals('url-a');
+    });
+
+    it('should return the correct matching phrase if a domain is passed', function() {
+      var phrase = Phrases.getById('other:domain', 'test-endpoint-a');
+      expect(phrase).to.be.an('object');
+      expect(phrase.id).to.equals('test-endpoint-a');
+      expect(phrase.url).to.equals('url-b');
     });
 
     it('should not return phrases if the domain is wrong', function() {
-      var phrasesObtained = Phrases.getById('my-domain-not-existing');
-
-      expect(phrasesObtained).to.be.a('null');
-    });
-
-    it('should return the specified phrase by id', function() {
-      var phraseObtained = Phrases.getById('other:domain', 'test-endpoint-a');
-
-      expect(phraseObtained).to.equals('test endpoint');
+      var phrase = Phrases.getById('my-domain-not-existing', 'test-endpoint-a');
+      expect(phrase).to.be.a('null');
     });
 
     it('should not return any phrase if id is wrong', function() {
       var phraseObtained = Phrases.getById('other:domain', 'test-test-test');
-
-      expect(phraseObtained).to.be.a('null');
-    });
-
-    it('should not return any phrase if domain is wrong and id is OK', function() {
-      var phraseObtained = Phrases.getById('other:domain:no:existing', 'test-endpoint-a');
-
       expect(phraseObtained).to.be.a('null');
     });
 
@@ -297,15 +371,24 @@ describe('== Phrases ==', function() {
 
     beforeEach(function() {
       Phrases.__phrases = {
-        'testdomain': {
-          'loginclient!:id!:name': 'loginclient phrase',
-          'user': 'user phrase'
-        },
-        'other:domain': {
-          'test-endpoint-a': 'test endpoint',
-          'register/user/:email': 'another endpoint'
-        }
-      }
+        'testdomain': [{
+          id: 'test-endpoint-a',
+          url: 'url-a'
+        }, {
+          id: 'loginclient!:id!:name',
+          url: 'url-a'
+        }, {
+          id: 'user',
+          url: 'url-a'
+        }],
+        'other:domain': [{
+          id: 'test-endpoint-a',
+          url: 'url-b'
+        }, {
+          id: 'register/user/:email',
+          url: 'url-b'
+        }]
+      };
     });
 
     afterEach(function() {
@@ -313,7 +396,7 @@ describe('== Phrases ==', function() {
     });
 
     it('Should count all the phrases', function() {
-      expect(Phrases.count()).to.equals(4);
+      expect(Phrases.count()).to.equals(5);
     });
 
   });
@@ -330,7 +413,7 @@ describe('== Phrases ==', function() {
         value: 'serious'
       });
 
-      expect(Object.keys(Phrases.getById('addtolist:domain')).length).to.equals(1);
+      expect(Phrases.getPhrases('addtolist:domain').length).to.equals(1);
       expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.be.an('object');
       expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.include.keys(
         'id',
@@ -342,21 +425,21 @@ describe('== Phrases ==', function() {
     it('Does not add an empty phrase', function() {
       var added = Phrases._addToList('addtolist:domain', null);
 
-      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
     it('Does not add non objects', function() {
       var added = Phrases._addToList('addtolist:domain', 'Hey');
 
-      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
     it('Does not add a phrase without id', function() {
       var added = Phrases._addToList('addtolist:domain', {});
 
-      expect(Phrases.getById('addtolist:domain')).to.be.a('null');
+      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
       expect(added).to.equals(false);
     });
 
@@ -367,30 +450,24 @@ describe('== Phrases ==', function() {
 
     before(function() {
       Phrases.__phrases = {
-        'mydomain': {
-          'id1': {
-            regexpReference: {
-              regexp: '^/?test/?$'
-            }
-          },
-          'id2': {
-            regexpReference: {
-              regexp: '^/?test-route/?$'
-            }
+        'mydomain': [{
+          regexpReference: {
+            regexp: '^/?test/?$'
           }
-        },
-        'mydomain2': {
-          'id1': {
-            regexpReference: {
-              regexp: '^/?test/?$'
-            }
-          },
-          'id2': {
-            regexpReference: {
-              regexp: '^/?test-route/?$'
-            }
+        }, {
+          regexpReference: {
+            regexp: '^/?test-route/?$'
           }
-        }
+        }],
+        'mydomain2': [{
+          regexpReference: {
+            regexp: '^/?test/?$'
+          }
+        }, {
+          regexpReference: {
+            regexp: '^/?test-route/?$'
+          }
+        }]
       }
     });
 
@@ -424,25 +501,23 @@ describe('== Phrases ==', function() {
 
     before(function() {
       Phrases.__phrases = {
-        'mydomain': {
-          'id1': {
-            url: 'test'
-          },
-          'id2': {
-            url: 'test'
-          }
-        },
-        'test-domain': {
-          'id1': {
-            url: 'test'
-          },
-          'id2': {
-            url: 'test'
-          },
-          'id3': {
-            url: 'test'
-          }
-        }
+        'mydomain': [{
+          id: 'id1',
+          url: 'test'
+        }, {
+          id: 'id2',
+          url: 'test'
+        }],
+        'test-domain': [{
+          id: 'id1',
+          url: 'test'
+        }, {
+          id: 'id2',
+          url: 'test'
+        }, {
+          id: 'id3',
+          url: 'test'
+        }]
       }
     });
 
@@ -639,7 +714,7 @@ describe('== Phrases ==', function() {
         .then(function(result) {
           expect(result.registered).to.equals(true);
 
-          var candidates = Phrases.getById('mydomain');
+          var candidates = Phrases.getPhrases('mydomain');
 
           expect(Object.keys(candidates).length).to.equals(1);
 
