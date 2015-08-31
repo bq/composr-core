@@ -16,9 +16,11 @@ describe('== Phrases ==', function() {
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
       expect(Phrases).to.respondTo('validate');
-      expect(Phrases).to.respondTo('_generateId'); 
-      expect(Phrases).to.respondTo('runById'); 
+      expect(Phrases).to.respondTo('_generateId');
+      expect(Phrases).to.respondTo('runById');
       expect(Phrases).to.respondTo('runByPath');
+      expect(Phrases).to.respondTo('_filterByRegexp');
+      expect(Phrases).to.respondTo('_getPhrasesAsList');
       expect(Phrases).to.respondTo('getById');
       expect(Phrases).to.respondTo('getByMatchingPath');
       expect(Phrases).to.respondTo('register');
@@ -78,23 +80,23 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Phrase id generation', function(){
+  describe('Phrase id generation', function() {
     var urlfixtures = [{
-      url : 'test',
-      domain : 'mydomain',
-      expected : 'mydomain!test'
-    },{
-      url : 'test/:user',
-      domain : 'mydomain',
-      expected : 'mydomain!test!:user'
-    },{
-      url : 'test/:path/:path/:path/:path?/user',
-      domain : 'anotherdomain',
-      expected : 'anotherdomain!test!:path!:path!:path!:path?!user'
+      url: 'test',
+      domain: 'mydomain',
+      expected: 'mydomain!test'
+    }, {
+      url: 'test/:user',
+      domain: 'mydomain',
+      expected: 'mydomain!test!:user'
+    }, {
+      url: 'test/:path/:path/:path/:path?/user',
+      domain: 'anotherdomain',
+      expected: 'anotherdomain!test!:path!:path!:path!:path?!user'
     }];
 
-    it('Generates the correct ids for each phrase url', function(){
-      urlfixtures.forEach(function(value){
+    it('Generates the correct ids for each phrase url', function() {
+      urlfixtures.forEach(function(value) {
         var idGenerated = Phrases._generateId(value.url, value.domain);
         expect(idGenerated).to.equals(value.expected);
       });
@@ -360,11 +362,116 @@ describe('== Phrases ==', function() {
 
   });
 
+
+  describe('Find duplicated regexp over the phrases', function() {
+
+    before(function() {
+      Phrases.__phrases = {
+        'mydomain': {
+          'id1': {
+            regexpReference: {
+              regexp: '^/?test/?$'
+            }
+          },
+          'id2': {
+            regexpReference: {
+              regexp: '^/?test-route/?$'
+            }
+          }
+        },
+        'mydomain2': {
+          'id1': {
+            regexpReference: {
+              regexp: '^/?test/?$'
+            }
+          },
+          'id2': {
+            regexpReference: {
+              regexp: '^/?test-route/?$'
+            }
+          }
+        }
+      }
+    });
+
+    after(function() {
+      Phrases.resetPhrases();
+    });
+
+    it('should find 2 items duplicated for all domains', function() {
+      var candidates = Phrases._filterByRegexp('', '^/?test/?$');
+      expect(candidates.length).to.equals(2);
+    });
+
+    it('should find 1 items duplicated for 1 domain', function() {
+      var candidates = Phrases._filterByRegexp('mydomain', '^/?test/?$');
+      expect(candidates.length).to.equals(1);
+    });
+
+    it('Should not find any candidate for a missing regexp', function() {
+      var candidates = Phrases._filterByRegexp('', 'asd');
+      expect(candidates.length).to.equals(0);
+    });
+
+    it('Should not find any candidate for a missing domain', function() {
+      var candidates = Phrases._filterByRegexp('nodomain', '^/?test/?$');
+      expect(candidates.length).to.equals(0);
+    });
+
+  });
+
+  describe('Get phrases as list', function() {
+
+    before(function() {
+      Phrases.__phrases = {
+        'mydomain': {
+          'id1': {
+            url: 'test'
+          },
+          'id2': {
+            url: 'test'
+          }
+        },
+        'test-domain': {
+          'id1': {
+            url: 'test'
+          },
+          'id2': {
+            url: 'test'
+          },
+          'id3': {
+            url: 'test'
+          }
+        }
+      }
+    });
+
+    after(function() {
+      Phrases.resetPhrases();
+    });
+
+    it('Returns a flattened array with all the phrases', function() {
+      var list = Phrases._getPhrasesAsList();
+      expect(list.length).to.equals(5);
+    });
+
+    it('Returns a flattened array for a single domain', function() {
+      var list = Phrases._getPhrasesAsList('test-domain');
+      expect(list.length).to.equals(3);
+    });
+
+    it('Returns an empty list for a missing domain', function() {
+      var list = Phrases._getPhrasesAsList('nodomain');
+      expect(list.length).to.equals(0);
+    });
+
+  });
+
   describe('Phrases registration', function() {
     var stubEvents;
     var spyGenerateId;
 
-    before(function(){
+    before(function() {
       spyGenerateId = sinon.spy(Phrases, '_generateId');
     });
 
@@ -379,7 +486,7 @@ describe('== Phrases ==', function() {
       Phrases.resetPhrases();
     });
 
-    after(function(){
+    after(function() {
       spyGenerateId.restore();
     });
 
@@ -409,10 +516,10 @@ describe('== Phrases ==', function() {
 
     it('should generate an id for a phrase without id', function(done) {
       var phrase = {
-        url : 'thephrase/without/:id',
-        get : {
-          code : 'console.log(a);',
-          doc : {}
+        url: 'thephrase/without/:id',
+        get: {
+          code: 'console.log(a);',
+          doc: {}
         }
       };
 
@@ -493,6 +600,36 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled.notify(done);
     });
 
+    it('should warn when various phrases matches the same regular expression', function(done) {
+      var phrase = {
+        url: 'test',
+        id: 'random-id-1',
+        get: {
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: {}
+        }
+      };
+
+      var similarPhrase = {
+        url: 'test',
+        id: 'random-id-2',
+        get: {
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: {}
+        }
+      };
+
+      Phrases.register(phrase)
+        .should.be.fulfilled
+        .then(function(result) {
+          return Phrases.register(phrase);
+        })
+        .then(function(result) {
+          expect(stubEvents.calledWith('warn', 'phrase:path:duplicated', phrase.url)).to.equals(true);
+        })
+        .should.notify(done);
+    });
+
     it('should be returnable over the registered phrases', function(done) {
       var phrase = phrasesFixtures.correct[0];
       var phraseId = phrase.id;
@@ -517,6 +654,23 @@ describe('== Phrases ==', function() {
           expect(sureCandidate.id).to.equals(phraseId);
         })
         .should.notify(done);
+    });
+
+    it('should not modify the passed objects', function(done) {
+      var phraseToRegister = {
+        url: 'test',
+        get: {
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: {}
+        }
+      };
+
+      Phrases.register(phraseToRegister, 'test-domain')
+        .then(function(result) {
+          expect(phraseToRegister.id).to.be.undefined;
+          done();
+        })
+        .catch(done);
     });
 
     describe('Secure methods called', function() {

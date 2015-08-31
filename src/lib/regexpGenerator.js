@@ -1,5 +1,7 @@
 'use strict';
 
+var XRegExp = require('xregexp').XRegExp;
+
 /**
  * Returns a regexp for a express route
  * @example
@@ -90,7 +92,8 @@ function regexpReference(url){
 
   return {
     params : params,
-    regexp : regexp
+    regexp : regexp,
+    xregexp : XRegExp(regexp) //jshint ignore: line
   };
 
 }
