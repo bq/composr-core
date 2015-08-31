@@ -66,4 +66,24 @@ describe('events', function() {
       }
     });
   });
+
+  describe('error event name', function(){
+    var stub;
+
+    beforeEach(function() {
+      stub = sinon.stub();
+      events.on('error', 'testComponent', stub);
+    });
+
+    afterEach(function() {
+      events.resetSuscriptions();
+    });
+
+    it('works when emitting an error', function(){
+      events.emit('error', 'that:error');
+      expect(stub.callCount).to.be.above(0);
+      expect(stub.calledWith('that:error')).to.equals(true);
+    });
+
+  });
 });

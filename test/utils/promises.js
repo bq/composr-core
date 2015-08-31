@@ -15,8 +15,15 @@ function rejectedPromise(arg){
   return q.reject(arg);
 }
 
+function rejectedCurriedPromise(arg){
+  return function(){
+    return rejectedPromise(arg);
+  }
+}
+
 module.exports = {
   resolvedPromise : resolvedPromise,
   resolvedCurriedPromise : resolvedCurriedPromise,
-  rejectedPromise : rejectedPromise
+  rejectedPromise : rejectedPromise,
+  rejectedCurriedPromise : rejectedCurriedPromise
 };
