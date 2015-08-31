@@ -43,7 +43,7 @@ function resetSuscriptions() {
 }
 
 function emit() {
-  eventEmitter.emit.apply(eventEmitter, arguments);
+  eventEmitter.emit.apply(eventEmitter, Array.prototype.slice.call(arguments));
 }
 
 module.exports = {
