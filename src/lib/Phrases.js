@@ -4,6 +4,8 @@ var regexpGenerator = require('./regexpGenerator');
 var utils = require('./utils');
 
 var q = require('q');
+var _ = require('lodash');
+var XRegExp = require('xregexp').XRegExp;
 
 var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'corbel', 'ComposrError', 'domain', '_', 'q', 'request', 'compoSR'];
 
@@ -26,6 +28,8 @@ var Phrases = {
       if (isArray === false) {
         phraseOrPhrases = [phraseOrPhrases];
       }
+
+      phraseOrPhrases = _.cloneDeep(phraseOrPhrases);
 
       var promises = phraseOrPhrases.map(function(phrase) {
         return module._register(phrase, phrasesDomain);
@@ -72,7 +76,7 @@ var Phrases = {
           var phraseDomain = phrasesDomain ? phrasesDomain : module._extractPhraseDomain(phrase);
 
           var phraseId = module._generateId(phrase.url, phraseDomain);
-          if(!phrase.id){
+          if (!phrase.id) {
             phrase.id = phraseId;
           }
 
@@ -239,47 +243,64 @@ var Phrases = {
       }
     },
 
-    getByMatchingPath : function(domain, path, verb){
+    /** 
+      CORE Entry point. One of the purposes of composr-core is to provide a fast and reliable
+      getByMatchingPath method.
+     **/
+    getByMatchingPath: function(domain, path, verb) {
       var candidate = null;
+      var module = this;
 
-      domain = utils.values.isNully(domain) ? null : domain;
-      
-      this.events.emit('debug', 'phrase:getByMatchingPath:' + domain + ':' + path);
-      
-      if(domain === null){
-        this.events.emit('warn', 'phrase:getByMatchingPath:noDomain:matchingAgainstAll');
+      if (!verb) {
+        verb = 'get';
       }
 
-      if(utils.values.isNully(path)){
+      domain = utils.values.isNully(domain) ? null : domain;
+
+      this.events.emit('debug', 'phrase:getByMatchingPath:' + domain + ':' + path + ':' + verb);
+
+      if (utils.values.isNully(path)) {
         this.events.emit('error', 'phrase:getByMatchingPath:path:undefined');
         return candidate;
       }
-      //this.events.emit('warn', 'phrase_manager:evaluatecode:wrong_code', e);
+
       var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
 
       path = path.replace(queryParamsString, '');
-      console.log(verb);
 
-      /*
-      
-      TODO: continue reimplementing this full method:
-      
-      var domainPhrases = this.getPhrases(domain);
+      var candidates = [];
 
-      if (!domainPhrases || domainPhrases.length === 0) {
-        logger.debug('phrase_manager:get_phrase:no_phrases');
-        return null;
+      if (domain === null) {
+        this.events.emit('warn', 'phrase:getByMatchingPath:noDomain:matchingAgainstAll:expensiveMethod');
+
+        candidates = _.flatten(Object.keys(this.__phrases).map(function(key) {
+          return _.values(module.__phrases[key]);
+        }));
+
+      } else if (this.__phrases[domain]) {
+        candidates = _.values(this.__phrases[domain]);
       }
 
-      var candidates = _.filter(domainPhrases, function(phrase) {
-        var regexp = XRegExp(phrase.regexpReference.regexp); //jshint ignore:line
+      this.events.emit('debug', 'evaluating:' + candidates.length + ':candidates');
 
-        return XRegExp.test(path, regexp);
-      });
+      candidates = _.compact(candidates.map(function(phrase) {
+        if (phrase.codes[verb] &&
+          XRegExp.test(path, phrase.regexpReference.xregexp)) {
+          return phrase;
+        }
+      }));
 
-      logger.debug('phrase_manager:get_phrase_by_name:candidates', candidates.length);
+      this.events.emit('debug', 'found:' + candidates.length + ':candidates');
 
-      return candidates.length > 0 ? candidates[0] : null;*/
+      if (candidates.length === 0) {
+        this.events.emit('debug', 'notfound:candidates:path:' + path + ':' + verb);
+        return candidate;
+      } else {
+        candidate = candidates[0];
+        this.events.emit('debug', 'using:candidate:' + candidate.id + ':' + verb);
+        return candidate;
+      }
+
     },
 
     //Counts all the loaded phrases
@@ -292,7 +313,7 @@ var Phrases = {
     },
 
     //Generates a PhraseID from a url an a domain
-    _generateId : function(url, domain){
+    _generateId: function(url, domain) {
       return domain + '!' + url.replace(/\//g, '!');
     },
 

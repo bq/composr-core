@@ -182,8 +182,8 @@ describe('in regexpGenerator module', function() {
         urls.forEach(function(urlData) {
           var regexpReference = regexpGenerator.regexpReference(urlData.url);
           expect(regexpReference.regexp).to.be.a('string');
+          expect(typeof(regexpReference.xregexp)).to.equals('object');
           expect(regexpReference.params).to.be.an('array');
-
           var regexp = XRegExp(regexpReference.regexp);
 
           urlData.test.forEach(function(test) {

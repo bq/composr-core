@@ -16,8 +16,8 @@ describe('== Phrases ==', function() {
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
       expect(Phrases).to.respondTo('validate');
-      expect(Phrases).to.respondTo('_generateId'); 
-      expect(Phrases).to.respondTo('runById'); 
+      expect(Phrases).to.respondTo('_generateId');
+      expect(Phrases).to.respondTo('runById');
       expect(Phrases).to.respondTo('runByPath');
       expect(Phrases).to.respondTo('getById');
       expect(Phrases).to.respondTo('getByMatchingPath');
@@ -78,23 +78,23 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Phrase id generation', function(){
+  describe('Phrase id generation', function() {
     var urlfixtures = [{
-      url : 'test',
-      domain : 'mydomain',
-      expected : 'mydomain!test'
-    },{
-      url : 'test/:user',
-      domain : 'mydomain',
-      expected : 'mydomain!test!:user'
-    },{
-      url : 'test/:path/:path/:path/:path?/user',
-      domain : 'anotherdomain',
-      expected : 'anotherdomain!test!:path!:path!:path!:path?!user'
+      url: 'test',
+      domain: 'mydomain',
+      expected: 'mydomain!test'
+    }, {
+      url: 'test/:user',
+      domain: 'mydomain',
+      expected: 'mydomain!test!:user'
+    }, {
+      url: 'test/:path/:path/:path/:path?/user',
+      domain: 'anotherdomain',
+      expected: 'anotherdomain!test!:path!:path!:path!:path?!user'
     }];
 
-    it('Generates the correct ids for each phrase url', function(){
-      urlfixtures.forEach(function(value){
+    it('Generates the correct ids for each phrase url', function() {
+      urlfixtures.forEach(function(value) {
         var idGenerated = Phrases._generateId(value.url, value.domain);
         expect(idGenerated).to.equals(value.expected);
       });
@@ -364,7 +364,7 @@ describe('== Phrases ==', function() {
     var stubEvents;
     var spyGenerateId;
 
-    before(function(){
+    before(function() {
       spyGenerateId = sinon.spy(Phrases, '_generateId');
     });
 
@@ -379,7 +379,7 @@ describe('== Phrases ==', function() {
       Phrases.resetPhrases();
     });
 
-    after(function(){
+    after(function() {
       spyGenerateId.restore();
     });
 
@@ -409,10 +409,10 @@ describe('== Phrases ==', function() {
 
     it('should generate an id for a phrase without id', function(done) {
       var phrase = {
-        url : 'thephrase/without/:id',
-        get : {
-          code : 'console.log(a);',
-          doc : {}
+        url: 'thephrase/without/:id',
+        get: {
+          code: 'console.log(a);',
+          doc: {}
         }
       };
 
@@ -517,6 +517,23 @@ describe('== Phrases ==', function() {
           expect(sureCandidate.id).to.equals(phraseId);
         })
         .should.notify(done);
+    });
+
+    it('should not modify the passed objects', function(done) {
+      var phraseToRegister = {
+        url: 'test',
+        get: {
+          code: 'res.render(\'index\', {title: \'test\'});',
+          doc: {}
+        }
+      };
+
+      Phrases.register(phraseToRegister, 'test-domain')
+        .then(function(result) {
+          expect(phraseToRegister.id).to.be.undefined;
+          done();
+        })
+        .catch(done);
     });
 
     describe('Secure methods called', function() {
