@@ -19,6 +19,7 @@ describe('== Phrases ==', function() {
       expect(Phrases).to.respondTo('_generateId');
       expect(Phrases).to.respondTo('runById');
       expect(Phrases).to.respondTo('runByPath');
+      expect(Phrases).to.respondTo('_run');
       expect(Phrases).to.respondTo('_filterByRegexp');
       expect(Phrases).to.respondTo('_getPhrasesAsList');
       expect(Phrases).to.respondTo('_getPhraseIndexById');

@@ -109,6 +109,7 @@ describe('Config initialization', function() {
       composr.init(options)
         .catch(function() {
           expect(spyEvents.callCount).to.be.above(0);
+          //TODO: Find the bug with the "error" word on the catch.
           expect(spyEvents.calledWith('errore', 'error:initializing')).to.equals(true);
         })
         .should.notify(done);

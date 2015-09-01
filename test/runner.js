@@ -18,6 +18,10 @@ require('./specs/Publisher.test.js');
 require('./specs/Phrases.test.js');
 require('./specs/phrases/phrases.getbymatchingpath.test.js');
 
+require('./specs/mock/mockedRequest.test.js');
+require('./specs/mock/mockedResponse.test.js');
+require('./specs/mock/mockedNext.test.js');
+
 /*
 require('./specs/snippetsBundler.js');
 require('./specs/composerError.js');
