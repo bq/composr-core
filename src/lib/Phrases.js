@@ -1,13 +1,14 @@
 'use strict';
 var phraseValidator = require('./validators/phrase.validator.js');
 var regexpGenerator = require('./regexpGenerator');
+var mockedExpress = require('./mock');
 var utils = require('./utils');
 
 var q = require('q');
 var _ = require('lodash');
 var XRegExp = require('xregexp').XRegExp;
 
-var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'corbel', 'ComposrError', 'domain', '_', 'q', 'request', 'compoSR'];
+var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require'];
 
 var Phrases = {
   prototype: {
@@ -231,14 +232,57 @@ var Phrases = {
       return dfd.promise;
     },
 
-    //Executes a phrase
-    runById: function() {
+    //Executes a phrase by id
+    runById: function(domain, id, verb, params) {
+      if(utils.values.isNully(verb)){
+        verb = 'get';
+      }
+
+      var phrase = this.getById(domain, id);
+
+      if(phrase && phrase.codes[verb] && phrase.codes[verb].error === false){
+        this.events.emit('debug', 'running:phrase:byId:' + domain + ':' + id + ':' + verb);
+        return this._run(phrase.codes[verb].fn, params, domain);
+      }else{
+        return q.reject();
+      }
 
     },
 
     //Executes a phrase matching a path
-    runByPath: function() {
+    runByPath: function(domain, path, verb, params) {
+      if(utils.values.isNully(verb)){
+        verb = 'get';
+      }
 
+      var phrase = this.getByMatchingPath(domain, path, verb);
+
+      if(phrase && phrase.codes[verb].error === false){
+        this.events.emit('debug', 'running:phrase:byPath:' + domain + ':' + path + ':' + verb);
+        return this._run(phrase.codes[verb].fn, params, domain);
+      }else{
+        return q.reject();
+      }
+
+    },
+
+    //Executes a phrase
+    _run : function(phraseCode, params, domain){
+
+      if(!params){
+        params = {
+          req : mockedExpress.req(),
+          res : mockedExpress.res(),
+          next : mockedExpress.next
+        };
+      }
+      var newCorbelDriverInstance = 'TODO';
+
+      params.corbelDriver = newCorbelDriverInstance;
+      params.domain = domain;
+      params.require = this.requirer.forDomain(domain);
+
+      return phraseCode.apply(null, _.values(params));
     },
 
     //Returns a list of elements matching the same regexp

@@ -23,6 +23,7 @@ describe('CompoSR core API', function() {
     expect(composr).to.have.property('loginManager');
     expect(composr).to.have.property('events');
     expect(composr).to.have.property('utils');
+    expect(composr).to.have.property('requirer');
     //expect(composr).to.have.property('_logger');
   });
 

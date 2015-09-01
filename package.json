@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "ascii-art": "0.0.2-alpha",
+    "async": "^1.4.2",
     "atob": "^1.1.2",
     "corbel-js": "0.0.14",
     "lodash": "^3.8.0",
