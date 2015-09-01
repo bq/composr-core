@@ -17,6 +17,7 @@ CompoSR.prototype.reset = require('./lib/reset');
 CompoSR.prototype.status = require('./lib/status');
 CompoSR.prototype.events = require('./lib/events');
 CompoSR.prototype.utils = require('./lib/utils');
+CompoSR.prototype.requirer = require('./lib/requirer');
 CompoSR.prototype.Phrases = require('./lib/Phrases');
 CompoSR.prototype.Snippets = require('./lib/Snippets');
 CompoSR.prototype.Publisher = require('./lib/Publisher');
