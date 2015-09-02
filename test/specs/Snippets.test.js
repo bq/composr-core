@@ -1,4 +1,4 @@
-var Phrases = require('../../src/lib/Phrases'),
+var Snippets = require('../../src/lib/Snippets'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -8,34 +8,51 @@ var Phrases = require('../../src/lib/Phrases'),
 
 chai.use(chaiAsPromised);
 
-var phrasesFixtures = require('../fixtures/phrases');
+var snippetsFixtures = require('../fixtures/phrases');
 var utilsPromises = require('../utils/promises');
 
-describe('== Phrases ==', function() {
+describe('== Snippets ==', function() {
 
-  describe('Phrases API', function() {
+  describe('Snippets API', function() {
     it('exposes the expected methods', function() {
-      expect(Phrases).to.respondTo('validate');
-      expect(Phrases).to.respondTo('_generateId');
-      expect(Phrases).to.respondTo('runById');
-      expect(Phrases).to.respondTo('runByPath');
-      expect(Phrases).to.respondTo('_run');
-      expect(Phrases).to.respondTo('_filterByRegexp');
-      expect(Phrases).to.respondTo('_getPhrasesAsList');
-      expect(Phrases).to.respondTo('_getPhraseIndexById');
-      expect(Phrases).to.respondTo('resetItems');
-      expect(Phrases).to.respondTo('getPhrases');
-      expect(Phrases).to.respondTo('getById');
-      expect(Phrases).to.respondTo('getByMatchingPath');
-      expect(Phrases).to.respondTo('register');
-      expect(Phrases).to.respondTo('_register');
-      expect(Phrases).to.respondTo('_unregister');
-      expect(Phrases).to.respondTo('compile');
-      expect(Phrases).to.respondTo('_compile');
+      expect(Snippets).to.have.property('__snippets');
+      expect(Snippets).to.respondTo('resetItems');
+      expect(Snippets).to.respondTo('validate');
+      expect(Snippets).to.respondTo('getSnippets');
+      expect(Snippets).to.respondTo('getById');
+      expect(Snippets).to.respondTo('compile');
+      expect(Snippets).to.respondTo('_compile');
+      expect(Snippets).to.respondTo('register');
+      expect(Snippets).to.respondTo('_register');
+      expect(Snippets).to.respondTo('unregister');
+      expect(Snippets).to.respondTo('_unregister');
     });
   });
 
-  describe('Phrases validation', function() {
+  describe('Reset snippets', function(){
+    beforeEach(function(){
+      Snippets.__snippets = {
+        'myDomain' : {
+          'snippetName' : function(){}
+        }
+      };
+    });
+
+    after(function(){
+      Snippets.__snippets = {};
+    });
+
+    it('Should be an empty object after calling it', function(){
+      Snippets.resetItems();
+
+      expect(Snippets.__snippets).to.be.a('object');
+      expect(Object.keys(Snippets.__snippets).length).to.equals(0);
+    });
+
+  });
+});
+/*
+  describe('Snippets validation', function() {
 
     it('Validates correct models', function(done) {
       var goodPhraseModel = {
@@ -121,7 +138,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should compile a well formed phrase', function() {
-      var phrase = phrasesFixtures.correct[0];
+      var phrase = snippetsFixtures.correct[0];
       var result = Phrases.compile(phrase);
 
       expect(result).to.include.keys(
@@ -176,7 +193,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should emit an event with information about the compilation', function() {
-      var phrase = phrasesFixtures.correct[0];
+      var phrase = snippetsFixtures.correct[0];
       var result = Phrases.compile(phrase);
 
       expect(stubEvents.callCount).to.be.above(0);
@@ -184,12 +201,12 @@ describe('== Phrases ==', function() {
     });
 
     it('should allow passing a single phrase', function() {
-      var compiled = Phrases.compile(phrasesFixtures.correct[0]);
+      var compiled = Phrases.compile(snippetsFixtures.correct[0]);
       expect(Array.isArray(compiled)).to.equals(false);
     });
 
     it('should allow passing multiple phrases', function() {
-      var compiledPhrases = Phrases.compile(phrasesFixtures.correct);
+      var compiledPhrases = Phrases.compile(snippetsFixtures.correct);
       expect(Array.isArray(compiledPhrases)).to.equals(true);
     });
 
@@ -217,7 +234,7 @@ describe('== Phrases ==', function() {
     });
 
     it('Resets the phrases', function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
       expect(Object.keys(Phrases.__phrases).length).to.equals(0);
     });
 
@@ -244,7 +261,7 @@ describe('== Phrases ==', function() {
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('returns all the phrases for all the domains if no domain is provided', function() {
@@ -284,7 +301,7 @@ describe('== Phrases ==', function() {
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('should return -1 if the phrase is not found', function() {
@@ -329,7 +346,7 @@ describe('== Phrases ==', function() {
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
 
@@ -394,7 +411,7 @@ describe('== Phrases ==', function() {
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('Should count all the phrases', function() {
@@ -406,7 +423,7 @@ describe('== Phrases ==', function() {
   describe('Add to list', function() {
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('Adds a phrase with a domain', function() {
@@ -474,7 +491,7 @@ describe('== Phrases ==', function() {
     });
 
     after(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('should find 2 items duplicated for all domains', function() {
@@ -524,7 +541,7 @@ describe('== Phrases ==', function() {
     });
 
     after(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('Returns a flattened array with all the phrases', function() {
@@ -560,7 +577,7 @@ describe('== Phrases ==', function() {
       };
 
       //Reset phrases for each test
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     after(function() {
@@ -568,9 +585,9 @@ describe('== Phrases ==', function() {
     });
 
     it('should allow to register an array of phrase models', function(done) {
-      var phrases = phrasesFixtures.correct;
+      var phrases = snippetsFixtures.correct;
 
-      Phrases.register('mydomain', phrases)
+      Phrases.register(phrases)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('array');
@@ -580,23 +597,10 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled.notify(done);
     });
 
-    it('Should reject if the domain is missing', function(done) {
-      var phrases = phrasesFixtures.correct;
-
-      Phrases.register(null, phrases)
-        .should.be.rejected.notify(done);
-    });
-
-    it('Should reject if the phrases are missing', function(done) {
-
-      Phrases.register('test', null)
-        .should.be.rejected.notify(done);
-    });
-
     it('should allow to register a single phrase model', function(done) {
-      var phrase = phrasesFixtures.correct[0];
+      var phrase = snippetsFixtures.correct[0];
 
-      Phrases.register('mydomain', phrase)
+      Phrases.register(phrase)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -613,7 +617,7 @@ describe('== Phrases ==', function() {
         }
       };
 
-      Phrases.register('simpledomain', phrase)
+      Phrases.register(phrase, 'simpledomain')
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -636,7 +640,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should emit a debug event when the phrase has been registered', function(done) {
-      Phrases.register('testdomain', phrasesFixtures.correct[0])
+      Phrases.register(snippetsFixtures.correct[0])
         .should.be.fulfilled
         .then(function() {
           expect(stubEvents.callCount).to.be.above(0);
@@ -646,9 +650,9 @@ describe('== Phrases ==', function() {
     });
 
     it('should return the registered state when it registers correctly', function(done) {
-      var phrase = phrasesFixtures.correct[0];
+      var phrase = snippetsFixtures.correct[0];
 
-      Phrases.register('mydomain', phrase)
+      Phrases.register(phrase)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -671,9 +675,9 @@ describe('== Phrases ==', function() {
     });
 
     it('should return the registered state when it does NOT register', function(done) {
-      var phrase = phrasesFixtures.malformed[0];
+      var phrase = snippetsFixtures.malformed[0];
 
-      Phrases.register('mydomain', phrase)
+      Phrases.register(phrase)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -709,22 +713,22 @@ describe('== Phrases ==', function() {
         }
       };
 
-      Phrases.register('mydomain', phrase)
+      Phrases.register(phrase)
         .should.be.fulfilled
         .then(function(result) {
-          return Phrases.register('mydomain', phrase);
+          return Phrases.register(phrase);
         })
         .then(function(result) {
-          expect(stubEvents.calledWith('warn', 'phrase:path:duplicated')).to.equals(true);
+          expect(stubEvents.calledWith('warn', 'phrase:path:duplicated', phrase.url)).to.equals(true);
         })
         .should.notify(done);
     });
 
     it('should be returnable over the registered phrases', function(done) {
-      var phrase = phrasesFixtures.correct[0];
+      var phrase = snippetsFixtures.correct[0];
       var phraseId = phrase.id;
 
-      Phrases.register('mydomain', phrase)
+      Phrases.register(phrase, 'mydomain')
         .should.be.fulfilled
         .then(function(result) {
           expect(result.registered).to.equals(true);
@@ -755,7 +759,7 @@ describe('== Phrases ==', function() {
         }
       };
 
-      Phrases.register('test-domain', phraseToRegister)
+      Phrases.register(phraseToRegister, 'test-domain')
         .then(function(result) {
           expect(phraseToRegister.id).to.be.undefined;
           done();
@@ -764,8 +768,7 @@ describe('== Phrases ==', function() {
     });
 
     describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList,
-        spyPreCompile, spyPreAdd;
+      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
 
       beforeEach(function() {
         spyRegister = sinon.spy(Phrases, '_register');
@@ -773,8 +776,6 @@ describe('== Phrases ==', function() {
         spyValidate = sinon.spy(Phrases, 'validate');
         spy_compile = sinon.spy(Phrases, '_compile');
         spyAddToList = sinon.spy(Phrases, '_addToList');
-        spyPreCompile = sinon.spy(Phrases, '__preCompile');
-        spyPreAdd = sinon.spy(Phrases, '__preAdd');
       });
 
       afterEach(function() {
@@ -783,38 +784,34 @@ describe('== Phrases ==', function() {
         spyValidate.restore();
         spy_compile.restore();
         spyAddToList.restore();
-        spyPreCompile.restore();
-        spyPreAdd.restore();
       });
 
       it('should call the compilation and validation methods when registering a phrase', function(done) {
 
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
+        Phrases.register(snippetsFixtures.correct[0])
           .should.be.fulfilled
           .then(function() {
             expect(spyCompile.callCount).to.equals(1);
             expect(spy_compile.callCount).to.equals(1);
             expect(spyValidate.callCount).to.equals(1);
-            expect(spyPreCompile.callCount).to.equals(1);
-            expect(spyPreAdd.callCount).to.equals(1);
           })
           .should.be.fulfilled.notify(done);
       });
 
       it('should call the _register method with the domain', function(done) {
 
-        Phrases.register('testingdomain:test', phrasesFixtures.correct[0])
+        Phrases.register(snippetsFixtures.correct[0], 'testingdomain:test')
           .should.be.fulfilled
           .then(function() {
             expect(spyRegister.callCount).to.equals(1);
-            expect(spyRegister.calledWith('testingdomain:test', phrasesFixtures.correct[0])).to.equals(true);
+            expect(spyRegister.calledWith(snippetsFixtures.correct[0], 'testingdomain:test')).to.equals(true);
           })
           .should.be.fulfilled.notify(done);
       });
 
       it('should call the _addToList method with the domain', function(done) {
 
-        Phrases.register('testingdomain:test', phrasesFixtures.correct[0])
+        Phrases.register(snippetsFixtures.correct[0], 'testingdomain:test')
           .should.be.fulfilled
           .then(function() {
             expect(spyAddToList.callCount).to.equals(1);
@@ -828,7 +825,7 @@ describe('== Phrases ==', function() {
     describe('Validation fail', function() {
 
       it('should emit an error when the registering fails because the validation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.malformed[0])
+        Phrases.register(snippetsFixtures.malformed[0])
           .should.be.fulfilled
           .then(function() {
             expect(stubEvents.callCount).to.be.above(0);
@@ -838,7 +835,7 @@ describe('== Phrases ==', function() {
       });
 
       it('should return not registered when the registering fails because the validation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.malformed[0])
+        Phrases.register(snippetsFixtures.malformed[0])
           .should.be.fulfilled
           .then(function(result) {
             expect(result.registered).to.equals(false);
@@ -862,7 +859,7 @@ describe('== Phrases ==', function() {
       });
 
       it('should emit an error when the registering fails because the compilation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
+        Phrases.register(snippetsFixtures.correct[0])
           .then(function() {
             expect(stubEvents.callCount).to.be.above(0);
             expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
@@ -871,7 +868,7 @@ describe('== Phrases ==', function() {
       });
 
       it('should return the unregistered state when the compilation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
+        Phrases.register(snippetsFixtures.correct[0])
           .should.be.fulfilled
           .then(function(result) {
             expect(result.registered).to.equals(false);
@@ -881,17 +878,17 @@ describe('== Phrases ==', function() {
     });
 
     describe('Domain registration', function() {
-      var existingPhraseId = phrasesFixtures.correct[0].id;
+      var existingPhraseId = snippetsFixtures.correct[0].id;
 
       beforeEach(function(done) {
-        Phrases.register('mydomain', phrasesFixtures.correct)
+        Phrases.register(snippetsFixtures.correct, 'mydomain')
           .then(function(res) {
             done();
           });
       });
 
       afterEach(function() {
-        Phrases.resetItems();
+        Phrases.resetPhrases();
       });
 
       it('should not return any phrase from other domain', function() {
@@ -914,29 +911,18 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Phrases unregistration', function() {
-    var domain = 'random:domain:unregistration';
+  xdescribe('Phrases unregistration', function() {
     beforeEach(function(done) {
-      Phrases.register(domain, phrasesFixtures.correct)
+      Phrases.register(snippetsFixtures.correct)
         .should.be.fulfilled.notify(done);
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.resetPhrases();
     });
 
     it('should not remove an unregistered phrase', function() {
-      var existingPhraseId = phrasesFixtures.correct[0].id;
-      var existingPhrase = Phrases.getById(domain, existingPhraseId);
-
-      expect(existingPhrase).to.be.a('object');
-
-      Phrases.unregister(domain, existingPhraseId);
-
-      var doesItExist = Phrases.getById(domain, existingPhraseId);
-
-      expect(doesItExist).to.equals(null);
-
+      Phrases.unregister(snippetsFixtures.correct[0].id)
     });
 
     it('should unregister a registered phrase', function() {
@@ -995,4 +981,4 @@ describe('== Phrases ==', function() {
   })
 
 
-});
+});*/

@@ -50,9 +50,9 @@ describe('Phrases -> getByMatchingPath', function() {
         }
       }];
 
-      Phrases.register(phrasesToRegister, 'mydomain')
+      Phrases.register('mydomain', phrasesToRegister)
         .then(function() {
-          return Phrases.register(phrasesToRegister, 'other-domain');
+          return Phrases.register('other-domain', phrasesToRegister);
         })
         .should.be.fulfilled.should.notify(done);
     });
@@ -66,7 +66,7 @@ describe('Phrases -> getByMatchingPath', function() {
     });
 
     after(function() {
-      Phrases.resetPhrases();
+      Phrases.resetItems();
     });
 
     it('should return null if no phrase matches the path', function() {
@@ -253,12 +253,12 @@ describe('Phrases -> getByMatchingPath', function() {
         phrasesToRegister.push(phrase);
       });
 
-      Phrases.register(phrasesToRegister, 'test-domain')
+      Phrases.register('test-domain', phrasesToRegister)
         .should.be.fulfilled.should.notify(done);
     });
 
     after(function() {
-      Phrases.resetPhrases();
+      Phrases.resetItems();
     });
 
     it('returns the correct phrase each time', function() {

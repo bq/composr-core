@@ -1,0 +1,183 @@
+'use strict';
+
+var q = require('q');
+var _ = require('lodash');
+
+function CodeCompiler(options) {
+  this.itemName = options.itemName;
+  this.item = options.item;
+  this.validator = options.validator;
+  this[options.item] = {};
+}
+
+//Reset the stack
+CodeCompiler.prototype.resetItems = function() {
+  this[this.item] = {};
+};
+
+//Entry point for registering or unregistering items
+CodeCompiler.prototype.register = function(domain, itemOrItems) {
+  if (!itemOrItems || !domain) {
+    return q.reject();
+  }
+
+  var dfd = q.defer();
+
+  var module = this;
+
+  var isArray = Array.isArray(itemOrItems);
+
+  if (isArray === false) {
+    itemOrItems = [itemOrItems];
+  }
+
+  itemOrItems = _.cloneDeep(itemOrItems);
+
+  var promises = itemOrItems.map(function(item) {
+    return module._register(domain, item);
+  });
+
+  q.allSettled(promises)
+    .then(function(results) {
+
+      //result has => value === resolved/ state === 'fulfilled' / reason === error
+      results = results.map(function(result, index) {
+        var returnedInfo = {
+          registered: result.state === 'fulfilled',
+          id: itemOrItems[index].id,
+          compiled: result.state === 'fulfilled' ? result.value : null,
+          error: result.reason ? result.reason : null
+        };
+
+        return returnedInfo;
+      });
+
+      if (isArray) {
+        dfd.resolve(results);
+      } else {
+        dfd.resolve(results[0]);
+      }
+    });
+
+  return dfd.promise;
+
+};
+
+//Register an item on the stack
+CodeCompiler.prototype._register = function(domain, item) {
+  var dfd = q.defer();
+
+  var module = this;
+
+  this.validate(item)
+    .then(function() {
+
+      module.__preCompile(domain, item);
+
+      var compiled = module.compile(item);
+
+      if (compiled) {
+        module.__preAdd(domain, compiled);
+
+        var added = module._addToList(domain, compiled);
+        module.events.emit('debug', module.itemName + ':registered', added, item.id);
+        dfd.resolve(compiled);
+      } else {
+        module.events.emit('warn', module.itemName + ':not:registered', item.id);
+        dfd.reject();
+      }
+
+    })
+    .catch(function(err) {
+      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
+      dfd.reject(err);
+    });
+
+  return dfd.promise;
+};
+
+//Verifies that a JSON for a item is well formed
+CodeCompiler.prototype.validate = function(item) {
+  var dfd = q.defer();
+  this.validator(item)
+    .then(function() {
+      dfd.resolve({
+        valid: true
+      });
+    })
+    .catch(function(errors) {
+      dfd.reject({
+        valid: false,
+        errors: errors
+      });
+    });
+  return dfd.promise;
+};
+
+//Iterates over the items to compile
+CodeCompiler.prototype.compile = function(itemOrItems) {
+  var module = this;
+
+  var isArray = Array.isArray(itemOrItems);
+
+  if (isArray === false) {
+    itemOrItems = [itemOrItems];
+  }
+
+  var compiledResults = itemOrItems.map(function(item) {
+    return module._compile(item);
+  });
+
+  return isArray ? compiledResults : compiledResults[0];
+};
+
+//Iterates over the items to unregister
+CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
+  var module = this;
+
+  var isArray = Array.isArray(itemOrItemIds);
+
+  if (isArray === false) {
+    itemOrItemIds = [itemOrItemIds];
+  }
+
+  itemOrItemIds.forEach(function(item) {
+    return module._unregister(domain, item);
+  });
+};
+
+
+/********************************
+  Mandatory implementations 
+********************************/
+
+CodeCompiler.prototype._compile = function(item) {
+  //Implement freely
+  return item;
+};
+
+CodeCompiler.prototype._addToList = function() {
+  //Implement freely
+  return true;
+};
+
+//Removes item from memory
+CodeCompiler.prototype._unregister = function() {
+  //Implement freely
+};
+
+/********************************
+  Optional methods 
+********************************/
+
+//Pre compile call 
+CodeCompiler.prototype.__preCompile = function() {
+
+};
+
+//Pre add call
+CodeCompiler.prototype.__preAdd = function() {
+
+};
+
+module.exports = CodeCompiler;
