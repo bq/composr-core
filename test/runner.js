@@ -9,7 +9,12 @@ require('./specs/utils.test.js');
 require('./specs/events.test.js');
 require('./specs/validators/validate.utils.test.js');
 require('./specs/validators/phrase.validator.test.js');
+require('./specs/validators/snippet.validator.test.js');
+
 require('./specs/compilers/raml.compiler.test.js');
+require('./specs/compilers/code.compiler.test.js');
+require('./specs/compilers/snippet.wrapper.test.js');
+
 require('./specs/doc/documentation.test.js');
 require('./specs/regexpGenerator.test.js');
 require('./specs/paramsExtractor.test.js');
@@ -17,6 +22,8 @@ require('./specs/paramsExtractor.test.js');
 require('./specs/Publisher.test.js');
 require('./specs/Phrases.test.js');
 require('./specs/phrases/phrases.getbymatchingpath.test.js');
+
+require('./specs/Snippets.test.js');
 
 require('./specs/mock/mockedRequest.test.js');
 require('./specs/mock/mockedResponse.test.js');

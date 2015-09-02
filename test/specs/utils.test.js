@@ -34,6 +34,7 @@ describe('utils', function() {
     it('fetches all the items with 4 pages', function(done){
       utils.getAllRecursively(caller(4))
         .then(function(items){
+          
           expect(items.length).to.equals(80);
           done();
         });

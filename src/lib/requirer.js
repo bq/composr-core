@@ -12,7 +12,7 @@ var ALLOWED_LIBRARIES = {
 };
 
 function Requirer() {
-  
+
 }
 
 Requirer.prototype.forDomain = function(domain) {
@@ -21,7 +21,7 @@ Requirer.prototype.forDomain = function(domain) {
   return function(libName) {
     if (libName.indexOf(SNIPPETS_PREFIX) !== -1) {
       libName = libName.replace(SNIPPETS_PREFIX, '');
-      return module.Snippets.get(domain, libName);
+      return module.Snippets.getById(domain, libName);
     } else if (Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
       return ALLOWED_LIBRARIES[libName];
     }
