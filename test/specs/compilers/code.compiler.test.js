@@ -1,6 +1,6 @@
 'use strict';
 
-var codeCompiler = require('../../../src/lib/compilers/code.compiler'),
+var CodeCompiler = require('../../../src/lib/compilers/code.compiler'),
   chai = require('chai'),
   chaiAsPromised = require('chai-as-promised'),
   sinon = require('sinon'),
@@ -15,26 +15,26 @@ var correctPhrases = require('../../fixtures/phrases').correct;
 describe('Code Compiler', function() {
 
   it('exposes the needed prototype', function() {
-    expect(codeCompiler.prototype).to.respondTo('register');
-    expect(codeCompiler.prototype).to.respondTo('_register');
-    expect(codeCompiler.prototype).to.respondTo('unregister');
-    expect(codeCompiler.prototype).to.respondTo('_unregister');
-    expect(codeCompiler.prototype).to.respondTo('compile');
-    expect(codeCompiler.prototype).to.respondTo('_compile');
-    expect(codeCompiler.prototype).to.respondTo('_addToList');
-    expect(codeCompiler.prototype).to.respondTo('__preCompile');
-    expect(codeCompiler.prototype).to.respondTo('__preAdd');
-    expect(codeCompiler.prototype).to.respondTo('validate');
-    expect(codeCompiler.prototype).to.respondTo('resetItems');
-    expect(codeCompiler.prototype).to.respondTo('_evaluateCode');
-    expect(codeCompiler.prototype).to.respondTo('_extractDomainFromId');
+    expect(CodeCompiler.prototype).to.respondTo('register');
+    expect(CodeCompiler.prototype).to.respondTo('_register');
+    expect(CodeCompiler.prototype).to.respondTo('unregister');
+    expect(CodeCompiler.prototype).to.respondTo('_unregister');
+    expect(CodeCompiler.prototype).to.respondTo('compile');
+    expect(CodeCompiler.prototype).to.respondTo('_compile');
+    expect(CodeCompiler.prototype).to.respondTo('_addToList');
+    expect(CodeCompiler.prototype).to.respondTo('__preCompile');
+    expect(CodeCompiler.prototype).to.respondTo('__preAdd');
+    expect(CodeCompiler.prototype).to.respondTo('validate');
+    expect(CodeCompiler.prototype).to.respondTo('resetItems');
+    expect(CodeCompiler.prototype).to.respondTo('_evaluateCode');
+    expect(CodeCompiler.prototype).to.respondTo('_extractDomainFromId');
   });
 
   describe('Code evaluation', function() {
     var compiler, stubEvents;
 
     beforeEach(function() {
-      compiler = new codeCompiler({
+      compiler = new CodeCompiler({
         itemName: 'test-object',
         item: 'myItems'
       });
@@ -70,10 +70,10 @@ describe('Code Compiler', function() {
   });
 
   describe('Item registration', function() {
-    var compiler;
+    var compiler, stubEvents;
 
     beforeEach(function() {
-      compiler = new codeCompiler({
+      compiler = new CodeCompiler({
         itemName: 'phrases',
         item: '__myList',
         validator: function(item) {
@@ -81,8 +81,10 @@ describe('Code Compiler', function() {
         }
       });
 
+      stubEvents = sinon.stub();
+
       compiler.events = {
-        emit: sinon.stub()
+        emit: stubEvents
       };
 
     });
@@ -110,6 +112,18 @@ describe('Code Compiler', function() {
           expect(result).to.be.an('object');
         })
         .should.notify(done);
+    });
+
+    it('should emit a debug event when the item has been registered', function(done) {
+      compiler.register('domain', {
+        id: '1'
+      })
+        .should.be.fulfilled
+        .then(function() {
+          expect(stubEvents.callCount).to.be.above(0);
+          expect(stubEvents.calledWith('debug', 'phrases:registered')).to.equals(true);
+        })
+        .should.be.fulfilled.notify(done);
     });
 
     describe('Secure methods called', function() {
@@ -166,14 +180,102 @@ describe('Code Compiler', function() {
       });
 
     });
+
+    describe('Phases failing', function() {
+      var stubEvents, aCompiler;
+
+      beforeEach(function() {
+        aCompiler = new CodeCompiler({
+          item: '__myList',
+          itemName: 'testObject',
+          validator: function(item) {
+            if (item.id === 'invalid') {
+              return q.reject();
+            } else {
+              return q.resolve(item);
+            }
+          }
+        });
+        stubEvents = sinon.stub();
+
+        aCompiler.events = {
+          emit: stubEvents
+        };
+      });
+
+      describe('Validation fail', function() {
+
+        it('should emit an error when the registering fails because the validation fails', function(done) {
+          aCompiler.register('domain', {
+            id: 'invalid'
+          })
+            .should.be.fulfilled
+            .then(function() {
+              expect(stubEvents.callCount).to.be.above(0);
+              expect(stubEvents.calledWith('warn', 'testObject:not:registered')).to.equals(true);
+            })
+            .should.be.fulfilled.notify(done);
+        });
+
+        it('should return not registered when the registering fails because the validation fails', function(done) {
+          aCompiler.register('domain', {
+            id: 'invalid'
+          })
+            .should.be.fulfilled
+            .then(function(result) {
+              expect(result.registered).to.equals(false);
+            })
+            .should.be.fulfilled.notify(done);
+        });
+
+      });
+
+      describe('Compilation fail', function() {
+        var stubCompile;
+
+        beforeEach(function() {
+          stubCompile = sinon.stub(aCompiler, 'compile', function() {
+            return false;
+          });
+        });
+
+        afterEach(function() {
+          stubCompile.restore();
+        });
+
+        it('should emit an error when the registering fails because the compilation fails', function(done) {
+          aCompiler.register('domain', {
+            id: 'valid'
+          })
+            .then(function() {
+              expect(stubEvents.callCount).to.be.above(0);
+              expect(stubEvents.calledWith('warn', 'testObject:not:registered')).to.equals(true);
+              done();
+            });
+        });
+
+        it('should return the unregistered state when the compilation fails', function(done) {
+          aCompiler.register('domain', {
+            id: 'valid'
+          })
+            .should.be.fulfilled
+            .then(function(result) {
+              expect(result.registered).to.equals(false);
+            })
+            .should.notify(done);
+        });
+      });
+    });
   });
+
+
 
   describe('Item reseting', function() {
     var compiler;
 
     beforeEach(function() {
 
-      compiler = new codeCompiler({
+      compiler = new CodeCompiler({
         item: '__mything'
       });
 
@@ -194,7 +296,7 @@ describe('Code Compiler', function() {
 
   describe('Domain extraction', function() {
 
-    var compiler = new codeCompiler({
+    var compiler = new CodeCompiler({
       item: '__mything'
     });
 

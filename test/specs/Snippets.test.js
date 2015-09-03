@@ -330,9 +330,10 @@ describe('== Snippets ==', function() {
           expect(result).to.include.keys(
             'id',
             'registered',
-            'compiled'
+            'compiled',
+            'error'
           );
-          
+
           expect(result.registered).to.equals(true);
           expect(result.id).to.equals('mydomain!TheSnippet');
           expect(result.compiled).to.include.keys(
@@ -340,13 +341,74 @@ describe('== Snippets ==', function() {
             'name',
             'code'
           );
-
+          expect(result.error).to.equals(null);
           expect(result.compiled.name).to.equals('TheSnippet');
           expect(result.compiled.id).to.equals('mydomain!TheSnippet');
         })
         .should.notify(done);
     });
 
+    it('should return the registered state when it does NOT register', function(done) {
+      var snippet = snippetsFixtures.malformed[0];
+
+      Snippets.register('domain', snippet)
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('object');
+          expect(result).to.include.keys(
+            'registered',
+            'id',
+            'compiled',
+            'error'
+          );
+          expect(result.id).to.equals(snippet.id);
+          expect(result.registered).to.equals(false);
+          expect(result.error).not.to.equals(null);
+        })
+        .should.notify(done);
+    });
+
+    it('should be returnable over the registered Snippets', function(done) {
+      var snippet = {
+        id: 'mydomain!TheSnippet',
+        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+      };
+
+      Snippets.register('mydomain', snippet)
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result.registered).to.equals(true);
+
+          var candidates = Snippets.getSnippets('mydomain');
+
+          expect(Object.keys(candidates).length).to.equals(1);
+
+          var sureCandidate = Snippets.getById('mydomain', 'TheSnippet');
+
+          expect(sureCandidate).to.include.keys(
+            'id',
+            'name',
+            'code'
+          );
+          expect(sureCandidate.id).to.equals('mydomain!TheSnippet');
+        })
+        .should.notify(done);
+    });
+
+
+    it('should not modify the passed objects', function(done) {
+      var snippetToRegister = {
+        id: 'mydomain!TheSnippet2',
+        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+      };
+
+      Snippets.register('test-domain', snippetToRegister)
+        .then(function(result) {
+          expect(snippetToRegister.name).to.be.undefined;
+          done();
+        })
+        .catch(done);
+    });
 
     describe('Secure methods called', function() {
       var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
@@ -408,316 +470,6 @@ describe('== Snippets ==', function() {
 });
 /*
   
-
- 
-
-  d
-
-  
-
-    it('should generate an id for a phrase without id', function(done) {
-      var phrase = {
-        url: 'thephrase/without/:id',
-        get: {
-          code: 'console.log(a);',
-          doc: {}
-        }
-      };
-
-      Snippets.register(phrase, 'simpledomain')
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-          expect(result).to.include.keys(
-            'id',
-            'registered',
-            'compiled'
-          );
-          expect(result.registered).to.equals(true);
-          expect(result.id).to.equals('simpledomain!thephrase!without!:id');
-          expect(result.compiled).to.include.keys(
-            'url',
-            'regexpReference',
-            'codes'
-          );
-          expect(result.compiled.url).to.equals(phrase.url);
-          expect(result.compiled.id).to.equals('simpledomain!thephrase!without!:id');
-        })
-        .should.notify(done);
-    });
-
-    it('should emit a debug event when the phrase has been registered', function(done) {
-      Snippets.register(snippetsFixtures.correct[0])
-        .should.be.fulfilled
-        .then(function() {
-          expect(stubEvents.callCount).to.be.above(0);
-          expect(stubEvents.calledWith('debug', 'phrase:registered')).to.equals(true);
-        })
-        .should.be.fulfilled.notify(done);
-    });
-
-    it('should return the registered state when it registers correctly', function(done) {
-      var phrase = snippetsFixtures.correct[0];
-
-      Snippets.register(phrase)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-          expect(result).to.include.keys(
-            'registered',
-            'id',
-            'compiled',
-            'error'
-          );
-          expect(result.id).to.equals(phrase.id);
-          expect(result.registered).to.equals(true);
-          expect(result.compiled).to.include.keys(
-            'url',
-            'regexpReference',
-            'codes'
-          );
-          expect(result.error).to.equals(null);
-        })
-        .should.notify(done);
-    });
-
-    it('should return the registered state when it does NOT register', function(done) {
-      var phrase = snippetsFixtures.malformed[0];
-
-      Snippets.register(phrase)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-          expect(result).to.include.keys(
-            'registered',
-            'id',
-            'compiled',
-            'error'
-          );
-          expect(result.id).to.equals(phrase.id);
-          expect(result.registered).to.equals(false);
-          expect(result.error).not.to.equals(null);
-        })
-        .should.be.fulfilled.notify(done);
-    });
-
-    it('should warn when various Snippets matches the same regular expression', function(done) {
-      var phrase = {
-        url: 'test',
-        id: 'random-id-1',
-        get: {
-          code: 'res.render(\'index\', {title: \'test\'});',
-          doc: {}
-        }
-      };
-
-      var similarPhrase = {
-        url: 'test',
-        id: 'random-id-2',
-        get: {
-          code: 'res.render(\'index\', {title: \'test\'});',
-          doc: {}
-        }
-      };
-
-      Snippets.register(phrase)
-        .should.be.fulfilled
-        .then(function(result) {
-          return Snippets.register(phrase);
-        })
-        .then(function(result) {
-          expect(stubEvents.calledWith('warn', 'phrase:path:duplicated', phrase.url)).to.equals(true);
-        })
-        .should.notify(done);
-    });
-
-    it('should be returnable over the registered Snippets', function(done) {
-      var phrase = snippetsFixtures.correct[0];
-      var phraseId = phrase.id;
-
-      Snippets.register(phrase, 'mydomain')
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result.registered).to.equals(true);
-
-          var candidates = Snippets.getSnippets('mydomain');
-
-          expect(Object.keys(candidates).length).to.equals(1);
-
-          var sureCandidate = Snippets.getById('mydomain', phraseId);
-
-          expect(sureCandidate).to.include.keys(
-            'url',
-            'id',
-            'regexpReference',
-            'codes'
-          );
-          expect(sureCandidate.id).to.equals(phraseId);
-        })
-        .should.notify(done);
-    });
-
-    it('should not modify the passed objects', function(done) {
-      var phraseToRegister = {
-        url: 'test',
-        get: {
-          code: 'res.render(\'index\', {title: \'test\'});',
-          doc: {}
-        }
-      };
-
-      Snippets.register(phraseToRegister, 'test-domain')
-        .then(function(result) {
-          expect(phraseToRegister.id).to.be.undefined;
-          done();
-        })
-        .catch(done);
-    });
-
-    describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
-
-      beforeEach(function() {
-        spyRegister = sinon.spy(Snippets, '_register');
-        spyCompile = sinon.spy(Snippets, 'compile');
-        spyValidate = sinon.spy(Snippets, 'validate');
-        spy_compile = sinon.spy(Snippets, '_compile');
-        spyAddToList = sinon.spy(Snippets, '_addToList');
-      });
-
-      afterEach(function() {
-        spyRegister.restore();
-        spyCompile.restore();
-        spyValidate.restore();
-        spy_compile.restore();
-        spyAddToList.restore();
-      });
-
-      it('should call the compilation and validation methods when registering a phrase', function(done) {
-
-        Snippets.register(snippetsFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyCompile.callCount).to.equals(1);
-            expect(spy_compile.callCount).to.equals(1);
-            expect(spyValidate.callCount).to.equals(1);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _register method with the domain', function(done) {
-
-        Snippets.register(snippetsFixtures.correct[0], 'testingdomain:test')
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyRegister.callCount).to.equals(1);
-            expect(spyRegister.calledWith(snippetsFixtures.correct[0], 'testingdomain:test')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _addToList method with the domain', function(done) {
-
-        Snippets.register(snippetsFixtures.correct[0], 'testingdomain:test')
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyAddToList.callCount).to.equals(1);
-            expect(spyAddToList.calledWith('testingdomain:test')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-    });
-
-    describe('Validation fail', function() {
-
-      it('should emit an error when the registering fails because the validation fails', function(done) {
-        Snippets.register(snippetsFixtures.malformed[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(stubEvents.callCount).to.be.above(0);
-            expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should return not registered when the registering fails because the validation fails', function(done) {
-        Snippets.register(snippetsFixtures.malformed[0])
-          .should.be.fulfilled
-          .then(function(result) {
-            expect(result.registered).to.equals(false);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-    });
-
-    describe('Compilation fail', function() {
-      var stubCompile;
-
-      beforeEach(function() {
-        stubCompile = sinon.stub(Snippets, 'compile', function() {
-          return false;
-        });
-      });
-
-      afterEach(function() {
-        stubCompile.restore();
-      });
-
-      it('should emit an error when the registering fails because the compilation fails', function(done) {
-        Snippets.register(snippetsFixtures.correct[0])
-          .then(function() {
-            expect(stubEvents.callCount).to.be.above(0);
-            expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
-            done();
-          });
-      });
-
-      it('should return the unregistered state when the compilation fails', function(done) {
-        Snippets.register(snippetsFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function(result) {
-            expect(result.registered).to.equals(false);
-          })
-          .should.notify(done);
-      });
-    });
-
-    describe('Domain registration', function() {
-      var existingPhraseId = snippetsFixtures.correct[0].id;
-
-      beforeEach(function(done) {
-        Snippets.register(snippetsFixtures.correct, 'mydomain')
-          .then(function(res) {
-            done();
-          });
-      });
-
-      afterEach(function() {
-        Snippets.resetSnippets();
-      });
-
-      it('should not return any phrase from other domain', function() {
-        var phraseObtained = Snippets.getById('other:domain', existingPhraseId);
-
-        expect(phraseObtained).to.be.a('null');
-      });
-
-      it('should return the phrase from my domain', function() {
-        var phraseObtained = Snippets.getById('mydomain', existingPhraseId);
-
-        expect(phraseObtained).to.include.keys(
-          'url',
-          'regexpReference',
-          'codes',
-          'id'
-        );
-      });
-    });
-
-  });
-
   xdescribe('Snippets unregistration', function() {
     beforeEach(function(done) {
       Snippets.register(snippetsFixtures.correct)
@@ -765,27 +517,6 @@ describe('== Snippets ==', function() {
     });
 
   });
-
-  describe('Domain extraction', function() {
-
-    var testItems = [{
-      id: 'booqs:demo!loginuser',
-      value: 'booqs:demo'
-    }, {
-      id: 'test-client!myphrase!:parameter',
-      value: 'test-client'
-    }, {
-      id: 'booqs:demo!bookWarehouseDetailMock!:id',
-      value: 'booqs:demo'
-    }];
-
-    it('Extracts all the domains correctly', function() {
-      testItems.forEach(function(phrase) {
-        expect(Snippets._extractPhraseDomain(phrase)).to.equals(phrase.value);
-      });
-    });
-
-  })
 
 
 });*/
