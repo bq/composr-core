@@ -3,25 +3,16 @@
 var check = require('syntax-error'),
   ramlCompiler = require('../compilers/raml.compiler'),
   q = require('q'),
-  vUtils = require('./validate.utils');
+  utils = require('../utils'),
+  vUtils = utils.values;
 
-
-function validationErrorsAcc(errors) {
-  return function(validation, field, err) {
-    var ok = validation(field);
-    if (!ok) {
-      errors.push(err);
-    }
-    return ok;
-  };
-}
 
 function validate(phrase) {
   var dfd = q.defer();
 
   var errors = [];
 
-  var errorAccumulator = validationErrorsAcc(errors);
+  var errorAccumulator = utils.errorAccumulator(errors);
 
   errorAccumulator(vUtils.isValue, phrase, 'undefined:phrase');
   errorAccumulator(vUtils.isValue, phrase.url, 'undefined:phrase:url');

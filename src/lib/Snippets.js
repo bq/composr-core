@@ -1,10 +1,6 @@
 'use strict';
 var CodeCompiler = require('./compilers/code.compiler.js');
 var snippetValidator = require('./validators/snippet.validator.js');
-//var utils = require('./utils');
-
-//var q = require('q');
-//var _ = require('lodash');
 
 var SnippetsManager = function() {};
 
@@ -19,6 +15,7 @@ SnippetsManager.prototype._compile = function(snippet) {
   try {
     var compiled = {
       id: snippet.id,
+      name: snippet.id.replace(this._extractDomainFromId(snippet.id) + '!', ''),
       code: null
     };
 
@@ -29,21 +26,21 @@ SnippetsManager.prototype._compile = function(snippet) {
     return compiled;
 
   } catch (e) {
+    console.log(e);
     //Somehow it has tried to compile an invalid snippet. Notify it and return false.
     //Catching errors and returning false here is important for not having an unstable snippets stack.
-    this.events.emit('error', 'snippet:not:usable', snippet.url, e);
+    this.events.emit('error', 'snippet:not:usable', snippet.id, e);
     return false;
   }
 
 };
 
-
-SnippetsManager.prototype._addToList = function(domain, snippet) {
-  if (!domain || !snippet) {
+SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
+  if (!domain || !snippetCompiled) {
     return false;
   }
 
-  if (typeof(snippet) !== 'object' || snippet.hasOwnProperty('id') === false || !snippet.id) {
+  if (typeof(snippetCompiled) !== 'object' || snippetCompiled.hasOwnProperty('name') === false || !snippetCompiled.name) {
     return false;
   }
 
@@ -51,7 +48,7 @@ SnippetsManager.prototype._addToList = function(domain, snippet) {
     this.__snippets[domain] = {};
   }
 
-  this.__snippets[domain][snippet.id] = snippet;
+  this.__snippets[domain][snippetCompiled.name] = snippetCompiled;
   return true;
 };
 
@@ -69,7 +66,7 @@ SnippetsManager.prototype.getById = function(domain, id) {
   var snippets = this.getSnippets(domain);
 
   if (snippets) {
-    return snippets[id];
+    return snippets[id] ? snippets[id] : null;
   } else {
     return null;
   }

@@ -73,27 +73,4 @@ describe('utils', function() {
     });
   });
 
-  describe('Values', function(){
-
-    describe('isNully', function(){
-
-      it('Returns true for all the nullable values', function(){
-        var nullablevalues = ['', null, undefined, 0, false];
-
-        nullablevalues.forEach(function(value){
-          expect(utils.values.isNully(value)).to.equals(true);
-        });
-      });
-
-      it('Returns false for all the trully values', function(){
-        var nullablevalues = ['a', 'null', 'undefined', 10, true, new Object(), function(){}, []];
-
-        nullablevalues.forEach(function(value){
-          expect(utils.values.isNully(value)).to.equals(false);
-        });
-      });
-    });
-
-  });
-
 });

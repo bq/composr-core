@@ -27,6 +27,7 @@ describe('Code Compiler', function() {
     expect(codeCompiler.prototype).to.respondTo('validate');
     expect(codeCompiler.prototype).to.respondTo('resetItems');
     expect(codeCompiler.prototype).to.respondTo('_evaluateCode');
+    expect(codeCompiler.prototype).to.respondTo('_extractDomainFromId');
   });
 
   describe('Code evaluation', function() {
@@ -163,6 +164,35 @@ describe('Code Compiler', function() {
       compiler.resetItems();
       expect(Object.keys(compiler.__mything).length).to.equals(0);
     });
+  });
+
+
+  describe('Domain extraction', function() {
+
+    var compiler = new codeCompiler({
+      item: '__mything'
+    });
+
+    var testItems = [{
+      id: 'booqs:demo!loginuser',
+      value: 'booqs:demo'
+    }, {
+      id: 'test-client!myphrase!:parameter',
+      value: 'test-client'
+    }, {
+      id: 'booqs:demo!bookWarehouseDetailMock!:id',
+      value: 'booqs:demo'
+    }, {
+      id: 'booqs:demo!UserModel',
+      value: 'booqs:demo'
+    }];
+
+    it('Extracts all the domains correctly', function() {
+      testItems.forEach(function(item) {
+        expect(compiler._extractDomainFromId(item.id)).to.equals(item.value);
+      });
+    });
+
   });
 
   //TODO test the other methods here instead in phrases.
