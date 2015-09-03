@@ -42,14 +42,12 @@ CodeCompiler.prototype.register = function(domain, itemOrItems) {
 
       //result has => value === resolved/ state === 'fulfilled' / reason === error
       results = results.map(function(result, index) {
-        var returnedInfo = {
+        return {
           registered: result.state === 'fulfilled',
           id: itemOrItems[index].id,
           compiled: result.state === 'fulfilled' ? result.value : null,
           error: result.reason ? result.reason : null
         };
-
-        return returnedInfo;
       });
 
       if (isArray) {
@@ -65,11 +63,10 @@ CodeCompiler.prototype.register = function(domain, itemOrItems) {
 
 //Register an item on the stack
 CodeCompiler.prototype._register = function(domain, item) {
-  var dfd = q.defer();
 
   var module = this;
 
-  this.validate(item)
+  return this.validate(item)
     .then(function() {
 
       module.__preCompile(domain, item);
@@ -81,37 +78,33 @@ CodeCompiler.prototype._register = function(domain, item) {
 
         var added = module._addToList(domain, compiled);
         module.events.emit('debug', module.itemName + ':registered', added, item.id);
-        dfd.resolve(compiled);
+        return compiled;
       } else {
         module.events.emit('warn', module.itemName + ':not:registered', item.id);
-        dfd.reject();
+        throw new Error('not:registered');
       }
 
     })
     .catch(function(err) {
       module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
-      dfd.reject(err);
+      throw err;
     });
-
-  return dfd.promise;
 };
 
 //Verifies that a JSON for a item is well formed
 CodeCompiler.prototype.validate = function(item) {
-  var dfd = q.defer();
-  this.validator(item)
+  return this.validator(item)
     .then(function() {
-      dfd.resolve({
+      return {
         valid: true
-      });
+      };
     })
     .catch(function(errors) {
-      dfd.reject({
+      throw({
         valid: false,
         errors: errors
       });
     });
-  return dfd.promise;
 };
 
 //Iterates over the items to compile
@@ -167,6 +160,12 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
     return module._unregister(domain, item);
   });
 };
+
+//Extracts the domain from a database item
+CodeCompiler.prototype._extractDomainFromId = function(id) {
+  return id.split('!')[0];
+};
+
 
 
 /********************************

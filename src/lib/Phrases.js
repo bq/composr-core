@@ -280,11 +280,5 @@ PhraseManager.prototype._generateId = function(url, domain) {
   return domain + '!' + url.replace(/\//g, '!');
 };
 
-//Extracts the domain from a phrase
-PhraseManager.prototype._extractPhraseDomain = function(phrase) {
-  return phrase.id.split('!')[0];
-};
-
-
 
 module.exports = new PhraseManager();

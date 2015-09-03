@@ -46,9 +46,21 @@ function isNully(value){
   return !value;
 }
 
+/* Accumulates results over an array */
+function errorAccumulator(list) {
+  return function(cb, data, err) {
+    var ok = cb(data);
+    if (!ok) {
+      list.push(err);
+    }
+    return ok;
+  };
+}
+
 module.exports = {
   getAllRecursively : getAllRecursively,
   extractDomain : extractDomain,
+  errorAccumulator : errorAccumulator,
   values : {
     isNully : isNully
   }
