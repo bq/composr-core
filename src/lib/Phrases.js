@@ -110,7 +110,7 @@ PhraseManager.prototype._compile = function(phrase) {
 
 //Executes a phrase by id
 PhraseManager.prototype.runById = function(domain, id, verb, params) {
-  if (utils.values.isNully(verb)) {
+  if (utils.values.isFalsy(verb)) {
     verb = 'get';
   }
 
@@ -127,7 +127,7 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
 
 //Executes a phrase matching a path
 PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
-  if (utils.values.isNully(verb)) {
+  if (utils.values.isFalsy(verb)) {
     verb = 'get';
   }
 
@@ -175,7 +175,7 @@ PhraseManager.prototype._getPhrasesAsList = function(domain) {
   var list = [];
   var module = this;
 
-  if (utils.values.isNully(domain)) {
+  if (utils.values.isFalsy(domain)) {
     list = _.flatten(Object.keys(this.__phrases).map(function(key) {
       return module.__phrases[key];
     }));
@@ -229,11 +229,11 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
     verb = 'get';
   }
 
-  domain = utils.values.isNully(domain) ? null : domain;
+  domain = utils.values.isFalsy(domain) ? null : domain;
 
   this.events.emit('debug', 'phrase:getByMatchingPath:' + domain + ':' + path + ':' + verb);
 
-  if (utils.values.isNully(path)) {
+  if (utils.values.isFalsy(path)) {
     this.events.emit('error', 'phrase:getByMatchingPath:path:undefined');
     return candidate;
   }
@@ -279,12 +279,6 @@ PhraseManager.prototype.count = function() {
 PhraseManager.prototype._generateId = function(url, domain) {
   return domain + '!' + url.replace(/\//g, '!');
 };
-
-//Extracts the domain from a phrase
-PhraseManager.prototype._extractPhraseDomain = function(phrase) {
-  return phrase.id.split('!')[0];
-};
-
 
 
 module.exports = new PhraseManager();

@@ -6,5 +6,6 @@ module.exports = [
   require('./malformedCodeHash.json'),
   require('./noExports.json'),
   require('./incorrectCodeInCodeHash.json'),
+  require('./malformedId.json'),
   require('./missingId.json')
 ];
