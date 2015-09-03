@@ -168,6 +168,12 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
   });
 };
 
+//Extracts the domain from a database item
+CodeCompiler.prototype._extractDomainFromId = function(id) {
+  return id.split('!')[0];
+};
+
+
 
 /********************************
   Mandatory implementations 

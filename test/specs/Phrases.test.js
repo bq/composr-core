@@ -973,26 +973,4 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Domain extraction', function() {
-
-    var testItems = [{
-      id: 'booqs:demo!loginuser',
-      value: 'booqs:demo'
-    }, {
-      id: 'test-client!myphrase!:parameter',
-      value: 'test-client'
-    }, {
-      id: 'booqs:demo!bookWarehouseDetailMock!:id',
-      value: 'booqs:demo'
-    }];
-
-    it('Extracts all the domains correctly', function() {
-      testItems.forEach(function(phrase) {
-        expect(Phrases._extractPhraseDomain(phrase)).to.equals(phrase.value);
-      });
-    });
-
-  })
-
-
 });

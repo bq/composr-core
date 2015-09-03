@@ -26,6 +26,15 @@ function validate(snippet) {
   errorAccumulator(vUtils.isValue, snippet.id, 'undefined:snippet:id');
   errorAccumulator(vUtils.isValue, snippet.codehash, 'undefined:snippet:codehash');
 
+  //validate that id is well formed "domain!Name"
+  if (snippet.id) {
+    var parts = snippet.id.split('!');
+    if (parts.length < 2) {
+      errors.push('error:invalid:snippet:id');
+    }
+  }
+
+
   var isValue = errorAccumulator(vUtils.isValue, snippet.codehash, 'undefined:snippet:codehash');
   var isValidBase64 = errorAccumulator(vUtils.isValidBase64, snippet.codehash, 'invalid:snippet:codehash');
 
@@ -45,10 +54,10 @@ function validate(snippet) {
   } catch (e) {
     errors.push('error:snippet:syntax:' + e);
   }
-  
+
   code = snippetFunctionWrapper(code);
 
-  if(code.indexOf('exports(') === -1){
+  if (code.indexOf('exports(') === -1) {
     errors.push('error:missing:exports');
   }
 
