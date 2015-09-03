@@ -52,7 +52,6 @@ describe('== Snippets ==', function() {
 
   });
 
-
   describe('Snippets validation', function() {
 
     it('Validates a good snippet', function(done) {
@@ -132,6 +131,7 @@ describe('== Snippets ==', function() {
       var compiledSnippets = Snippets.compile(snippetsFixtures.correct);
       expect(Array.isArray(compiledSnippets)).to.equals(true);
     });
+
   });
 
   describe('Get Snippets', function() {
@@ -170,27 +170,26 @@ describe('== Snippets ==', function() {
 
   });
 
-
   describe('Get Snippets by id', function() {
 
     beforeEach(function() {
       Snippets.__snippets = {
         'testdomain': {
-          'mySnippet1': {
+          'testdomain!mySnippet1': {
             id: 'mySnippet1',
             code: {}
           },
-          'mySnippet2': {
+          'testdomain!mySnippet2': {
             id: 'mySnippet2',
             code: {}
           },
-          'mySnippet3': {
+          'testdomain!mySnippet3': {
             id: 'mySnippet3',
             code: {}
           },
         },
         'other:domain': {
-          'mySnippet1': {
+          'other:domain!mySnippet1': {
             id: 'mySnippet1-otherDomain',
             code: {}
           }
@@ -237,7 +236,6 @@ describe('== Snippets ==', function() {
 
   });
 
-
   describe('Add to list', function() {
 
     afterEach(function() {
@@ -246,8 +244,7 @@ describe('== Snippets ==', function() {
 
     it('Adds a snippet with a domain', function() {
       var added = Snippets._addToList('addtolist:domain', {
-        id: 'serious-snippet',
-        name: 'UserModelSnippet',
+        id: 'addtolist:domain!UserModelSnippet',
         value: 'serious'
       });
 
@@ -255,7 +252,6 @@ describe('== Snippets ==', function() {
       expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.be.an('object');
       expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.include.keys(
         'id',
-        'name',
         'value'
       );
       expect(added).to.equals(true);
@@ -285,6 +281,72 @@ describe('== Snippets ==', function() {
   });
 
   describe('Snippets Registration', function() {
+
+    var stubEvents;
+    var spyExtractDomain;
+
+    before(function() {
+      spyExtractDomain = sinon.spy(Snippets, '_extractDomainFromId');
+    });
+
+    beforeEach(function() {
+      stubEvents = sinon.stub();
+      //Mock the composr external methods
+      Snippets.events = {
+        emit: stubEvents
+      };
+
+      //Reset Snippets for each test
+      Snippets.resetItems();
+    });
+
+    after(function() {
+      spyExtractDomain.restore();
+    });
+
+    it('should allow to register an array of snippet models', function(done) {
+      var snippetsToRegister = snippetsFixtures.correct;
+
+      Snippets.register('domain', snippetsToRegister)
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('array');
+          expect(result.length).to.equals(1);
+          expect(spyExtractDomain.callCount).to.be.above(0);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should allow to register a single snippet model', function(done) {
+      var snippet = {
+        id: 'mydomain!TheSnippet',
+        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+      };
+
+      Snippets.register('domain', snippet)
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('object');
+          expect(result).to.include.keys(
+            'id',
+            'registered',
+            'compiled'
+          );
+          
+          expect(result.registered).to.equals(true);
+          expect(result.id).to.equals('mydomain!TheSnippet');
+          expect(result.compiled).to.include.keys(
+            'id',
+            'name',
+            'code'
+          );
+
+          expect(result.compiled.name).to.equals('TheSnippet');
+          expect(result.compiled.id).to.equals('mydomain!TheSnippet');
+        })
+        .should.notify(done);
+    });
+
 
     describe('Secure methods called', function() {
       var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
@@ -349,52 +411,9 @@ describe('== Snippets ==', function() {
 
  
 
-  describe('Snippets registration', function() {
-    var stubEvents;
-    var spyGenerateId;
+  d
 
-    before(function() {
-      spyGenerateId = sinon.spy(Snippets, '_generateId');
-    });
-
-    beforeEach(function() {
-      stubEvents = sinon.stub();
-      //Mock the composr external methods
-      Snippets.events = {
-        emit: stubEvents
-      };
-
-      //Reset Snippets for each test
-      Snippets.resetSnippets();
-    });
-
-    after(function() {
-      spyGenerateId.restore();
-    });
-
-    it('should allow to register an array of phrase models', function(done) {
-      var Snippets = snippetsFixtures.correct;
-
-      Snippets.register(Snippets)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('array');
-          expect(result.length).to.equals(1);
-          expect(spyGenerateId.callCount).to.be.above(0);
-        })
-        .should.be.fulfilled.notify(done);
-    });
-
-    it('should allow to register a single phrase model', function(done) {
-      var phrase = snippetsFixtures.correct[0];
-
-      Snippets.register(phrase)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-        })
-        .should.notify(done);
-    });
+  
 
     it('should generate an id for a phrase without id', function(done) {
       var phrase = {

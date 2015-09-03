@@ -40,7 +40,7 @@ SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
     return false;
   }
 
-  if (typeof(snippetCompiled) !== 'object' || snippetCompiled.hasOwnProperty('name') === false || !snippetCompiled.name) {
+  if (typeof(snippetCompiled) !== 'object' || snippetCompiled.hasOwnProperty('id') === false || !snippetCompiled.id) {
     return false;
   }
 
@@ -48,7 +48,7 @@ SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
     this.__snippets[domain] = {};
   }
 
-  this.__snippets[domain][snippetCompiled.name] = snippetCompiled;
+  this.__snippets[domain][snippetCompiled.id] = snippetCompiled;
   return true;
 };
 
@@ -66,7 +66,7 @@ SnippetsManager.prototype.getById = function(domain, id) {
   var snippets = this.getSnippets(domain);
 
   if (snippets) {
-    return snippets[id] ? snippets[id] : null;
+    return snippets[domain + '!' + id] ? snippets[domain + '!' + id] : null;
   } else {
     return null;
   }
