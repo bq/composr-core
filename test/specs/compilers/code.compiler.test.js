@@ -87,6 +87,31 @@ describe('Code Compiler', function() {
 
     });
 
+    it('should allow to register an array of items', function(done) {
+      compiler.register('domain', [{
+        id: '1'
+      }, {
+        id: '2'
+      }])
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('array');
+          expect(result.length).to.equals(2);
+        })
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('should allow to register a single item', function(done) {
+      compiler.register('domain', {
+        id: '1'
+      })
+        .should.be.fulfilled
+        .then(function(result) {
+          expect(result).to.be.an('object');
+        })
+        .should.notify(done);
+    });
+
     describe('Secure methods called', function() {
       var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
 
