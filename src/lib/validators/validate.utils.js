@@ -34,6 +34,15 @@ var isValue = function(value) {
 };
 
 /**
+ * Checks whenever a value is a falsy value
+ * @param  {Mixed}  value
+ * @return {Boolean}
+ */
+var isFalsy = function(value) {
+  return !value;
+};
+
+/**
  * Checks whenever a value is greater than other
  * @param  {Mixed}  value
  * @param  {Mixed}  greaterThan
@@ -97,6 +106,7 @@ var isValidBase64 = function(codehash) {
 module.exports.isDefined = isDefined;
 module.exports.isNotNull = isNotNull;
 module.exports.isValue = isValue;
+module.exports.isFalsy = isFalsy;
 module.exports.isGreaterThan = isGreaterThan;
 module.exports.isGreaterThanOrEqual = isGreaterThanOrEqual;
 module.exports.isValidEndpoint = isValidEndpoint;

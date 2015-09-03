@@ -41,15 +41,20 @@ function extractDomain(accessToken) {
   return corbel.jwt.decode(accessToken.replace('Bearer ', '')).domainId;
 }
 
-/* Returns true if a value is nullable : null, false, undefined, 0 */
-function isNully(value){
-  return !value;
+/* Accumulates results over an array */
+function errorAccumulator(list) {
+  return function(cb, data, err) {
+    var ok = cb(data);
+    if (!ok) {
+      list.push(err);
+    }
+    return ok;
+  };
 }
 
 module.exports = {
   getAllRecursively : getAllRecursively,
   extractDomain : extractDomain,
-  values : {
-    isNully : isNully
-  }
+  errorAccumulator : errorAccumulator,
+  values : require('./validators/validate.utils')
 };

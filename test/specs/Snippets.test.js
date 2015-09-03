@@ -108,6 +108,8 @@ describe('== Snippets ==', function() {
       );
 
       expect(result.id).to.be.a('string');
+      expect(result.name).to.be.a('string');
+      expect(result.name).to.equals('UserModel');
       expect(result.code).to.be.a('object');
       expect(result.code.fn).to.be.a('function');
     });
@@ -168,6 +170,119 @@ describe('== Snippets ==', function() {
 
   });
 
+
+  describe('Get Snippets by id', function() {
+
+    beforeEach(function() {
+      Snippets.__snippets = {
+        'testdomain': {
+          'mySnippet1': {
+            id: 'mySnippet1',
+            code: {}
+          },
+          'mySnippet2': {
+            id: 'mySnippet2',
+            code: {}
+          },
+          'mySnippet3': {
+            id: 'mySnippet3',
+            code: {}
+          },
+        },
+        'other:domain': {
+          'mySnippet1': {
+            id: 'mySnippet1-otherDomain',
+            code: {}
+          }
+        }
+      };
+    });
+
+    afterEach(function() {
+      Snippets.resetItems();
+    });
+
+    it('should return null if no domain and no id is passed', function() {
+      var snippet = Snippets.getById();
+      expect(snippet).to.equals(null);
+    });
+
+    it('should return null if no id is passed', function() {
+      var snippet = Snippets.getById('other:domain');
+      expect(snippet).to.equals(null);
+    });
+
+    it('should not return the first matching snippet if no domain is passed', function() {
+      var snippet = Snippets.getById('', 'mySnippet1');
+      expect(snippet).to.be.an('null');
+    });
+
+    it('should return the correct matching snippet if a domain is passed', function() {
+      var snippet = Snippets.getById('other:domain', 'mySnippet1');
+      expect(snippet).to.be.an('object');
+      expect(snippet.id).to.equals('mySnippet1-otherDomain');
+    });
+
+    it('should not return Snippets if the domain is wrong', function() {
+      var snippet = Snippets.getById('my-domain-not-existing', 'mySnippet1');
+      expect(snippet).to.be.a('null');
+    });
+
+    it('should not return any snippet if id is wrong', function() {
+      var snippetObtained = Snippets.getById('other:domain', 'test-test-test');
+      expect(snippetObtained).to.be.a('null');
+    });
+
+    //TODO: test to get after registration.
+
+  });
+
+
+  describe('Add to list', function() {
+
+    afterEach(function() {
+      Snippets.resetItems();
+    });
+
+    it('Adds a snippet with a domain', function() {
+      var added = Snippets._addToList('addtolist:domain', {
+        id: 'serious-snippet',
+        name: 'UserModelSnippet',
+        value: 'serious'
+      });
+
+      expect(Object.keys(Snippets.getSnippets('addtolist:domain')).length).to.equals(1);
+      expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.be.an('object');
+      expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.include.keys(
+        'id',
+        'name',
+        'value'
+      );
+      expect(added).to.equals(true);
+    });
+
+    it('Does not add an empty snippet', function() {
+      var added = Snippets._addToList('addtolist:domain', null);
+
+      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+    it('Does not add non objects', function() {
+      var added = Snippets._addToList('addtolist:domain', 'Hey');
+
+      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+    it('Does not add a snippet without id', function() {
+      var added = Snippets._addToList('addtolist:domain', {});
+
+      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
+      expect(added).to.equals(false);
+    });
+
+  });
 
   describe('Snippets Registration', function() {
 
@@ -232,326 +347,7 @@ describe('== Snippets ==', function() {
 /*
   
 
-  
-
-  describe('Get Snippets', function() {
-    beforeEach(function() {
-      Snippets.__Snippets = {
-        'testdomain': [{
-          id: 'loginclient!:id!:name'
-        }, {
-          id: 'user'
-        }],
-        'other:domain': [{
-          id: 'test-endpoint-a'
-        }, {
-          id: 'register/user/:email'
-        }, {
-          id: 'register/user/:email/2'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('returns all the Snippets for all the domains if no domain is provided', function() {
-      var candidates = Snippets.getSnippets();
-      expect(candidates.length).to.equals(5);
-    });
-
-    it('returns all the Snippets for a single domain', function() {
-      var candidates = Snippets.getSnippets('other:domain');
-      expect(candidates.length).to.equals(3);
-    });
-
-  });
-
-  describe('Get phrase index by id', function() {
-
-    beforeEach(function() {
-      Snippets.__Snippets = {
-        'testdomain': [{
-          id: 'test-endpoint-a',
-          url: 'url-a'
-        }, {
-          id: 'loginclient!:id!:name',
-          url: 'url-a'
-        }, {
-          id: 'user',
-          url: 'url-a'
-        }],
-        'other:domain': [{
-          id: 'register/user/:email',
-          url: 'url-b'
-        }, {
-          id: 'test-endpoint-a',
-          url: 'url-b'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('should return -1 if the phrase is not found', function() {
-      var result = Snippets._getPhraseIndexById('testdomain', 'asdfg');
-      expect(result).to.equals(-1);
-    });
-
-    it('should return the index of the phrase in the domain list', function() {
-      var result = Snippets._getPhraseIndexById('testdomain', 'test-endpoint-a');
-      expect(result).to.equals(0);
-    });
-
-    it('should return the index of the phrase on another domain', function() {
-      var result = Snippets._getPhraseIndexById('other:domain', 'test-endpoint-a');
-      expect(result).to.equals(1);
-    });
-
-  });
-
-  describe('Get Snippets by id', function() {
-
-    beforeEach(function() {
-      Snippets.__Snippets = {
-        'testdomain': [{
-          id: 'test-endpoint-a',
-          url: 'url-a'
-        }, {
-          id: 'loginclient!:id!:name',
-          url: 'url-a'
-        }, {
-          id: 'user',
-          url: 'url-a'
-        }],
-        'other:domain': [{
-          id: 'test-endpoint-a',
-          url: 'url-b'
-        }, {
-          id: 'register/user/:email',
-          url: 'url-b'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-
-    it('should return null if no domain and no id is passed', function() {
-      var phrase = Snippets.getById();
-      expect(phrase).to.equals(null);
-    });
-
-    it('should return null if no id is passed', function() {
-      var phrase = Snippets.getById('other:domain');
-      expect(phrase).to.equals(null);
-    });
-
-    it('should return the first matching phrase if no domain is passed', function() {
-      var phrase = Snippets.getById('', 'test-endpoint-a');
-      expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('test-endpoint-a');
-      expect(phrase.url).to.equals('url-a');
-    });
-
-    it('should return the correct matching phrase if a domain is passed', function() {
-      var phrase = Snippets.getById('other:domain', 'test-endpoint-a');
-      expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('test-endpoint-a');
-      expect(phrase.url).to.equals('url-b');
-    });
-
-    it('should not return Snippets if the domain is wrong', function() {
-      var phrase = Snippets.getById('my-domain-not-existing', 'test-endpoint-a');
-      expect(phrase).to.be.a('null');
-    });
-
-    it('should not return any phrase if id is wrong', function() {
-      var phraseObtained = Snippets.getById('other:domain', 'test-test-test');
-      expect(phraseObtained).to.be.a('null');
-    });
-
-  });
-
-  describe('Count Snippets', function() {
-
-    beforeEach(function() {
-      Snippets.__Snippets = {
-        'testdomain': [{
-          id: 'test-endpoint-a',
-          url: 'url-a'
-        }, {
-          id: 'loginclient!:id!:name',
-          url: 'url-a'
-        }, {
-          id: 'user',
-          url: 'url-a'
-        }],
-        'other:domain': [{
-          id: 'test-endpoint-a',
-          url: 'url-b'
-        }, {
-          id: 'register/user/:email',
-          url: 'url-b'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('Should count all the Snippets', function() {
-      expect(Snippets.count()).to.equals(5);
-    });
-
-  });
-
-  describe('Add to list', function() {
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('Adds a phrase with a domain', function() {
-      var added = Snippets._addToList('addtolist:domain', {
-        id: 'serious-phrase',
-        value: 'serious'
-      });
-
-      expect(Snippets.getSnippets('addtolist:domain').length).to.equals(1);
-      expect(Snippets.getById('addtolist:domain', 'serious-phrase')).to.be.an('object');
-      expect(Snippets.getById('addtolist:domain', 'serious-phrase')).to.include.keys(
-        'id',
-        'value'
-      );
-      expect(added).to.equals(true);
-    });
-
-    it('Does not add an empty phrase', function() {
-      var added = Snippets._addToList('addtolist:domain', null);
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add non objects', function() {
-      var added = Snippets._addToList('addtolist:domain', 'Hey');
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add a phrase without id', function() {
-      var added = Snippets._addToList('addtolist:domain', {});
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-  });
-
-
-  describe('Find duplicated regexp over the Snippets', function() {
-
-    before(function() {
-      Snippets.__Snippets = {
-        'mydomain': [{
-          regexpReference: {
-            regexp: '^/?test/?$'
-          }
-        }, {
-          regexpReference: {
-            regexp: '^/?test-route/?$'
-          }
-        }],
-        'mydomain2': [{
-          regexpReference: {
-            regexp: '^/?test/?$'
-          }
-        }, {
-          regexpReference: {
-            regexp: '^/?test-route/?$'
-          }
-        }]
-      }
-    });
-
-    after(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('should find 2 items duplicated for all domains', function() {
-      var candidates = Snippets._filterByRegexp('', '^/?test/?$');
-      expect(candidates.length).to.equals(2);
-    });
-
-    it('should find 1 items duplicated for 1 domain', function() {
-      var candidates = Snippets._filterByRegexp('mydomain', '^/?test/?$');
-      expect(candidates.length).to.equals(1);
-    });
-
-    it('Should not find any candidate for a missing regexp', function() {
-      var candidates = Snippets._filterByRegexp('', 'asd');
-      expect(candidates.length).to.equals(0);
-    });
-
-    it('Should not find any candidate for a missing domain', function() {
-      var candidates = Snippets._filterByRegexp('nodomain', '^/?test/?$');
-      expect(candidates.length).to.equals(0);
-    });
-
-  });
-
-  describe('Get Snippets as list', function() {
-
-    before(function() {
-      Snippets.__Snippets = {
-        'mydomain': [{
-          id: 'id1',
-          url: 'test'
-        }, {
-          id: 'id2',
-          url: 'test'
-        }],
-        'test-domain': [{
-          id: 'id1',
-          url: 'test'
-        }, {
-          id: 'id2',
-          url: 'test'
-        }, {
-          id: 'id3',
-          url: 'test'
-        }]
-      }
-    });
-
-    after(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('Returns a flattened array with all the Snippets', function() {
-      var list = Snippets._getSnippetsAsList();
-      expect(list.length).to.equals(5);
-    });
-
-    it('Returns a flattened array for a single domain', function() {
-      var list = Snippets._getSnippetsAsList('test-domain');
-      expect(list.length).to.equals(3);
-    });
-
-    it('Returns an empty list for a missing domain', function() {
-      var list = Snippets._getSnippetsAsList('nodomain');
-      expect(list.length).to.equals(0);
-    });
-
-  });
+ 
 
   describe('Snippets registration', function() {
     var stubEvents;
