@@ -100,7 +100,7 @@ CodeCompiler.prototype.validate = function(item) {
       };
     })
     .catch(function(errors) {
-      throw({
+      throw ({
         valid: false,
         errors: errors
       });
