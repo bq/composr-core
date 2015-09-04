@@ -152,9 +152,8 @@ PhraseManager.prototype._run = function(phraseCode, params, domain) {
       next: mockedExpress.next
     };
   }
-  var newCorbelDriverInstance = 'TODO';
 
-  params.corbelDriver = newCorbelDriverInstance;
+  //params.corbelDriver = newCorbelDriverInstance;
   params.domain = domain;
   params.require = this.requirer.forDomain(domain);
 

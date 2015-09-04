@@ -1,5 +1,5 @@
 'use strict';
-
+var _ = require('lodash');
 var SNIPPETS_PREFIX = 'snippet-';
 
 var ALLOWED_LIBRARIES = {
@@ -7,13 +7,26 @@ var ALLOWED_LIBRARIES = {
   'http': require('http'),
   'request': require('request'),
   'async': require('async'),
-  'corbel': require('corbel-js'),
+  'corbel-js': require('corbel-js'),
   'lodash': require('lodash')
 };
 
-function Requirer() {
+var driverObtainFunction = function(defaults) {
+  return function(options) {
+    var generatedOptions = _.defaults(_.cloneDeep(options), defaults);
+    return ALLOWED_LIBRARIES['corbel-js'].getDriver(generatedOptions);
+  };
+};
 
+function Requirer() {
+  
 }
+
+Requirer.prototype.configure = function(config){
+  ALLOWED_LIBRARIES['corbel-js'].generateDriver = driverObtainFunction({
+    urlBase: config.urlBase
+  });
+};
 
 Requirer.prototype.forDomain = function(domain) {
   var module = this;
