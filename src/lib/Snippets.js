@@ -2,7 +2,9 @@
 var CodeCompiler = require('./compilers/code.compiler.js');
 var snippetValidator = require('./validators/snippet.validator.js');
 
-var SnippetsManager = function() {};
+var SnippetsManager = function(options) {
+  this.events = options.events;
+};
 
 SnippetsManager.prototype = new CodeCompiler({
   itemName: 'snippet',
@@ -72,4 +74,4 @@ SnippetsManager.prototype.getById = function(domain, id) {
   }
 };
 
-module.exports = new SnippetsManager();
+module.exports = SnippetsManager;

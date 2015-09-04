@@ -1,4 +1,4 @@
-var Phrases = require('../../../src/lib/Phrases'),
+var PhraseManager = require('../../../src/lib/Phrases'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -12,16 +12,21 @@ var phrasesFixtures = require('../../fixtures/phrases');
 var utilsPromises = require('../../utils/promises');
 
 describe('Phrases -> getByMatchingPath', function() {
-  before(function() {
-    Phrases.events = {
-      emit: sinon.stub()
-    };
+  var stubEvents, Phrases;
+
+  beforeEach(function() {
+    stubEvents = sinon.stub();
+
+    Phrases = new PhraseManager({
+      events: {
+        emit: stubEvents
+      }
+    });
   });
 
   describe('Get phrases by matching path', function() {
-    var stubEvents;
 
-    before(function(done) {
+    beforeEach(function(done) {
       var phrasesToRegister = [{
         url: 'test',
         get: {
@@ -55,18 +60,6 @@ describe('Phrases -> getByMatchingPath', function() {
           return Phrases.register('other-domain', phrasesToRegister);
         })
         .should.be.fulfilled.should.notify(done);
-    });
-
-    beforeEach(function() {
-      stubEvents = sinon.stub();
-      //Mock the composr external methods
-      Phrases.events = {
-        emit: stubEvents
-      };
-    });
-
-    after(function() {
-      Phrases.resetItems();
     });
 
     it('should return null if no phrase matches the path', function() {

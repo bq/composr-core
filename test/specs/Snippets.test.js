@@ -1,4 +1,4 @@
-var Snippets = require('../../src/lib/Snippets'),
+var SnippetManager = require('../../src/lib/Snippets'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -13,6 +13,18 @@ var snippetsFixtures = require('../fixtures/snippets');
 var utilsPromises = require('../utils/promises');
 
 describe('== Snippets ==', function() {
+  var stubEvents, Phrases;
+
+  beforeEach(function() {
+    stubEvents = sinon.stub();
+
+    Snippets = new SnippetManager({
+      events: {
+        emit: stubEvents
+      }
+    });
+
+  });
 
   describe('Snippets API', function() {
     it('exposes the expected methods', function() {
@@ -238,7 +250,7 @@ describe('== Snippets ==', function() {
 
   describe('Add to list', function() {
 
-    afterEach(function() {
+    beforeEach(function() {
       Snippets.resetItems();
     });
 
@@ -282,25 +294,13 @@ describe('== Snippets ==', function() {
 
   describe('Snippets Registration', function() {
 
-    var stubEvents;
     var spyExtractDomain;
 
-    before(function() {
+    beforeEach(function() {
       spyExtractDomain = sinon.spy(Snippets, '_extractDomainFromId');
     });
-
-    beforeEach(function() {
-      stubEvents = sinon.stub();
-      //Mock the composr external methods
-      Snippets.events = {
-        emit: stubEvents
-      };
-
-      //Reset Snippets for each test
-      Snippets.resetItems();
-    });
-
-    after(function() {
+  
+    afterEach(function() {
       spyExtractDomain.restore();
     });
 

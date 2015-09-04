@@ -1,5 +1,10 @@
 'use strict';
 
+var events = require('./lib/events');
+var PhraseManager = require('./lib/Phrases');
+var SnippetsManager = require('./lib/Snippets');
+var Requirer = require('./lib/requirer');
+
 function CompoSR() {
   this.reset();
 }
@@ -15,14 +20,28 @@ CompoSR.prototype.registerData = require('./lib/registerData');
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
 CompoSR.prototype.status = require('./lib/status');
-CompoSR.prototype.events = require('./lib/events');
 CompoSR.prototype.utils = require('./lib/utils');
-CompoSR.prototype.requirer = require('./lib/requirer');
-CompoSR.prototype.Phrases = require('./lib/Phrases');
-CompoSR.prototype.Snippets = require('./lib/Snippets');
+CompoSR.prototype.events = events;
+
+var Snippets = new SnippetsManager({
+  events : events
+});
+
+CompoSR.prototype.requirer = new Requirer({
+  events : events,
+  Snippets : Snippets
+});
+
+CompoSR.prototype.Phrases = new PhraseManager({
+  events : events
+});
+
+CompoSR.prototype.Snippets = Snippets;
+
 CompoSR.prototype.Publisher = require('./lib/Publisher');
 //CompoSR.prototype._logger = require('./lib/logger');
 //TODO: load integrations, integrations with load a logger that will suscribe to the debug, warn , error and info events and log them
 //All the integrations will be handled by the events module.
+
 
 module.exports = new CompoSR();

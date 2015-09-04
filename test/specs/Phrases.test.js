@@ -1,4 +1,4 @@
-var Phrases = require('../../src/lib/Phrases'),
+var PhraseManager = require('../../src/lib/Phrases'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -12,6 +12,18 @@ var phrasesFixtures = require('../fixtures/phrases');
 var utilsPromises = require('../utils/promises');
 
 describe('== Phrases ==', function() {
+  var stubEvents, Phrases;
+
+  beforeEach(function() {
+    stubEvents = sinon.stub();
+
+    Phrases = new PhraseManager({
+      events: {
+        emit: stubEvents
+      }
+    });
+  });
+
 
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
@@ -109,16 +121,6 @@ describe('== Phrases ==', function() {
   });
 
   describe('Compile phrases', function() {
-    var stubEvents;
-
-    beforeEach(function() {
-      stubEvents = sinon.stub();
-
-      Phrases.events = {
-        emit: stubEvents
-      };
-
-    });
 
     it('should compile a well formed phrase', function() {
       var phrase = phrasesFixtures.correct[0];
@@ -405,7 +407,7 @@ describe('== Phrases ==', function() {
 
   describe('Add to list', function() {
 
-    afterEach(function() {
+    beforeEach(function() {
       Phrases.resetItems();
     });
 
@@ -450,7 +452,7 @@ describe('== Phrases ==', function() {
 
   describe('Find duplicated regexp over the phrases', function() {
 
-    before(function() {
+    beforeEach(function() {
       Phrases.__phrases = {
         'mydomain': [{
           regexpReference: {
@@ -473,7 +475,7 @@ describe('== Phrases ==', function() {
       }
     });
 
-    after(function() {
+    afterEach(function() {
       Phrases.resetItems();
     });
 
@@ -501,7 +503,7 @@ describe('== Phrases ==', function() {
 
   describe('Get phrases as list', function() {
 
-    before(function() {
+    beforeEach(function() {
       Phrases.__phrases = {
         'mydomain': [{
           id: 'id1',
@@ -523,7 +525,7 @@ describe('== Phrases ==', function() {
       }
     });
 
-    after(function() {
+    afterEach(function() {
       Phrases.resetItems();
     });
 
@@ -545,25 +547,15 @@ describe('== Phrases ==', function() {
   });
 
   describe('Phrases registration', function() {
-    var stubEvents;
     var spyGenerateId;
 
-    before(function() {
-      spyGenerateId = sinon.spy(Phrases, '_generateId');
-    });
-
     beforeEach(function() {
-      stubEvents = sinon.stub();
-      //Mock the composr external methods
-      Phrases.events = {
-        emit: stubEvents
-      };
-
+      spyGenerateId = sinon.spy(Phrases, '_generateId');
       //Reset phrases for each test
       Phrases.resetItems();
     });
 
-    after(function() {
+    afterEach(function() {
       spyGenerateId.restore();
     });
 

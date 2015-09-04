@@ -9,6 +9,7 @@ function init(options) {
 
   this.config = this.bindConfiguration(options);
 
+  this.requirer.configure(this.config);
   //Do the stuff
   this.initCorbelDriver()
     .then(function() {
@@ -22,6 +23,7 @@ function init(options) {
     })
     .then(function() {
       module.events.emit('debug', 'success:initializing');
+      
       dfd.resolve();
     })
     .catch(function(err) {

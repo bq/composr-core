@@ -68,7 +68,7 @@ CodeCompiler.prototype._register = function(domain, item) {
 
   return this.validate(item)
     .then(function() {
-
+      
       module.__preCompile(domain, item);
 
       var compiled = module.compile(item);

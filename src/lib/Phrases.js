@@ -12,7 +12,9 @@ var XRegExp = require('xregexp').XRegExp;
 var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require'];
 
 
-var PhraseManager = function() {};
+var PhraseManager = function(options) {
+  this.events = options.events;
+};
 
 PhraseManager.prototype = new CodeCompiler({
   itemName: 'phrase',
@@ -152,9 +154,8 @@ PhraseManager.prototype._run = function(phraseCode, params, domain) {
       next: mockedExpress.next
     };
   }
-  var newCorbelDriverInstance = 'TODO';
 
-  params.corbelDriver = newCorbelDriverInstance;
+  //params.corbelDriver = newCorbelDriverInstance;
   params.domain = domain;
   params.require = this.requirer.forDomain(domain);
 
@@ -281,4 +282,4 @@ PhraseManager.prototype._generateId = function(url, domain) {
 };
 
 
-module.exports = new PhraseManager();
+module.exports = PhraseManager;
