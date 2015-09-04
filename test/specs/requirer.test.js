@@ -8,41 +8,117 @@ var composr = require('../../src/composr-core'),
 
 chai.use(chaiAsPromised);
 
-var snippetFixtures = require('../../fixtures/snippets');
-var utilsPromises = require('../../utils/promises');
 
 describe('Requirer', function() {
+
+  var snippets = [{
+    id: 'DOMAIN!TheSnippet1',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }, {
+    id: 'DOMAIN!TheSnippet2',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }, {
+    id: 'DOMAIN!TheSnippet3',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }, {
+    id: 'DOMAIN!TheSnippet4',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }, {
+    id: 'DOMAIN!TheSnippet5',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }, {
+    id: 'DOMAIN!TheSnippet6',
+    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+  }];
+
   before(function(done) {
+    composr.bindConfiguration({
+      urlBase : 'http://internet.com'
+    });
+
     composr.events = {
       emit: sinon.stub()
     };
 
-    composr.Snippets.register(_.pick(snippetFixtures.correct, 3) , 'testDomain')
+    var snippetsDomainOne = _.take(snippets, 3).map(function(snippet) {
+      snippet.id = snippet.id.replace('DOMAIN', 'testDomain');
+      return snippet;
+    });
+
+    var snippetsDomainTwo = _.takeRight(snippets, 6).map(function(snippet) {
+      snippet.id = snippet.id.replace('DOMAIN', 'otherDomain');
+      return snippet;
+    });
+
+    composr.Snippets.register(snippetsDomainOne, 'testDomain')
       .should.be.fulfilled
-      .then(function(){
-        return composr.Snippets.register(_.pick(snippetFixtures.correct, 3, 4), 'otherDomain');
+      .then(function() {
+        return composr.Snippets.register(snippetsDomainTwo, 'otherDomain');
       })
       .should.be.fulfilled.notify(done);
 
   });
 
-  it('Can require all the allowed libraries', function(){
-
-  });
- 
-  it('Can not require a non allowed library', function(){
-
+  it('Has the expected API', function(){
+    expect(composr.requirer).to.respondTo('configure');
+    expect(composr.requirer).to.respondTo('forDomain');
   });
 
-  it('Can require its own snippets', function(){
+  it('Can require all the allowed libraries', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+
+    var ALLOWED_LIBRARIES = ['q', 'async', 'request', 'corbel-js', 'lodash', 'http'];
+
+    var requiredLibraries = ALLOWED_LIBRARIES.map(function(lib) {
+      return requirerMethod(lib);
+    });
+
+    requiredLibraries.forEach(function(lib) {
+      expect(lib).to.exist;
+    });
+  });
+
+  it('Can not require a non allowed library', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+
+    var NON_ALLOWED_LIBRARIES = ['fs', 'fs-extra', 'mongoose'];
+
+    var requiredLibraries = NON_ALLOWED_LIBRARIES.map(function(lib) {
+      return requirerMethod(lib);
+    });
+
+    requiredLibraries.forEach(function(lib) {
+      expect(lib).to.not.exist;
+    });
 
   });
 
-  it('Can not request other domain snippets', function(){
+  it('corbel-js should have the getDriver method', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+    var corbel = requirerMethod('corbel-js');
+    expect(corbel).to.respondTo('getDriver');
+  });
+
+  it('corbel-js should have the generateDriver method', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+    var corbel = requirerMethod('corbel-js');
+    expect(corbel).to.respondTo('generateDriver');
+  });
+
+  it('Can require its own snippets', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+
+    var TheSnippet1 = requirerMethod('snippet-TheSnippet1');
+
+    expect(TheSnippet1).to.exist;
+    expect(TheSnippet1).to.be.a('function');
+  });
+
+  it('Can not request other domain snippets', function() {
 
   });
 
-  it('Returns null for empty parameter', function(){
+  it('Returns null for empty parameter', function() {
 
   });
 
