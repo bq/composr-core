@@ -64,7 +64,7 @@ SnippetsManager.prototype.getSnippets = function(domain) {
 };
 
 //Get a single snippet
-SnippetsManager.prototype.getById = function(domain, id) {
+SnippetsManager.prototype.getByName = function(domain, id) {
   var snippets = this.getSnippets(domain);
 
   if (snippets) {

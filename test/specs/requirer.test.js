@@ -33,7 +33,7 @@ describe('Requirer', function() {
 
   before(function(done) {
     composr.bindConfiguration({
-      urlBase : 'http://internet.com'
+      urlBase: 'http://internet.com'
     });
 
     composr.events = {
@@ -59,7 +59,7 @@ describe('Requirer', function() {
 
   });
 
-  it('Has the expected API', function(){
+  it('Has the expected API', function() {
     expect(composr.requirer).to.respondTo('configure');
     expect(composr.requirer).to.respondTo('forDomain');
   });
@@ -107,20 +107,35 @@ describe('Requirer', function() {
 
   it('Can require its own snippets', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
-    
+    var requirerMethodOtherDomain = composr.requirer.forDomain('otherDomain');
+
     var TheSnippet1 = requirerMethod('snippet-TheSnippet1');
 
     expect(TheSnippet1).to.exist;
-    expect(TheSnippet1.code.fn).to.be.a('function');
+    expect(TheSnippet1).to.be.a('function');
+
+
+    var TheSnippet6 = requirerMethodOtherDomain('snippet-TheSnippet6');
+
+    expect(TheSnippet6).to.exist;
+    expect(TheSnippet6).to.be.a('function');
   });
 
   it('Can not request other domain snippets', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
 
+    var TheSnippet6 = requirerMethod('snippet-TheSnippet6');
+
+    expect(TheSnippet6).to.be.a('null');
   });
 
   it('Returns null for empty parameter', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
 
+    var snippet = requirerMethod();
+
+    expect(snippet).to.be.a('null');
   });
 
-
+  //TODO: try to register and execute a snippet for testing the exports method
 });

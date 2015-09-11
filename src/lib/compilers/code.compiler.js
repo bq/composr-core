@@ -68,7 +68,7 @@ CodeCompiler.prototype._register = function(domain, item) {
 
   return this.validate(item)
     .then(function() {
-      
+
       module.__preCompile(domain, item);
 
       var compiled = module.compile(item);
@@ -157,6 +157,7 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
   }
 
   itemOrItemIds.forEach(function(item) {
+    module.events.emit('debug', module.itemName + ':unregister:' + item.id);
     return module._unregister(domain, item);
   });
 };

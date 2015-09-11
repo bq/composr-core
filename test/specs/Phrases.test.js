@@ -908,6 +908,7 @@ describe('== Phrases ==', function() {
 
   describe('Phrases unregistration', function() {
     var domain = 'random:domain:unregistration';
+
     beforeEach(function(done) {
       Phrases.register(domain, phrasesFixtures.correct)
         .should.be.fulfilled.notify(done);
@@ -917,7 +918,7 @@ describe('== Phrases ==', function() {
       Phrases.resetItems();
     });
 
-    it('should not remove an unregistered phrase', function() {
+    it('should not be able to get an unregistered phrase', function() {
       var existingPhraseId = phrasesFixtures.correct[0].id;
       var existingPhrase = Phrases.getById(domain, existingPhraseId);
 
@@ -931,27 +932,106 @@ describe('== Phrases ==', function() {
 
     });
 
-    it('should unregister a registered phrase', function() {
+    it('Should unregister all the phrases', function(){
+      var phrasesIds = Phrases.getPhrases(domain).map(function(phrase){
+        return phrase.id;
+      });
 
-    });
+      expect(phrasesIds.length).to.be.above(0);
+      
+      Phrases.unregister(domain, phrasesIds);
 
-    it('cannot request a unregistered phrase', function() {
+      var savedPhrases = Phrases.getPhrases(domain);
 
-    });
-
-    it('should emit a debug event with info about the unregistration', function() {
-
-    });
-
-    it('should emit an event for the unregistration', function() {
+      expect(savedPhrases.length).to.equals(0);
 
     });
 
   });
 
-  xdescribe('Phrases runner', function() {
+  describe('Phrases runner', function() {
+    var domain = 'bq:domain';
+    var phraseTransformObject = {
+      'url': 'user/:name',
+      'get': {
+        'code': 'var name = req.params.name; res.send({ username: name });',
+        'doc' : {
+
+        }
+      }
+    };
+
+    beforeEach(function(done){
+      Phrases.register(domain, phraseTransformObject)
+        .should.be.fulfilled.notify(done);
+    });
+
+    it('Should be able to run a registered phrase', function(){
+      var result = Phrases.runById(domain, domain+':user!:name');
+
+    });
+
+    /*
+    
+    function(domain, id, verb, params) {
+  if (utils.values.isFalsy(verb)) {
+    verb = 'get';
+  }
+
+  var phrase = this.getById(domain, id);
+
+  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false) {
+    this.events.emit('debug', 'running:phrase:byId:' + domain + ':' + id + ':' + verb);
+    return this._run(phrase.codes[verb].fn, params, domain);
+  } else {
+    return q.reject();
+  }
+
+};
+
+//Executes a phrase matching a path
+PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
+  if (utils.values.isFalsy(verb)) {
+    verb = 'get';
+  }
+
+  var phrase = this.getByMatchingPath(domain, path, verb);
+
+  if (phrase && phrase.codes[verb].error === false) {
+    this.events.emit('debug', 'running:phrase:byPath:' + domain + ':' + path + ':' + verb);
+    return this._run(phrase.codes[verb].fn, params, domain);
+  } else {
+    return q.reject();
+  }
+
+};
+
+//Executes a phrase
+PhraseManager.prototype._run = function(phraseCode, params, domain) {
+
+  if (!params) {
+    params = {
+      req: mockedExpress.req(),
+      res: mockedExpress.res(),
+      next: mockedExpress.next
+    };
+  }
+
+  //params.corbelDriver = newCorbelDriverInstance;
+  params.domain = domain;
+  params.require = this.requirer.forDomain(domain);
+
+  return phraseCode.apply(null, _.values(params));
+};
+     */
 
     it('should not allow to run an unregistered phrase', function() {
+      var result = Phrases.runById(domain, 'nonexisting!id');
+
+
+    });
+
+    it('Should not allow to run an unregistered VERB', function(){
 
     });
 

@@ -27,6 +27,8 @@ describe('Phrases -> getByMatchingPath', function() {
   describe('Get phrases by matching path', function() {
 
     beforeEach(function(done) {
+      Phrases.resetItems();
+      
       var phrasesToRegister = [{
         url: 'test',
         get: {
@@ -121,6 +123,7 @@ describe('Phrases -> getByMatchingPath', function() {
     });
 
     it('returns the first matching phrase if no domain is provided', function() {
+
       var found = Phrases.getByMatchingPath('', 'user/one', 'get');
       expect(found.url).to.equals('user/:id');
       expect(found.id).to.equals('mydomain!user!:id');
@@ -227,7 +230,7 @@ describe('Phrases -> getByMatchingPath', function() {
       testfail: ['/user', '/user/', '/user/sads/asdsad']
     }];
 
-    before(function(done) {
+    beforeEach(function(done) {
       var phrasesToRegister = [];
 
       //Consctruct all the phrases

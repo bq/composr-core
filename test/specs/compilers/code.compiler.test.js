@@ -322,6 +322,59 @@ describe('Code Compiler', function() {
 
   });
 
+  describe('Items unregistration', function() {
+    var spyUnregister, compiler, stubEvents;
+
+    beforeEach(function() {
+      compiler = new CodeCompiler({
+        item: '__mything',
+        itemName: 'goodies'
+      });
+
+      spyUnregister = sinon.spy(compiler, '_unregister');
+
+      stubEvents = sinon.stub();
+      //Mock the composr external methods
+      compiler.events = {
+        emit: stubEvents
+      };
+
+    });
+
+    it('Should be able to receive a single item', function() {
+      compiler.unregister('mydomain', {
+        id: 'testId'
+      });
+
+      expect(spyUnregister.callCount).to.equals(1);
+    });
+
+    it('Should be emit info about the event', function() {
+      compiler.unregister('mydomain', {
+        id: 'testId'
+      });
+
+      expect(stubEvents.callCount).to.equals(1);
+      expect(stubEvents.calledWith('debug', 'goodies:unregister:testId')).to.equals(true);
+    });
+
+    it('Should be able to receive an array', function() {
+      compiler.unregister('mydomain', [{
+        id: 'testId'
+      }, {
+        id: 'testId'
+      }, {
+        id: 'testId'
+      }, {
+        id: 'testId'
+      }, {
+        id: 'testId'
+      }]);
+
+      expect(spyUnregister.callCount).to.equals(5);
+    });
+  });
+
   //TODO test the other methods here instead in phrases.
 
 });

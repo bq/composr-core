@@ -24,16 +24,16 @@ CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
 var Snippets = new SnippetsManager({
-  events : events
+  events: events
 });
 
 CompoSR.prototype.requirer = new Requirer({
-  events : events,
-  Snippets : Snippets
+  events: events,
+  Snippets: Snippets
 });
 
 CompoSR.prototype.Phrases = new PhraseManager({
-  events : events
+  events: events
 });
 
 CompoSR.prototype.Snippets = Snippets;

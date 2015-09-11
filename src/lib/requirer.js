@@ -23,7 +23,7 @@ function Requirer(options) {
   this.events = options.events;
 }
 
-Requirer.prototype.configure = function(config){
+Requirer.prototype.configure = function(config) {
   ALLOWED_LIBRARIES['corbel-js'].generateDriver = driverObtainFunction({
     urlBase: config.urlBase
   });
@@ -33,12 +33,21 @@ Requirer.prototype.forDomain = function(domain) {
   var module = this;
 
   return function(libName) {
+    if (!libName || typeof(libName) !== 'string') {
+      libName = '';
+    }
+
     if (libName.indexOf(SNIPPETS_PREFIX) !== -1) {
+
       libName = libName.replace(SNIPPETS_PREFIX, '');
-      return module.Snippets.getById(domain, libName);
-    } else if (Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
+      var snippet = module.Snippets.getByName(domain, libName);
+      return snippet ? snippet.code.fn : null;
+
+    } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
+
       return ALLOWED_LIBRARIES[libName];
     }
+
     return null;
   };
 };

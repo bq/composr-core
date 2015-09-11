@@ -32,7 +32,7 @@ describe('== Snippets ==', function() {
       expect(Snippets).to.respondTo('resetItems');
       expect(Snippets).to.respondTo('validate');
       expect(Snippets).to.respondTo('getSnippets');
-      expect(Snippets).to.respondTo('getById');
+      expect(Snippets).to.respondTo('getByName');
       expect(Snippets).to.respondTo('compile');
       expect(Snippets).to.respondTo('_compile');
       expect(Snippets).to.respondTo('register');
@@ -214,33 +214,33 @@ describe('== Snippets ==', function() {
     });
 
     it('should return null if no domain and no id is passed', function() {
-      var snippet = Snippets.getById();
+      var snippet = Snippets.getByName();
       expect(snippet).to.equals(null);
     });
 
     it('should return null if no id is passed', function() {
-      var snippet = Snippets.getById('other:domain');
+      var snippet = Snippets.getByName('other:domain');
       expect(snippet).to.equals(null);
     });
 
     it('should not return the first matching snippet if no domain is passed', function() {
-      var snippet = Snippets.getById('', 'mySnippet1');
+      var snippet = Snippets.getByName('', 'mySnippet1');
       expect(snippet).to.be.an('null');
     });
 
     it('should return the correct matching snippet if a domain is passed', function() {
-      var snippet = Snippets.getById('other:domain', 'mySnippet1');
+      var snippet = Snippets.getByName('other:domain', 'mySnippet1');
       expect(snippet).to.be.an('object');
       expect(snippet.id).to.equals('mySnippet1-otherDomain');
     });
 
     it('should not return Snippets if the domain is wrong', function() {
-      var snippet = Snippets.getById('my-domain-not-existing', 'mySnippet1');
+      var snippet = Snippets.getByName('my-domain-not-existing', 'mySnippet1');
       expect(snippet).to.be.a('null');
     });
 
     it('should not return any snippet if id is wrong', function() {
-      var snippetObtained = Snippets.getById('other:domain', 'test-test-test');
+      var snippetObtained = Snippets.getByName('other:domain', 'test-test-test');
       expect(snippetObtained).to.be.a('null');
     });
 
@@ -261,8 +261,8 @@ describe('== Snippets ==', function() {
       });
 
       expect(Object.keys(Snippets.getSnippets('addtolist:domain')).length).to.equals(1);
-      expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.be.an('object');
-      expect(Snippets.getById('addtolist:domain', 'UserModelSnippet')).to.include.keys(
+      expect(Snippets.getByName('addtolist:domain', 'UserModelSnippet')).to.be.an('object');
+      expect(Snippets.getByName('addtolist:domain', 'UserModelSnippet')).to.include.keys(
         'id',
         'value'
       );
@@ -383,7 +383,7 @@ describe('== Snippets ==', function() {
 
           expect(Object.keys(candidates).length).to.equals(1);
 
-          var sureCandidate = Snippets.getById('mydomain', 'TheSnippet');
+          var sureCandidate = Snippets.getByName('mydomain', 'TheSnippet');
 
           expect(sureCandidate).to.include.keys(
             'id',
