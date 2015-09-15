@@ -7,24 +7,24 @@ var mockedNext = require('../../../src/lib/mock/mockedNext'),
 chai.use(chaiAsPromised);
 
 describe('Mocked Next', function() {
+  it('should have a promise', function() {
+    var next = mockedNext();
 
-  it('should be a function', function() {
-    var next = mockedNext;
-
-    expect(next).to.be.a('function');
+    expect(next).to.have.ownProperty('promise');
+    expect(next).to.respondTo('execute');
   });
 
   it('should resolve', function(done) {
-    var next = mockedNext;
+    var next = mockedNext();
 
-    next({
+    next.execute({
       myThing: 'test'
     })
-    .should.be.fulfilled
-    .then(function(data) {
-      expect(data.myThing).to.equals('test');
-    })
-    .should.notify(done);
+      .should.be.fulfilled
+      .then(function(data) {
+        expect(data.myThing).to.equals('test');
+      })
+      .should.notify(done);
   });
-  
+
 });

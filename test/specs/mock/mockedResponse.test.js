@@ -15,6 +15,7 @@ describe('Mocked Response', function() {
     expect(res).to.respondTo('json');
     expect(res).to.respondTo('status');
     expect(res).to.respondTo('send');
+    expect(res).to.have.ownProperty('promise');
   });
 
   it('should assign the status', function() {
@@ -30,6 +31,7 @@ describe('Mocked Response', function() {
     expect(res).to.respondTo('json');
     expect(res).to.respondTo('status');
     expect(res).to.respondTo('send');
+    expect(res).to.have.ownProperty('promise');
   });
 
   it('should resolve on json call', function(done) {
@@ -41,6 +43,7 @@ describe('Mocked Response', function() {
       .should.be.fulfilled
       .then(function(response) {
         expect(response.user).to.equals('test');
+        expect(res._action).to.equals('json');
       })
       .should.notify(done);
   });
@@ -60,6 +63,7 @@ describe('Mocked Response', function() {
 
         expect(response.body.user).to.equals('test');
         expect(response.status).to.equals(200);
+        expect(res._action).to.equals('send');
       })
       .should.notify(done);
   });
@@ -79,6 +83,7 @@ describe('Mocked Response', function() {
 
         expect(response.body.user).to.equals('test');
         expect(response.status).to.equals(405);
+        expect(res._action).to.equals('send');
       })
       .should.notify(done);
   });

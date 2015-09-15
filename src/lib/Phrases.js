@@ -14,6 +14,7 @@ var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain',
 
 var PhraseManager = function(options) {
   this.events = options.events;
+  this.requirer = options.requirer;
 };
 
 PhraseManager.prototype = new CodeCompiler({
@@ -92,7 +93,14 @@ PhraseManager.prototype._compile = function(phrase) {
         var phraseIdentifier = phrase.id ? phrase.id : phrase.url;
         module.events.emit('debug', 'phrase_manager:evaluatecode:', method, phraseIdentifier);
 
-        var code = phrase[method].code ? phrase[method].code : new Buffer(phrase[method].codehash, 'base64').toString('utf8');
+        var code;
+
+        if(phrase[method].codehash){
+          code = new Buffer(phrase[method].codehash, 'base64').toString('utf8');
+        }else{
+          code = phrase[method].code;
+        }
+        
         compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS);
       }
     });
@@ -118,11 +126,10 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
 
   var phrase = this.getById(domain, id);
 
-  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false) {
-    this.events.emit('debug', 'running:phrase:byId:' + domain + ':' + id + ':' + verb);
-    return this._run(phrase.codes[verb].fn, params, domain);
+  if (this.canBeRun(phrase, verb)) {
+    return this._run(phrase, verb, params, domain);
   } else {
-    return q.reject();
+    return q.reject('phrase:cant:be:runned');
   }
 
 };
@@ -135,31 +142,80 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
   var phrase = this.getByMatchingPath(domain, path, verb);
 
-  if (phrase && phrase.codes[verb].error === false) {
-    this.events.emit('debug', 'running:phrase:byPath:' + domain + ':' + path + ':' + verb);
-    return this._run(phrase.codes[verb].fn, params, domain);
+  if (this.canBeRun(phrase, verb)) {
+    return this._run(phrase, verb, params, domain);
   } else {
-    return q.reject();
+    return q.reject('phrase:cant:be:runned');
   }
 
 };
 
+//Checks if it can be run
+PhraseManager.prototype.canBeRun = function(phrase, verb){
+  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false){
+    return true;
+  }else{
+    return false;
+  }
+};
+
 //Executes a phrase
-PhraseManager.prototype._run = function(phraseCode, params, domain) {
+PhraseManager.prototype._run = function(phrase, verb, params, domain) {
+  this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
+
+  var phraseCode = phrase.codes[verb].fn;
+  var callerParameters = {};
+
+  var resWrapper = mockedExpress.res();
+  var nextWrapper = mockedExpress.next();
 
   if (!params) {
-    params = {
-      req: mockedExpress.req(),
-      res: mockedExpress.res(),
-      next: mockedExpress.next
-    };
+    params = {};
   }
 
-  //params.corbelDriver = newCorbelDriverInstance;
-  params.domain = domain;
-  params.require = this.requirer.forDomain(domain);
+  if(!params.req){
+    callerParameters.req = mockedExpress.req();
+  }else{
+    callerParameters.req = params.req;
+  }
 
-  return phraseCode.apply(null, _.values(params));
+  if(!params.res){
+    callerParameters.res = resWrapper;
+  }else{
+    var previousRes = params.res;
+    callerParameters.res = resWrapper;
+    resWrapper.promise.then(function(response){
+      return previousRes.status(response.status)[resWrapper._action](response.body);
+    });
+  }
+
+  if(!params.next){
+    callerParameters.next = nextWrapper;
+  }else{
+    var previousNext = params.next;
+    callerParameters.next = nextWrapper;
+    nextWrapper.promise.then(function(){
+      previousNext();
+    });
+  }
+
+  if(!params.corbelDriver){
+    callerParameters.corbelDriver = null;
+  }else{
+    callerParameters.corbelDriver = params.corbelDriver;
+  }
+
+  callerParameters.domain = domain;
+
+  callerParameters.require = this.requirer.forDomain(domain);
+
+  //trigger the execution 
+  //TODO: use VM or try / catch it
+  //TODO: tripwire for timeouts
+  phraseCode.apply(null, _.values(callerParameters));
+
+  //Resolve on any promise resolution, either res or next
+  return q.any([resWrapper.promise, nextWrapper.promise]);
 };
 
 //Returns a list of elements matching the same regexp

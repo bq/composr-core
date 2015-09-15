@@ -1,4 +1,6 @@
 var PhraseManager = require('../../src/lib/Phrases'),
+  SnippetsManager = require('../../src/lib/Snippets'),
+  Requirer = require('../../src/lib/requirer'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -175,6 +177,19 @@ describe('== Phrases ==', function() {
 
     xit('should evaluate the function *only once* and mantain it in memory', function() {
 
+    });
+
+    it('should compile a phrase with code instead of codehash', function() {
+      var phrase = {
+        url: 'thephrase/without/:id',
+        get: {
+          code: 'console.log(a);',
+          doc: {}
+        }
+      };
+
+      var compiled = Phrases.compile(phrase);
+      expect(compiled.codes.get.fn).to.be.a('function');
     });
 
     it('should emit an event with information about the compilation', function() {
@@ -932,13 +947,13 @@ describe('== Phrases ==', function() {
 
     });
 
-    it('Should unregister all the phrases', function(){
-      var phrasesIds = Phrases.getPhrases(domain).map(function(phrase){
+    it('Should unregister all the phrases', function() {
+      var phrasesIds = Phrases.getPhrases(domain).map(function(phrase) {
         return phrase.id;
       });
 
       expect(phrasesIds.length).to.be.above(0);
-      
+
       Phrases.unregister(domain, phrasesIds);
 
       var savedPhrases = Phrases.getPhrases(domain);
@@ -951,96 +966,182 @@ describe('== Phrases ==', function() {
 
   describe('Phrases runner', function() {
     var domain = 'bq:domain';
-    var phraseTransformObject = {
+    var spyRun;
+
+    var phrasesToRegister = [{
       'url': 'user/:name',
       'get': {
         'code': 'var name = req.params.name; res.send({ username: name });',
-        'doc' : {
+        'doc': {
 
         }
       }
-    };
+    },{
+      'url': 'test',
+      'get': {
+        'code': 'res.send("testValue");',
+        'doc': {
 
-    beforeEach(function(done){
-      Phrases.register(domain, phraseTransformObject)
+        }
+      }
+    },{
+      'url': 'changestatus',
+      'get': {
+        'code': 'res.status(401).send("Allo allo");',
+        'doc': {
+
+        }
+      }
+    }];
+
+    beforeEach(function(done) {
+      Phrases.register(domain, phrasesToRegister)
         .should.be.fulfilled.notify(done);
+
+      spyRun = sinon.spy(Phrases, '_run');
+
+      //New snippets instance
+      var Snippets = new SnippetsManager({
+        events: {
+          emit: sinon.stub()
+        }
+      });
+
+      Phrases.requirer = new Requirer({
+        events: {
+          emit: sinon.stub()
+        },
+        Snippets: Snippets
+      });
+
     });
 
-    it('Should be able to run a registered phrase', function(){
-      var result = Phrases.runById(domain, domain+':user!:name');
+    describe('Can be run', function() {
+      it('only allows to run a phrase with the registered codes', function() {
+
+        var phrase = Phrases.getById(domain, domain + '!user!:name');
+
+        var canBeRunnedWithGet = Phrases.canBeRun(phrase, 'get');
+        var canBeRunnedWithPost = Phrases.canBeRun(phrase, 'post');
+        var canBeRunnedWithPut = Phrases.canBeRun(phrase, 'put');
+        var canBeRunnedWithDelete = Phrases.canBeRun(phrase, 'delete');
+
+        expect(canBeRunnedWithGet).to.equals(true);
+        expect(canBeRunnedWithPost).to.equals(false);
+        expect(canBeRunnedWithPut).to.equals(false);
+        expect(canBeRunnedWithDelete).to.equals(false);
+
+      });
+    });
+
+    it('Should be able to run a registered phrase', function(done) {
+      var result = Phrases.runById(domain, domain + '!test');
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.body).to.equals('testValue');
+          expect(response.status).to.equals(200);
+        })
+        .should.notify(done);
+    });
+
+    it('Should be able to receive a req object', function(done){
+       var result = Phrases.runById(domain, domain + '!user!:name', 'get', {
+        req : {
+          params : {
+            name : 'Pepito the user'
+          }
+        }
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.username).to.exist;
+          expect(response.body.username).to.equals('Pepito the user');
+        })
+        .should.notify(done);
+    });
+
+    it('Can change the status', function(done){
+      var result = Phrases.runById(domain, domain + '!changestatus');
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(401);
+        })
+        .should.notify(done);
+    });
+
+    it('Should be able to receive a res object, and wrap it', function(){
 
     });
 
-    /*
-    
-    function(domain, id, verb, params) {
-  if (utils.values.isFalsy(verb)) {
-    verb = 'get';
-  }
+    it('Should be able to receive a next object, and wrap it', function(){
 
-  var phrase = this.getById(domain, id);
+    });
 
-  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false) {
-    this.events.emit('debug', 'running:phrase:byId:' + domain + ':' + id + ':' + verb);
-    return this._run(phrase.codes[verb].fn, params, domain);
-  } else {
-    return q.reject();
-  }
+    it('Should be able to receive a corbelDriver instance', function(){
 
-};
+    });
 
-//Executes a phrase matching a path
-PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
-  if (utils.values.isFalsy(verb)) {
-    verb = 'get';
-  }
+    it('Should execute the phrase with a domain', function(){
 
-  var phrase = this.getByMatchingPath(domain, path, verb);
+    });
 
-  if (phrase && phrase.codes[verb].error === false) {
-    this.events.emit('debug', 'running:phrase:byPath:' + domain + ':' + path + ':' + verb);
-    return this._run(phrase.codes[verb].fn, params, domain);
-  } else {
-    return q.reject();
-  }
+    it('Should receive a requirer object', function(){
 
-};
+    });
 
-//Executes a phrase
-PhraseManager.prototype._run = function(phraseCode, params, domain) {
+    it('Should be able to require a snippet inside a phrase', function(){
 
-  if (!params) {
-    params = {
-      req: mockedExpress.req(),
-      res: mockedExpress.res(),
-      next: mockedExpress.next
-    };
-  }
+    });
 
-  //params.corbelDriver = newCorbelDriverInstance;
-  params.domain = domain;
-  params.require = this.requirer.forDomain(domain);
-
-  return phraseCode.apply(null, _.values(params));
-};
-     */
-
-    it('should not allow to run an unregistered phrase', function() {
+    it('should not allow to run an unregistered phrase', function(done) {
       var result = Phrases.runById(domain, 'nonexisting!id');
 
-
+      result
+        .should.be.rejected
+        .then(function() {
+          expect(spyRun.callCount).to.equals(0);
+        })
+        .should.notify(done);
     });
 
-    it('Should not allow to run an unregistered VERB', function(){
+    it('Should not allow to run an unregistered VERB', function(done) {
+      var result = Phrases.runById(domain, domain + ':user!:name', 'post');
 
-    });
-
-    it('should be able to register a phrase for running it', function() {
-
-    });
-
-    it('can execute a registered phrase', function() {
-
+      result
+        .should.be.rejected
+        .then(function() {
+          expect(spyRun.callCount).to.equals(0);
+        })
+        .should.notify(done);
     });
 
   });

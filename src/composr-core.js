@@ -27,13 +27,16 @@ var Snippets = new SnippetsManager({
   events: events
 });
 
-CompoSR.prototype.requirer = new Requirer({
+var requirer = new Requirer({
   events: events,
   Snippets: Snippets
 });
 
+CompoSR.prototype.requirer = requirer;
+
 CompoSR.prototype.Phrases = new PhraseManager({
-  events: events
+  events: events,
+  requirer : requirer
 });
 
 CompoSR.prototype.Snippets = Snippets;

@@ -28,7 +28,7 @@ describe('Phrases -> getByMatchingPath', function() {
 
     beforeEach(function(done) {
       Phrases.resetItems();
-      
+
       var phrasesToRegister = [{
         url: 'test',
         get: {
@@ -281,6 +281,130 @@ describe('Phrases -> getByMatchingPath', function() {
           });
         });
       });
+
+    });
+
+  });
+
+  describe('more paths', function() {
+
+    describe('Get the correct phrase index by name', function() {
+
+      var domain = 'test';
+
+      var phrases = [{
+        url: 'composererror',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: ':param',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: 'pepito',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: 'test/:arg/:arg2',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: 'test/:arg/:optional?',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: 'user/:arg/:optional?/name',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }];
+
+      beforeEach(function(done) {
+        Phrases.register(domain, phrases)
+          .should.be.fulfilled.should.notify(done);
+      });
+
+      afterEach(function() {
+        Phrases.resetItems();
+      });
+
+      it('gets phrases with url parameters: /:param', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'francisco');
+        expect(phrase.url).to.equals(':param');
+      });
+
+      it('gets the first phrase that matches with url parameters: /pepito', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'pepito');
+        expect(phrase.url).to.equals(':param');
+      });
+
+      it('gets the first phrase that matches with url parameters: /composererror', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'composererror');
+        expect(phrase.url).to.equals('composererror');
+      });
+
+      it('gets phrases with query params: /url?param=test', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'url?param=test');
+        expect(phrase.url).to.equals(':param');
+      });
+
+      it('gets phrases with optional parameters at the end: test/:arg/:optional?', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'test/hola');
+        expect(phrase.url).to.equals('test/:arg/:optional?');
+      });
+
+      it('gets the first phrase if 2 phrases collide with number of arguments and importancy', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'test/hola/adios');
+        expect(phrase.url).to.equals('test/:arg/:arg2');
+      });
+
+    });
+
+    describe('Similar names', function() {
+      var domain = 'test';
+
+      var phrases = [{
+        url: 'thematics',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }, {
+        url: 'back-thematics',
+        get: {
+          code: 'console.log("ey");',
+          doc: {}
+        }
+      }];
+
+      beforeEach(function(done) {
+        Phrases.resetItems();
+
+        Phrases.register(domain, phrases)
+          .should.be.fulfilled.should.notify(done);
+      });
+
+      it('gets the correct phrase', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'back-thematics');
+        expect(phrase.url).to.equals('back-thematics');
+      });
+
+      it('gets the correct phrase', function() {
+        var phrase = Phrases.getByMatchingPath(domain, 'thematics');
+        expect(phrase.url).to.equals('thematics');
+      });
+
 
     });
 
