@@ -467,56 +467,8 @@ describe('== Snippets ==', function() {
 
   });
 
+  xdescribe('Snippets execution', function(){
+
+  });
+
 });
-/*
-  
-  xdescribe('Snippets unregistration', function() {
-    beforeEach(function(done) {
-      Snippets.register(snippetsFixtures.correct)
-        .should.be.fulfilled.notify(done);
-    });
-
-    afterEach(function() {
-      Snippets.resetSnippets();
-    });
-
-    it('should not remove an unregistered phrase', function() {
-      Snippets.unregister(snippetsFixtures.correct[0].id)
-    });
-
-    it('should unregister a registered phrase', function() {
-
-    });
-
-    it('cannot request a unregistered phrase', function() {
-
-    });
-
-    it('should emit a debug event with info about the unregistration', function() {
-
-    });
-
-    it('should emit an event for the unregistration', function() {
-
-    });
-
-  });
-
-  xdescribe('Snippets runner', function() {
-
-    it('should not allow to run an unregistered phrase', function() {
-
-    });
-
-    it('should be able to register a phrase for running it', function() {
-
-    });
-
-    it('can execute a registered phrase', function() {
-
-    });
-
-  });
-
-
-});*/

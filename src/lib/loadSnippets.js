@@ -1,9 +1,9 @@
 'use strict';
 
 var loadSnippets = function loadSnippets(){
-  var that = this;
+  var module = this;
   var caller = function(pageNumber, pageSize) {
-    return that.corbelDriver.resources.collection(that.resources.snippetsCollection).get({
+    return module.corbelDriver.resources.collection(module.resources.snippetsCollection).get({
       pagination: {
         page: pageNumber,
         size: pageSize

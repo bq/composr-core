@@ -52,9 +52,19 @@ function errorAccumulator(list) {
   };
 }
 
+function encodeToBase64(string) {
+  return new Buffer(string).toString('base64');
+}
+
+function decodeFromBase64(string) {
+  return new Buffer(string, 'base64').toString('utf8');
+}
+
 module.exports = {
-  getAllRecursively : getAllRecursively,
-  extractDomain : extractDomain,
-  errorAccumulator : errorAccumulator,
-  values : require('./validators/validate.utils')
+  getAllRecursively: getAllRecursively,
+  extractDomain: extractDomain,
+  errorAccumulator: errorAccumulator,
+  encodeToBase64: encodeToBase64,
+  decodeFromBase64: decodeFromBase64,
+  values: require('./validators/validate.utils')
 };

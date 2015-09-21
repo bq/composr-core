@@ -2,12 +2,10 @@
 
 var q = require('q');
 
-var registerData = function registerData(){
+var registerData = function registerData() {
 
-  this.Phrases.register(this.data.phrases);
-  this.Snippets.register(this.data.snippets);  
-
-  return q.resolve();
+  return q.all(this.Phrases.registerWithoutDomain(this.data.phrases),
+    this.Snippets.registerWithoutDomain(this.data.snippets));
 };
 
 module.exports = registerData;

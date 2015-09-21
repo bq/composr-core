@@ -3,19 +3,20 @@
 var q = require('q');
 
 var fetchData = function fetchData() {
-  var that = this;
+  var module = this;
   var dfd = q.defer();
 
   var promises = [this.loadPhrases(), this.loadSnippets()];
 
   q.spread(promises, function(phrases, snippets) {
-    that.data.phrases = phrases;
-    that.data.snippets = snippets;
-    that.events.emit('data:loaded');
+    module.data.phrases = phrases;
+    module.data.snippets = snippets;
+    module.events.emit('data:loaded');
     dfd.resolve();
   })
   .catch(function(err) {
-    that.events.emit('data:error:loading');
+
+    module.events.emit('data:error:loading');
     dfd.reject(err);
   });
 

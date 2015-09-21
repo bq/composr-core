@@ -18,6 +18,10 @@ var driverObtainFunction = function(defaults) {
   };
 };
 
+var exportsFunction = function(thing){
+  return thing;
+};
+
 function Requirer(options) {
   this.Snippets = options.Snippets;
   this.events = options.events;
@@ -41,7 +45,9 @@ Requirer.prototype.forDomain = function(domain) {
 
       libName = libName.replace(SNIPPETS_PREFIX, '');
       var snippet = module.Snippets.getByName(domain, libName);
-      return snippet ? snippet.code.fn : null;
+
+      //Execute the exports function
+      return snippet ? snippet.code.fn(exportsFunction) : null;
 
     } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
 

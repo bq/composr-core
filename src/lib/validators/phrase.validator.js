@@ -60,7 +60,7 @@ function validate(phrase) {
   if (!methodPresent) {
     errors.push('undefined:phrase:http_method');
   }
-
+  
   ramlCompiler.compile([phrase])
     .then(function(){
       if(errors.length > 0){

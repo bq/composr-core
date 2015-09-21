@@ -1,9 +1,9 @@
 'use strict';
 
 var loadPhrases = function loadPhrases(){
-  var that = this;
+  var module = this;
   var caller = function(pageNumber, pageSize) {
-    return that.corbelDriver.resources.collection(that.resources.phrasesCollection).get({
+    return module.corbelDriver.resources.collection(module.resources.phrasesCollection).get({
       pagination: {
         page: pageNumber,
         size: pageSize

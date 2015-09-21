@@ -13,7 +13,7 @@ describe('Config initialization', function() {
   describe('Correct initialization', function() {
     before(function() {
       stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-      stubLogClient = sinon.stub(composr.loginManager, 'clientLogin', utilsPromises.resolvedPromise);
+      stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
       stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
       stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
       spyRequirerConfigure = sinon.spy(composr.requirer, 'configure');
@@ -84,7 +84,7 @@ describe('Config initialization', function() {
 
     before(function() {
       stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.rejectedPromise);
-      stubLogClient = sinon.stub(composr.loginManager, 'clientLogin', utilsPromises.resolvedPromise);
+      stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
       stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
       stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
       spyEvents = sinon.spy(composr.events, 'emit');

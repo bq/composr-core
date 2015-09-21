@@ -10,7 +10,7 @@ var buildPhraseDefinition = function(phrase) {
 
   // convert express URL `path/:param1/:param2` to
   // RAML URL`path/{param1}/{param2}`
-  var url = phrase.url.split('/');
+  var url = phrase.url ? phrase.url.split('/') : [];
   url = url.map(function(item) {
     if (item[0] === ':') {
       item = item.replace(':', '{').replace('?', '');

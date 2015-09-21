@@ -13,9 +13,10 @@ function init(options) {
   //Do the stuff
   this.initCorbelDriver()
     .then(function() {
-      return module.loginManager.clientLogin();
+      return module.clientLogin();
     })
-    .then(function() {
+    .then(function(token) {
+      module.data.token = token;
       return module.fetchData();
     })
     .then(function() {

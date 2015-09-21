@@ -91,6 +91,32 @@ CodeCompiler.prototype._register = function(domain, item) {
     });
 };
 
+//Registers phrases, extracting domain from id (TODO: Test)
+CodeCompiler.prototype.registerWithoutDomain = function(items) {
+  var module = this;
+  
+  var promises = [];
+
+  var itemsHash = {};
+
+  items.forEach(function(item){
+    var domain = module._extractDomainFromId(item.id);
+    
+    if(!itemsHash[domain]){
+      itemsHash[domain] = [];
+    }
+
+    itemsHash[domain].push(item);
+  });
+
+  Object.keys(itemsHash).forEach(function(key){
+    promises.push(module.register(key, itemsHash[key]));
+  });
+
+  return q.all(promises);
+};
+
+
 //Verifies that a JSON for a item is well formed
 CodeCompiler.prototype.validate = function(item) {
   return this.validator(item)
@@ -127,7 +153,7 @@ CodeCompiler.prototype.compile = function(itemOrItems) {
 
 //Creates a function based on a function body and some params.
 CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
-  var phraseParams = params ? params : [];
+  var functionParams = params ? params : [];
 
   var result = {
     fn: null,
@@ -136,7 +162,7 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
 
   try {
     /* jshint evil:true */
-    result.fn = Function.apply(null, phraseParams.concat(functionBody));
+    result.fn = Function.apply(null, functionParams.concat(functionBody));
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
     this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);

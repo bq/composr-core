@@ -2,6 +2,7 @@ var composr = require('../../src/composr-core'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
+  utils = require('../../src/lib/utils'),
   chaiAsPromised = require('chai-as-promised'),
   expect = chai.expect,
   should = chai.should();
@@ -13,28 +14,30 @@ describe('Requirer', function() {
 
   var snippets = [{
     id: 'DOMAIN!TheSnippet1',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('var userModel = function(id){ this.id = id; }; exports(userModel);')
   }, {
     id: 'DOMAIN!TheSnippet2',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('exports(1);')
   }, {
     id: 'DOMAIN!TheSnippet3',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('exports("My test");')
   }, {
     id: 'DOMAIN!TheSnippet4',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('exports(1);')
   }, {
     id: 'DOMAIN!TheSnippet5',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('exports(1);')
   }, {
     id: 'DOMAIN!TheSnippet6',
-    codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
+    codehash: utils.encodeToBase64('exports(1);')
   }];
 
   before(function(done) {
-    composr.bindConfiguration({
+    composr.config = composr.bindConfiguration({
       urlBase: 'http://internet.com'
     });
+
+    composr.requirer.configure(composr.config);
 
     composr.events = {
       emit: sinon.stub()
@@ -118,8 +121,19 @@ describe('Requirer', function() {
     var TheSnippet6 = requirerMethodOtherDomain('snippet-TheSnippet6');
 
     expect(TheSnippet6).to.exist;
-    expect(TheSnippet6).to.be.a('function');
+    expect(TheSnippet6).to.be.a('number');
   });
+
+  it('Returns the expected value', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+
+    var TheSnippet3 = requirerMethod('snippet-TheSnippet3');
+
+    expect(TheSnippet3).to.exist;
+    expect(TheSnippet3).to.be.a('string');
+    expect(TheSnippet3).to.be.equals('My test');
+  });
+
 
   it('Can not request other domain snippets', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
@@ -137,5 +151,4 @@ describe('Requirer', function() {
     expect(snippet).to.be.a('null');
   });
 
-  //TODO: try to register and execute a snippet for testing the exports method
 });

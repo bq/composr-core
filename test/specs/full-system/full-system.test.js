@@ -14,7 +14,7 @@ describe('Full system usage', function() {
 
   before(function() {
     stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-    stubLogClient = sinon.stub(composr.loginManager, 'clientLogin', utilsPromises.resolvedPromise);
+    stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
     stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
     stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
   });

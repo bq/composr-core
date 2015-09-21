@@ -2,6 +2,7 @@
 var phraseValidator = require('./validators/phrase.validator');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
+var paramsExtractor = require('./paramsExtractor');
 var mockedExpress = require('./mock');
 var utils = require('./utils');
 
@@ -72,6 +73,7 @@ PhraseManager.prototype._unregister = function(domain, id) {
   }
 };
 
+
 PhraseManager.prototype._compile = function(phrase) {
   try {
     var module = this;
@@ -95,12 +97,12 @@ PhraseManager.prototype._compile = function(phrase) {
 
         var code;
 
-        if(phrase[method].codehash){
-          code = new Buffer(phrase[method].codehash, 'base64').toString('utf8');
-        }else{
+        if (phrase[method].codehash) {
+          code = utils.decodeFromBase64(phrase[method].codehash);
+        } else {
           code = phrase[method].code;
         }
-        
+
         compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS);
       }
     });
@@ -143,6 +145,17 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
   var phrase = this.getByMatchingPath(domain, path, verb);
 
   if (this.canBeRun(phrase, verb)) {
+    if (!params) {
+      params = {};
+    }
+
+    if (!params.req) {
+      params.req = {};
+    }
+
+    //extract params from path
+    params.req.params = paramsExtractor.extract(path, phrase.regexpReference);
+
     return this._run(phrase, verb, params, domain);
   } else {
     return q.reject('phrase:cant:be:runned');
@@ -151,10 +164,10 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 };
 
 //Checks if it can be run
-PhraseManager.prototype.canBeRun = function(phrase, verb){
-  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false){
+PhraseManager.prototype.canBeRun = function(phrase, verb) {
+  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false) {
     return true;
-  }else{
+  } else {
     return false;
   }
 };
@@ -173,35 +186,35 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     params = {};
   }
 
-  if(!params.req){
+  if (!params.req) {
     callerParameters.req = mockedExpress.req();
-  }else{
+  } else {
     callerParameters.req = params.req;
   }
 
-  if(!params.res){
+  if (!params.res) {
     callerParameters.res = resWrapper;
-  }else{
+  } else {
     var previousRes = params.res;
     callerParameters.res = resWrapper;
-    resWrapper.promise.then(function(response){
+    resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
     });
   }
 
-  if(!params.next){
+  if (!params.next) {
     callerParameters.next = nextWrapper;
-  }else{
+  } else {
     var previousNext = params.next;
     callerParameters.next = nextWrapper;
-    nextWrapper.promise.then(function(){
+    nextWrapper.promise.then(function() {
       previousNext();
     });
   }
 
-  if(!params.corbelDriver){
+  if (!params.corbelDriver) {
     callerParameters.corbelDriver = null;
-  }else{
+  } else {
     callerParameters.corbelDriver = params.corbelDriver;
   }
 

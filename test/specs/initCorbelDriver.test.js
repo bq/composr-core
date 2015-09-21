@@ -30,10 +30,10 @@ describe('initCorbelDriver', function() {
     var mockObject = {
       config: {
         credentials: {
-          urlBase: '1',
           clientId: '2',
           scopes: '3'
-        }
+        },
+        urlBase: '1'
       }
     };
 
@@ -45,10 +45,10 @@ describe('initCorbelDriver', function() {
     var mockObject = {
       config: {
         credentials: {
-          urlBase: '1',
           clientId: '2',
           clientSecret: '3'
-        }
+        },
+        urlBase: '1'
       }
     };
 
@@ -60,11 +60,11 @@ describe('initCorbelDriver', function() {
     var mockObject = {
       config: {
         credentials: {
-          urlBase: 'test',
           clientId: '1',
           clientSecret: '2',
           scopes: '3'
-        }
+        },
+        urlBase: 'test'
       }
     };
 

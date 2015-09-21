@@ -11,11 +11,13 @@ var CodeCompiler = require('../../../src/lib/compilers/code.compiler'),
 chai.use(chaiAsPromised);
 
 var correctPhrases = require('../../fixtures/phrases').correct;
+var utilsPromises = require('../../utils/promises');
 
 describe('Code Compiler', function() {
 
   it('exposes the needed prototype', function() {
     expect(CodeCompiler.prototype).to.respondTo('register');
+    expect(CodeCompiler.prototype).to.respondTo('registerWithoutDomain');
     expect(CodeCompiler.prototype).to.respondTo('_register');
     expect(CodeCompiler.prototype).to.respondTo('unregister');
     expect(CodeCompiler.prototype).to.respondTo('_unregister');
@@ -375,6 +377,38 @@ describe('Code Compiler', function() {
     });
   });
 
-  //TODO test the other methods here instead in phrases.
+  describe('Register without domain', function() {
+    var stubRegister, compiler;
+
+    before(function() {
+      compiler = new CodeCompiler({
+        item: '__mything',
+        itemName: 'goodies'
+      });
+      
+      stubRegister = sinon.stub(compiler, 'register', utilsPromises.resolvedPromise);
+    });
+
+    it('Calls the register method with the domain', function(done) {
+      var examplePhrases = [{
+        'id': 'domainTest!phrase'
+      }, {
+        'id': 'domainTest!phrase2'
+      }, {
+        'id': 'domainTest!phrase3'
+      }, {
+        'id': 'domainTwo!phrase'
+      }];
+
+      compiler.registerWithoutDomain(examplePhrases)
+        .then(function() {
+          expect(stubRegister.callCount).to.equals(2);
+          expect(stubRegister.calledWith('domainTest')).to.equals(true);
+          expect(stubRegister.calledWith('domainTwo')).to.equals(true);
+        })
+        .should.notify(done);
+    });
+
+  });
 
 });

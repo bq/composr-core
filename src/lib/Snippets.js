@@ -1,6 +1,7 @@
 'use strict';
 var CodeCompiler = require('./compilers/code.compiler.js');
 var snippetValidator = require('./validators/snippet.validator.js');
+var utils = require('./utils.js');
 
 var SnippetsManager = function(options) {
   this.events = options.events;
@@ -21,7 +22,9 @@ SnippetsManager.prototype._compile = function(snippet) {
       code: null
     };
 
-    compiled.code = this._evaluateCode(snippet.code, ['exports']);
+    var code = utils.decodeFromBase64(snippet.codehash);
+    code = code.replace('exports(', 'return exports(');
+    compiled.code = this._evaluateCode(code, ['exports']);
 
     this.events.emit('debug', 'snippet:compiled', compiled);
 
