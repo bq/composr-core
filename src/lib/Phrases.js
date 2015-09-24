@@ -149,12 +149,10 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
       params = {};
     }
 
-    if (!params.req) {
-      params.req = {};
+    if (!params.reqParams) {
+      //extract params from path
+      params.reqParams = paramsExtractor.extract(path, phrase.regexpReference);
     }
-
-    //extract params from path
-    params.req.params = paramsExtractor.extract(path, phrase.regexpReference);
 
     return this._run(phrase, verb, params, domain);
   } else {
@@ -187,7 +185,21 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   }
 
   if (!params.req) {
-    callerParameters.req = mockedExpress.req();
+    var reqParams = {};
+
+    if (params.reqHeaders) {
+      reqParams.headers = params.reqHeaders;
+    }
+
+    if (params.reqBody) {
+      reqParams.body = params.reqBody;
+    }
+
+    if (params.reqParams) {
+      reqParams.params = params.reqParams;
+    }
+
+    callerParameters.req = mockedExpress.req(reqParams);
   } else {
     callerParameters.req = params.req;
   }
@@ -199,6 +211,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     callerParameters.res = resWrapper;
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
+    }).catch(function(errResponse){
+      return previousRes.status(errResponse.status)[resWrapper._action](errResponse.body);
     });
   }
 
@@ -227,8 +241,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   //TODO: tripwire for timeouts
   phraseCode.apply(null, _.values(callerParameters));
 
-  //Resolve on any promise resolution, either res or next
-  return q.any([resWrapper.promise, nextWrapper.promise]);
+  //Resolve on any promise resolution or rejection, either res or next
+  return Promise.race([resWrapper.promise, nextWrapper.promise]);
 };
 
 //Returns a list of elements matching the same regexp

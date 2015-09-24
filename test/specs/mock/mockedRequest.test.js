@@ -10,8 +10,10 @@ describe('MockedRequest', function() {
     expect(mockedRequest()).to.include.keys(
       'params',
       'query',
-      'headers'
+      'headers',
+      'body'
     );
+
   });
 
   it('should expose the req API', function() {
@@ -62,9 +64,20 @@ describe('MockedRequest', function() {
       }
     });
 
-
     expect(req.get('userId')).to.equals(1);
     expect(req.get('name')).to.equals('test');
+  });
+
+  it('should receive the body', function() {
+    var req = mockedRequest({
+      body: {
+        userId: 1,
+        name: 'test'
+      }
+    });
+
+    expect(req.body.userId).to.equals(1);
+    expect(req.body.name).to.equals('test');
   });
 
 });

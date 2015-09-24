@@ -71,10 +71,30 @@ describe('Mocked Response', function() {
   it('should resolve on send call with a status', function(done) {
     var res = mockedResponse();
 
-    res.status(405).send({
+    res.status(204).send({
       user: 'test'
     })
       .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+
+        expect(response.body.user).to.equals('test');
+        expect(response.status).to.equals(204);
+        expect(res._action).to.equals('send');
+      })
+      .should.notify(done);
+  });
+
+  it('should reject on send call with a status 40X', function(done) {
+    var res = mockedResponse();
+
+    res.status(405).send({
+      user: 'test'
+    })
+      .should.be.rejected
       .then(function(response) {
         expect(response).to.include.keys(
           'status',

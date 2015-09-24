@@ -9,6 +9,7 @@ function MockedRequest(options) {
   this.params = options.params || {};
   this.query = options.query || {};
   this.headers = options.headers || {};
+  this.body = options.body || {};
 }
 
 MockedRequest.prototype.get = function(headerName) {
