@@ -19,10 +19,19 @@ MockedResponse.prototype.status = function(statusCode) {
 
 MockedResponse.prototype.send = function(data) {
   this._action = 'send';
-  this.resolve({
-    status: this.statusCode,
-    body: data
-  });
+
+  if (this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0) {
+    this.reject({
+      status: this.statusCode,
+      body: data,
+    });
+  } else {
+    this.resolve({
+      status: this.statusCode,
+      body: data
+    });
+  }
+
   return this.promise;
 };
 

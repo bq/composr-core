@@ -8,7 +8,9 @@ var ALLOWED_LIBRARIES = {
   'request': require('request'),
   'async': require('async'),
   'corbel-js': require('corbel-js'),
-  'lodash': require('lodash')
+  'lodash': require('lodash'),
+  'ComposrError' : require('./ComposrError'),
+  'composrUtils' : require('./utils')
 };
 
 var driverObtainFunction = function(defaults) {

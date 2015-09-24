@@ -30,6 +30,21 @@ module.exports = function(grunt) {
         },
         src: ['test/runner.js']
       }
+    },
+
+    // Empties folders to start fresh
+    clean: {
+      all: 'dist'
+    },
+
+    //Bundles for browser
+    browserify: {
+      dist: {
+        banner: '/** composr-core for browser **/',
+        files: {
+          'dist/composr-core.browser.js': ['./src/composr-core.standalone.js'],
+        }
+      }
     }
 
   });
@@ -50,34 +65,15 @@ module.exports = function(grunt) {
   });
 
 
-  grunt.registerTask('default', [
-    'clean',
-    'jshint',
-    'test',
-    'develop',
-    'watch'
-  ]);
-
-  grunt.registerTask('test:coverage', [
-    'clean',
-    'jshint',
-    'madge',
-    'copy:coverage',
-    'blanket',
-    'mochaTest:testCoverage',
-    'mochaTest:coverage',
-    'mochaTest:coveralls',
-    'mochaTest:travis-cov',
-    'coveralls'
-  ]);
-
   grunt.registerTask('test', [
     'jshint',
     'madge',
     'mochaTest:ci'
   ]);
 
-  grunt.registerTask('unit', [
-    'mochaTest:unit'
+  grunt.registerTask('build', [
+    'clean',
+    'browserify',
+
   ]);
 };
