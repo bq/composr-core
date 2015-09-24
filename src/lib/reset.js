@@ -7,7 +7,7 @@ function reset() {
   //Corbel collections  
   this.resources = {
     phrasesCollection: 'composr:Phrase',
-    snippetsCollection: 'composr:Snippets'
+    snippetsCollection: 'composr:Snippet'
   };
 
   //Loaded resources

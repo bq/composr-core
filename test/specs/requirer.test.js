@@ -39,10 +39,6 @@ describe('Requirer', function() {
 
     composr.requirer.configure(composr.config);
 
-    composr.events = {
-      emit: sinon.stub()
-    };
-
     var snippetsDomainOne = _.take(snippets, 3).map(function(snippet) {
       snippet.id = snippet.id.replace('DOMAIN', 'testDomain');
       return snippet;
@@ -70,7 +66,7 @@ describe('Requirer', function() {
   it('Can require all the allowed libraries', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
 
-    var ALLOWED_LIBRARIES = ['q', 'async', 'request', 'corbel-js', 'lodash', 'http'];
+    var ALLOWED_LIBRARIES = ['q', 'async', 'request', 'corbel-js', 'lodash', 'http', 'ComposrError', 'composrUtils'];
 
     var requiredLibraries = ALLOWED_LIBRARIES.map(function(lib) {
       return requirerMethod(lib);
@@ -107,6 +103,15 @@ describe('Requirer', function() {
     var corbel = requirerMethod('corbel-js');
     expect(corbel).to.respondTo('generateDriver');
   });
+
+  it('requires lodash correctly', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+    var _lodash = requirerMethod('lodash');
+    expect(_lodash.map).to.be.a('function');
+    expect(_lodash.chunk).to.be.a('function');
+    expect(_lodash.flatten).to.be.a('function');
+  });
+
 
   it('Can require its own snippets', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');

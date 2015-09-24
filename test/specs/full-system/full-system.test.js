@@ -70,4 +70,21 @@ describe('Full system usage', function() {
       }).should.notify(done);
   });
 
+
+  it('shares the events object reference', function(done) {
+    var stub = sinon.stub();
+    var stub2 = sinon.stub();
+
+    composr.events.on('debug', 'myProject', stub);
+    composr.Phrases.events.on('debug', 'myProject2', stub2);
+
+    composr.Phrases.register('myDomain', phrasesFixtures.correct)
+      .should.be.fulfilled
+      .then(function(results) {
+        expect(stub.callCount).to.be.above(0);
+        expect(stub2.callCount).to.be.above(0);
+        expect(stub2.callCount).to.equals(stub.callCount);
+      }).should.notify(done);
+  });
+
 });

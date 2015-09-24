@@ -27,6 +27,7 @@ var Snippets = new SnippetsManager({
   events: events
 });
 
+
 var requirer = new Requirer({
   events: events,
   Snippets: Snippets
@@ -34,12 +35,12 @@ var requirer = new Requirer({
 
 CompoSR.prototype.requirer = requirer;
 
+CompoSR.prototype.Snippets = Snippets;
+
 CompoSR.prototype.Phrases = new PhraseManager({
   events: events,
   requirer : requirer
 });
-
-CompoSR.prototype.Snippets = Snippets;
 
 CompoSR.prototype.Publisher = require('./lib/Publisher');
 //CompoSR.prototype._logger = require('./lib/logger');
