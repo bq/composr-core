@@ -46,9 +46,25 @@ describe('Phrases runner', function() {
       }
     }
   }, {
+    'url': 'nextmiddleware',
+    'get': {
+      'code': 'next();',
+      'doc': {
+
+      }
+    }
+  }, {
     'url': 'require',
     'get': {
       'code': 'var model = require("snippet-modelSnippet"); res.send(model);',
+      'doc': {
+
+      }
+    }
+  }, {
+    'url': 'usecorbeldriver/:value',
+    'get': {
+      'code': 'corbelDriver.stubbed(req.params.value); return res.send();',
       'doc': {
 
       }
@@ -209,32 +225,118 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  it.skip('Should be able to receive a res object, and wrap it', function() {
+  it('Should be able to receive a res object, and wrap it on a RESOLVED promise', function(done) {
+    var stubSend = sinon.stub();
+    var res = {
+      status: function() {
+        return {
+          send: stubSend
+        }
+      }
+    };
+
+    var spyStatus = sinon.spy(res, 'status');
+
+    var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
+      res: res
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyStatus.callCount).to.equals(1);
+        expect(spyStatus.calledWith(response.status)).to.equals(true);
+        
+        expect(stubSend.callCount).to.equals(1);
+        expect(stubSend.calledWith(response.body)).to.equals(true);
+
+        expect(response.status).to.equals(200);
+        expect(response.body).to.exist;
+      })
+      .should.notify(done);
 
   });
 
-  it.skip('Should be able to receive a next object, and wrap it', function() {
+  it('Should be able to receive a res object, and wrap it on a REJECTED promise', function(done) {
+    var stubSend = sinon.stub();
+    var res = {
+      status: function() {
+        return {
+          send: stubSend
+        }
+      }
+    };
+
+    var spyStatus = sinon.spy(res, 'status');
+
+    var result = Phrases.runByPath(domain, 'changestatus', 'get', {
+      res: res
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.rejected
+      .then(function(response) {
+        expect(spyStatus.callCount).to.equals(1);
+        expect(spyStatus.calledWith(response.status)).to.equals(true);
+        
+        expect(stubSend.callCount).to.equals(1);
+        expect(stubSend.calledWith(response.body)).to.equals(true);
+
+        expect(response.status).to.equals(401);
+        expect(response.body).to.exist;
+      })
+      .should.notify(done);
 
   });
 
-  it.skip('Should be able to receive a corbelDriver instance', function() {
+  it('Should be able to receive a next object, and wrap it', function(done) {
+    
+    var next = sinon.stub();
+    
+    var result = Phrases.runByPath(domain, 'nextmiddleware', 'get', {
+      next: next
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function() {
+        expect(next.callCount).to.equals(1);
+      })
+      .should.notify(done);
+  });
+
+  it('Should be able to receive a corbelDriver instance', function(done) {
+    var mockCorbelDriver = {
+      stubbed : sinon.stub()
+    };
+
+    var result = Phrases.runByPath(domain, 'usecorbeldriver/testvalue', 'get', {
+      corbelDriver: mockCorbelDriver
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function() {
+        expect(mockCorbelDriver.stubbed.callCount).to.equals(1);
+        expect(mockCorbelDriver.stubbed.calledWith('testvalue')).to.equals(true);
+      })
+      .should.notify(done);
 
   });
 
-  it.skip('Should execute the phrase with a domain', function() {
-
-  });
-
-  it.skip('Should receive a requirer object', function() {
-
-  });
-
-  it.skip('Should be able to require a snippet inside a phrase', function(done) {
+  it('Should be able to require a snippet inside a phrase', function(done) {
     var result = Phrases.runById(domain, domain + '!require');
     result
       .should.be.fulfilled
       .then(function(response) {
-        console.log(response);
         expect(spyRun.callCount).to.equals(1);
         expect(response).to.be.an('object');
         expect(response).to.include.keys(
@@ -242,6 +344,9 @@ describe('Phrases runner', function() {
           'body'
         );
         expect(response.status).to.equals(200);
+
+        expect(response.body.iam).to.exist;
+        expect(response.body.iam).to.equals('A model');
 
       })
       .should.notify(done);

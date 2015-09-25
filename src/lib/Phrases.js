@@ -204,11 +204,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     callerParameters.req = params.req;
   }
 
-  if (!params.res) {
-    callerParameters.res = resWrapper;
-  } else {
+  if (params.res) {
     var previousRes = params.res;
-    callerParameters.res = resWrapper;
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
     }).catch(function(errResponse){
@@ -216,15 +213,16 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     });
   }
 
-  if (!params.next) {
-    callerParameters.next = nextWrapper;
-  } else {
+  callerParameters.res = resWrapper;
+
+  if (params.next) {
     var previousNext = params.next;
-    callerParameters.next = nextWrapper;
     nextWrapper.promise.then(function() {
       previousNext();
     });
   }
+
+  callerParameters.next = nextWrapper.resolve;
 
   if (!params.corbelDriver) {
     callerParameters.corbelDriver = null;
