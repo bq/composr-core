@@ -217,10 +217,10 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   }
 
   if (!params.next) {
-    callerParameters.next = nextWrapper;
+    callerParameters.next = nextWrapper.resolve;
   } else {
     var previousNext = params.next;
-    callerParameters.next = nextWrapper;
+    callerParameters.next = nextWrapper.resolve;
     nextWrapper.promise.then(function() {
       previousNext();
     });
