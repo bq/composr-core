@@ -20,11 +20,3 @@
 [codeclimate-url]: https://codeclimate.com/github/bq/composr-core
 
 [coverage-badge]: https://codeclimate.com/github/bq/composr-core/badges/coverage.svg
-
-TODO List
-
-- Get phrase by matching path
-- Test get phrase by matching path
-- Add similar paths to that test /phrase /phrase-hola/ /hola-phrase/phrase/hola
-- Remove phrase by Id
-

@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "grunt test",
-    "preversion": "npm test",
+    "build": "grunt build",
+    "preversion": "npm test; grunt build",
     "coverage": "istanbul cover node_modules/.bin/_mocha -- -R dot"
   },
   "keywords": [
@@ -22,7 +23,7 @@
     "ascii-art": "0.0.2-alpha",
     "async": "^1.4.2",
     "atob": "^1.1.2",
-    "corbel-js": "0.0.14",
+    "corbel-js": "0.2.0",
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
