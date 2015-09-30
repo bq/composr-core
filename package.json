@@ -55,6 +55,10 @@
     "supertest": "^1.0.0",
     "time-grunt": "^1.2.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:bq/composr-core.git"
+  },
   "author": "Rafael Pedrola",
   "license": "ISC"
 }
