@@ -174,7 +174,8 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
 
-  var phraseCode = phrase.codes[verb].fn;
+  //var phraseCode = phrase.codes[verb].fn;
+  var phraseScript = phrase.codes[verb].script;
   var callerParameters = {};
 
   var resWrapper = mockedExpress.res();
@@ -208,7 +209,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     var previousRes = params.res;
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
-    }).catch(function(errResponse){
+    }).catch(function(errResponse) {
       return previousRes.status(errResponse.status)[resWrapper._action](errResponse.body);
     });
   }
@@ -235,9 +236,17 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   callerParameters.require = this.requirer.forDomain(domain);
 
   //trigger the execution 
-  //TODO: use VM or try / catch it
-  //TODO: tripwire for timeouts
-  phraseCode.apply(null, _.values(callerParameters));
+  //phraseCode.apply(null, _.values(callerParameters));
+  try {
+    phraseScript.runInNewContext(callerParameters, {
+      timeout: params.timeout || 10000
+    });
+
+  } catch (e) {
+    //vm throws an error when timedout
+    this.events.emit('warn', 'phrase:timedout', phrase.url, e);
+    resWrapper.reject(e);
+  }
 
   //Resolve on any promise resolution or rejection, either res or next
   return Promise.race([resWrapper.promise, nextWrapper.promise]);

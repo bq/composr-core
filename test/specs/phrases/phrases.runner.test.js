@@ -64,7 +64,15 @@ describe('Phrases runner', function() {
   }, {
     'url': 'usecorbeldriver/:value',
     'get': {
-      'code': 'corbelDriver.stubbed(req.params.value); return res.send();',
+      'code': 'corbelDriver.stubbed(req.params.value); res.send();',
+      'doc': {
+
+      }
+    }
+  }, {
+    'url': 'timeout',
+    'get': {
+      'code': 'var a = 3; while(true){ a = a + 3; };',
       'doc': {
 
       }
@@ -372,6 +380,26 @@ describe('Phrases runner', function() {
         expect(spyRun.callCount).to.equals(0);
       })
       .should.notify(done);
+  });
+
+  describe('timeout phrases', function(){
+    this.timeout(3000);
+
+    it('cuts the phrase execution at 500 ms', function(done){
+      var result = Phrases.runByPath(domain, 'timeout', 'get', {
+        timeout : 500
+      });
+
+      result
+        .should.be.rejected
+        .then(function() {
+          expect(spyRun.callCount).to.equals(1);
+          expect(stubEvents.calledWith('warn', 'phrase:timedout')).to.equals(true);
+        })
+        .should.notify(done);
+       
+    });
+
   });
 
 });

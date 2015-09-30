@@ -4,6 +4,7 @@ var check = require('syntax-error'),
   ramlCompiler = require('../compilers/raml.compiler'),
   q = require('q'),
   utils = require('../utils'),
+  vm = require('vm'),
   vUtils = utils.values;
 
 
@@ -49,6 +50,12 @@ function validate(phrase) {
         if (error) {
           errors.push('error:phrase:syntax');
         }
+      } catch (e) {
+        errors.push('error:phrase:syntax:' + e);
+      }
+
+      try {
+        var tmpScript = new vm.Script(code); //jshint ignore:line
       } catch (e) {
         errors.push('error:phrase:syntax:' + e);
       }

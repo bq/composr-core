@@ -51,6 +51,7 @@ describe('Code Compiler', function() {
     it('should evaluate a function', function() {
       var result = compiler._evaluateCode('console.log(a);');
       expect(result.fn).to.be.a('function');
+      expect(result.script).to.be.a('object');
       expect(result.error).to.equals(false);
     });
 

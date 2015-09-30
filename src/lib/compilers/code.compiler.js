@@ -2,6 +2,7 @@
 
 var q = require('q');
 var _ = require('lodash');
+var vm = require('vm');
 
 function CodeCompiler(options) {
   this.itemName = options.itemName;
@@ -94,22 +95,22 @@ CodeCompiler.prototype._register = function(domain, item) {
 //Registers phrases, extracting domain from id (TODO: Test)
 CodeCompiler.prototype.registerWithoutDomain = function(items) {
   var module = this;
-  
+
   var promises = [];
 
   var itemsHash = {};
 
-  items.forEach(function(item){
+  items.forEach(function(item) {
     var domain = module._extractDomainFromId(item.id);
-    
-    if(!itemsHash[domain]){
+
+    if (!itemsHash[domain]) {
       itemsHash[domain] = [];
     }
 
     itemsHash[domain].push(item);
   });
 
-  Object.keys(itemsHash).forEach(function(key){
+  Object.keys(itemsHash).forEach(function(key) {
     promises.push(module.register(key, itemsHash[key]));
   });
 
@@ -157,12 +158,16 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
 
   var result = {
     fn: null,
+    script: null,
     error: false
   };
 
   try {
     /* jshint evil:true */
     result.fn = Function.apply(null, functionParams.concat(functionBody));
+    result.script = new vm.Script(functionBody, {
+      displayErrors: true
+    });
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
     this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);
