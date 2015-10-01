@@ -16,6 +16,7 @@ var malformedPhrases = phrases.malformed;
 var docmethod;
 
 describe('Documentation', function() {
+  this.timeout(10000);
   var stub;
 
   beforeEach(function() {
