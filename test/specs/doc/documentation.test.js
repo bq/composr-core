@@ -57,7 +57,7 @@ describe('Documentation', function() {
     docmethod([malformedPhrases[0]])
       .should.be.fulfilled
       .then(function(result) {
-        expect(stub.callCount).to.equals(1);
+        expect(stub.callCount).to.be.above(0);
         expect(stub.calledWith('warn', 'generating:documentation:invalid-phrase')).to.equals(true);
       })
       .should.notify(done);
