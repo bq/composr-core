@@ -20,10 +20,6 @@ var driverObtainFunction = function(defaults) {
   };
 };
 
-var exportsFunction = function(thing){
-  return thing;
-};
-
 function Requirer(options) {
   this.Snippets = options.Snippets;
   this.events = options.events;
@@ -48,8 +44,17 @@ Requirer.prototype.forDomain = function(domain) {
       libName = libName.replace(SNIPPETS_PREFIX, '');
       var snippet = module.Snippets.getByName(domain, libName);
 
+      var returnedResult = null;
       //Execute the exports function
-      return snippet ? snippet.code.fn(exportsFunction) : null;
+      if(snippet){
+        snippet.code.script.runInNewContext({
+          exports : function(res){
+            returnedResult = res;
+          }
+        });
+      }
+
+      return returnedResult;
 
     } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
 

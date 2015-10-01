@@ -23,7 +23,7 @@ SnippetsManager.prototype._compile = function(snippet) {
     };
 
     var code = utils.decodeFromBase64(snippet.codehash);
-    code = code.replace('exports(', 'return exports(');
+
     compiled.code = this._evaluateCode(code, ['exports']);
 
     this.events.emit('debug', 'snippet:compiled', compiled);
