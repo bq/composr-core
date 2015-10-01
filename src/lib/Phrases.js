@@ -203,6 +203,11 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
     callerParameters.req = mockedExpress.req(reqParams);
   } else {
+    //Overwrite params extraction
+    if (params.reqParams) {
+      params.req.params = params.reqParams;
+    }
+
     callerParameters.req = params.req;
   }
 
