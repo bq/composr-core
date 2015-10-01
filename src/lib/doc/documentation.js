@@ -13,6 +13,10 @@ var raml2html = require('raml2html');
  */
 function documentation(phrases, domain) {
   /*jshint validthis:true */
+  if (!phrases) {
+    phrases = [];
+  }
+
   var dfd = q.defer();
   var module = this;
 
@@ -41,8 +45,10 @@ function documentation(phrases, domain) {
       return raml2html.render(data, config);
     })
     .then(function(result) {
+      module.events.emit('debug', 'generated:documentation', error);
       dfd.resolve(result);
     }, function(error) {
+      module.events.emit('warn', 'generating:documentation', error);
       dfd.reject(error);
     });
 
