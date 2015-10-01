@@ -3,6 +3,7 @@ var phraseValidator = require('./validators/phrase.validator');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
+var ComposrError = require('./ComposrError');
 var mockedExpress = require('./mock');
 var utils = require('./utils');
 
@@ -245,7 +246,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   } catch (e) {
     //vm throws an error when timedout
     this.events.emit('warn', 'phrase:timedout', phrase.url, e);
-    resWrapper.reject(e);
+    resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
   }
 
   //Resolve on any promise resolution or rejection, either res or next
