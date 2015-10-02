@@ -106693,8 +106693,7 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
 
-  //var phraseCode = phrase.codes[verb].fn;
-  var phraseScript = phrase.codes[verb].script;
+
   var callerParameters = {};
 
   var resWrapper = mockedExpress.res();
@@ -106760,11 +106759,16 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   callerParameters.require = this.requirer.forDomain(domain);
 
   //trigger the execution 
-  //phraseCode.apply(null, _.values(callerParameters));
   try {
-    phraseScript.runInNewContext(callerParameters, {
-      timeout: params.timeout || 10000
-    });
+
+    if (params.browser) {
+
+      var phraseCode = phrase.codes[verb].fn;
+      this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
+    } else {
+      var phraseScript = phrase.codes[verb].script;
+      this.__executeScriptMode(phraseScript, callerParameters, params.timeout);
+    }
 
   } catch (e) {
     //vm throws an error when timedout
@@ -106774,6 +106778,19 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   //Resolve on any promise resolution or rejection, either res or next
   return Promise.race([resWrapper.promise, nextWrapper.promise]);
+
+};
+
+//Runs VM script mode
+PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout) {
+  script.runInNewContext(parameters, {
+    timeout: timeout || 10000
+  });
+};
+
+//Runs VM function mode (DEPRECATED)
+PhraseManager.prototype.__executeFunctionMode = function(code, parameters) {
+  code.apply(null, _.values(parameters));
 };
 
 //Returns a list of elements matching the same regexp
