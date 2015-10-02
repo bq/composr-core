@@ -256,7 +256,7 @@ describe('Phrases runner', function() {
       .then(function(response) {
         expect(spyStatus.callCount).to.equals(1);
         expect(spyStatus.calledWith(response.status)).to.equals(true);
-        
+
         expect(stubSend.callCount).to.equals(1);
         expect(stubSend.calledWith(response.body)).to.equals(true);
 
@@ -290,7 +290,7 @@ describe('Phrases runner', function() {
       .then(function(response) {
         expect(spyStatus.callCount).to.equals(1);
         expect(spyStatus.calledWith(response.status)).to.equals(true);
-        
+
         expect(stubSend.callCount).to.equals(1);
         expect(stubSend.calledWith(response.body)).to.equals(true);
 
@@ -302,9 +302,9 @@ describe('Phrases runner', function() {
   });
 
   it('Should be able to receive a next object, and wrap it', function(done) {
-    
+
     var next = sinon.stub();
-    
+
     var result = Phrases.runByPath(domain, 'nextmiddleware', 'get', {
       next: next
     });
@@ -321,7 +321,7 @@ describe('Phrases runner', function() {
 
   it('Should be able to receive a corbelDriver instance', function(done) {
     var mockCorbelDriver = {
-      stubbed : sinon.stub()
+      stubbed: sinon.stub()
     };
 
     var result = Phrases.runByPath(domain, 'usecorbeldriver/testvalue', 'get', {
@@ -382,12 +382,12 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  describe('timeout phrases', function(){
+  describe('timeout phrases', function() {
     this.timeout(3000);
 
-    it('cuts the phrase execution at 500 ms', function(done){
+    it('cuts the phrase execution at 500 ms', function(done) {
       var result = Phrases.runByPath(domain, 'timeout', 'get', {
-        timeout : 500
+        timeout: 500
       });
 
       result
@@ -397,9 +397,50 @@ describe('Phrases runner', function() {
           expect(stubEvents.calledWith('warn', 'phrase:timedout')).to.equals(true);
         })
         .should.notify(done);
-       
+
+    });
+  });
+
+  describe('Browser and Script mode', function() {
+    var spyScript, spyBrowser;
+
+    beforeEach(function() {
+      spyScript = sinon.spy(Phrases, '__executeScriptMode');
+      spyBrowser = sinon.spy(Phrases, '__executeFunctionMode');
+    });
+
+    afterEach(function() {
+      spyScript.reset();
+      spyBrowser.reset();
+    });
+
+    it('Can be invoked with the browser option', function(done) {
+      var result = Phrases.runById(domain, domain + '!changestatus', null, {
+        browser: true
+      });
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(spyBrowser.callCount).to.equals(1);
+          expect(spyScript.callCount).to.equals(0);
+        })
+        .should.notify(done);
+    });
+
+    it('Runs by default with script mode', function(done) {
+      var result = Phrases.runById(domain, domain + '!changestatus');
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(spyBrowser.callCount).to.equals(0);
+          expect(spyScript.callCount).to.equals(1);
+        })
+        .should.notify(done);
     });
 
   });
+
 
 });
