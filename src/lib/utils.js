@@ -30,7 +30,7 @@ var getAllRecursively = function getAllRecursively(caller, pageNumber, pageSize,
           return getAllRecursively(caller, pageNumber + 1, pageSize, items, promise);
         }
       } else {
-        promise.reject('error:get:books');
+        promise.reject('error:get:items');
       }
     });
   });

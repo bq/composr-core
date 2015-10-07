@@ -10,6 +10,11 @@ require('./specs/events.test.js');
 require('./specs/requirer.test.js');
 require('./specs/ComposrError.test.js');
 
+require('./specs/loaders/loadPhrases.test.js');
+require('./specs/loaders/loadPhrase.test.js');
+require('./specs/loaders/loadSnippet.test.js');
+require('./specs/loaders/loadSnippets.test.js');
+
 require('./specs/full-system/full-system.test.js');
 require('./specs/full-system/phrases-project.test.js');
 

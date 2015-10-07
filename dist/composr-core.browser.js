@@ -106441,8 +106441,10 @@ CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
 CompoSR.prototype.clientLogin = require('./lib/clientLogin');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
-CompoSR.prototype.loadPhrases = require('./lib/loadPhrases');
-CompoSR.prototype.loadSnippets = require('./lib/loadSnippets');
+CompoSR.prototype.loadPhrases = require('./lib/loaders/loadPhrases');
+CompoSR.prototype.loadPhrase = require('./lib/loaders/loadPhrase');
+CompoSR.prototype.loadSnippets = require('./lib/loaders/loadSnippets');
+CompoSR.prototype.loadSnippet = require('./lib/loaders/loadSnippet');
 CompoSR.prototype.fetchData = require('./lib/fetchData');
 CompoSR.prototype.registerData = require('./lib/registerData');
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
@@ -106477,7 +106479,7 @@ CompoSR.prototype.Publisher = require('./lib/Publisher');
 
 
 module.exports = new CompoSR();
-},{"./lib/Phrases":445,"./lib/Publisher":446,"./lib/Snippets":447,"./lib/bindConfiguration":448,"./lib/clientLogin":449,"./lib/doc/documentation":452,"./lib/events":453,"./lib/fetchData":454,"./lib/init":455,"./lib/initCorbelDriver":456,"./lib/loadPhrases":457,"./lib/loadSnippets":458,"./lib/registerData":465,"./lib/requirer":466,"./lib/reset":467,"./lib/status":468,"./lib/utils":469}],443:[function(require,module,exports){
+},{"./lib/Phrases":445,"./lib/Publisher":446,"./lib/Snippets":447,"./lib/bindConfiguration":448,"./lib/clientLogin":449,"./lib/doc/documentation":452,"./lib/events":453,"./lib/fetchData":454,"./lib/init":455,"./lib/initCorbelDriver":456,"./lib/loaders/loadPhrase":457,"./lib/loaders/loadPhrases":458,"./lib/loaders/loadSnippet":459,"./lib/loaders/loadSnippets":460,"./lib/registerData":467,"./lib/requirer":468,"./lib/reset":469,"./lib/status":470,"./lib/utils":471}],443:[function(require,module,exports){
 (function (global){
 var composrCore = require('./composr-core');
 
@@ -106914,7 +106916,7 @@ PhraseManager.prototype._generateId = function(url, domain) {
 
 
 module.exports = PhraseManager;
-},{"./ComposrError":444,"./compilers/code.compiler":450,"./mock":459,"./paramsExtractor":463,"./regexpGenerator":464,"./utils":469,"./validators/phrase.validator":470,"lodash":254,"q":255,"xregexp":431}],446:[function(require,module,exports){
+},{"./ComposrError":444,"./compilers/code.compiler":450,"./mock":461,"./paramsExtractor":465,"./regexpGenerator":466,"./utils":471,"./validators/phrase.validator":472,"lodash":254,"q":255,"xregexp":431}],446:[function(require,module,exports){
 'use strict';
 
 var Publisher = {
@@ -107017,7 +107019,7 @@ SnippetsManager.prototype.getByName = function(domain, id) {
 };
 
 module.exports = SnippetsManager;
-},{"./compilers/code.compiler.js":450,"./utils.js":469,"./validators/snippet.validator.js":471}],448:[function(require,module,exports){
+},{"./compilers/code.compiler.js":450,"./utils.js":471,"./validators/snippet.validator.js":473}],448:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -107488,7 +107490,7 @@ function documentation(phrases, domain) {
 }
 
 module.exports = documentation;
-},{"../compilers/raml.compiler":451,"../validators/phrase.validator":470,"q":255,"raml2html":281}],453:[function(require,module,exports){
+},{"../compilers/raml.compiler":451,"../validators/phrase.validator":472,"q":255,"raml2html":281}],453:[function(require,module,exports){
 'use strict';
 
 var events = require('events');
@@ -107664,6 +107666,25 @@ module.exports = initCorbelDriver;
 },{"corbel-js":3,"q":255}],457:[function(require,module,exports){
 'use strict';
 
+var loadPhrase = function loadPhrase(id) {
+  if(!id){
+    return Promise.reject('missing:id');
+  }
+  
+  if (this.corbelDriver) {
+    return this.corbelDriver.resources
+      .resource(this.resources.phrasesCollection, id)
+      .get();
+  } else {
+    return Promise.reject('missing:driver');
+  }
+};
+
+
+module.exports = loadPhrase;
+},{}],458:[function(require,module,exports){
+'use strict';
+
 var loadPhrases = function loadPhrases(){
   var module = this;
   var caller = function(pageNumber, pageSize) {
@@ -107679,7 +107700,26 @@ var loadPhrases = function loadPhrases(){
 };
 
 module.exports = loadPhrases;
-},{}],458:[function(require,module,exports){
+},{}],459:[function(require,module,exports){
+'use strict';
+
+var loadSnippet = function loadSnippet(id) {
+  if(!id){
+    return Promise.reject('missing:id');
+  }
+
+  if (this.corbelDriver) {
+    return this.corbelDriver.resources
+      .resource(this.resources.snippetsCollection, id)
+      .get();
+  } else {
+    return Promise.reject('missing:driver');
+  }
+};
+
+
+module.exports = loadSnippet;
+},{}],460:[function(require,module,exports){
 'use strict';
 
 var loadSnippets = function loadSnippets(){
@@ -107697,7 +107737,7 @@ var loadSnippets = function loadSnippets(){
 };
 
 module.exports = loadSnippets;
-},{}],459:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -107705,7 +107745,7 @@ module.exports = {
   req: require('./mockedRequest'),
   res: require('./mockedResponse')
 };
-},{"./mockedNext":460,"./mockedRequest":461,"./mockedResponse":462}],460:[function(require,module,exports){
+},{"./mockedNext":462,"./mockedRequest":463,"./mockedResponse":464}],462:[function(require,module,exports){
 'use strict';
 
 function MockedNext() {
@@ -107726,7 +107766,7 @@ MockedNext.prototype.execute = function(data) {
 module.exports = function(options) {
   return new MockedNext(options);
 };
-},{}],461:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 'use strict';
 
 function MockedRequest(options) {
@@ -107748,7 +107788,7 @@ MockedRequest.prototype.get = function(headerName) {
 module.exports = function(options) {
   return new MockedRequest(options);
 };
-},{}],462:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 'use strict';
 
 function MockedResponse() {
@@ -107795,7 +107835,7 @@ MockedResponse.prototype.json = function(data) {
 module.exports = function(options) {
   return new MockedResponse(options);
 };
-},{}],463:[function(require,module,exports){
+},{}],465:[function(require,module,exports){
 'use strict';
 
 var XRegExp = require('xregexp').XRegExp;
@@ -107827,7 +107867,7 @@ function extractParams(path, phraseRegexpReference) {
 module.exports = {
   extract: extractParams
 };
-},{"xregexp":431}],464:[function(require,module,exports){
+},{"xregexp":431}],466:[function(require,module,exports){
 'use strict';
 
 var XRegExp = require('xregexp').XRegExp;
@@ -107932,7 +107972,7 @@ module.exports = {
   regexpUrl: regexpUrl,
   regexpReference : regexpReference
 };
-},{"xregexp":431}],465:[function(require,module,exports){
+},{"xregexp":431}],467:[function(require,module,exports){
 'use strict';
 
 var q = require('q');
@@ -107944,7 +107984,7 @@ var registerData = function registerData() {
 };
 
 module.exports = registerData;
-},{"q":255}],466:[function(require,module,exports){
+},{"q":255}],468:[function(require,module,exports){
 'use strict';
 var _ = require('lodash');
 var SNIPPETS_PREFIX = 'snippet-';
@@ -108013,7 +108053,7 @@ Requirer.prototype.forDomain = function(domain) {
 };
 
 module.exports = Requirer;
-},{"./ComposrError":444,"./utils":469,"async":1,"corbel-js":3,"http":237,"lodash":254,"q":255,"request":338}],467:[function(require,module,exports){
+},{"./ComposrError":444,"./utils":471,"async":1,"corbel-js":3,"http":237,"lodash":254,"q":255,"request":338}],469:[function(require,module,exports){
 'use strict';
 
 function reset() {
@@ -108036,7 +108076,7 @@ function reset() {
 }
 
 module.exports = reset;
-},{}],468:[function(require,module,exports){
+},{}],470:[function(require,module,exports){
 'use strict';
 
 function status() {
@@ -108048,7 +108088,7 @@ function status() {
 }
 
 module.exports = status;
-},{}],469:[function(require,module,exports){
+},{}],471:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -108082,7 +108122,7 @@ var getAllRecursively = function getAllRecursively(caller, pageNumber, pageSize,
           return getAllRecursively(caller, pageNumber + 1, pageSize, items, promise);
         }
       } else {
-        promise.reject('error:get:books');
+        promise.reject('error:get:items');
       }
     });
   });
@@ -108121,7 +108161,7 @@ module.exports = {
   values: require('./validators/validate.utils')
 };
 }).call(this,require("buffer").Buffer)
-},{"./validators/validate.utils":472,"buffer":21,"corbel-js":3,"q":255}],470:[function(require,module,exports){
+},{"./validators/validate.utils":474,"buffer":21,"corbel-js":3,"q":255}],472:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -108212,7 +108252,7 @@ function validate(phrase) {
 
 module.exports = validate;
 }).call(this,require("buffer").Buffer)
-},{"../compilers/raml.compiler":451,"../utils":469,"buffer":21,"q":255,"syntax-error":429,"vm":251}],471:[function(require,module,exports){
+},{"../compilers/raml.compiler":451,"../utils":471,"buffer":21,"q":255,"syntax-error":429,"vm":251}],473:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -108279,7 +108319,7 @@ function validate(snippet) {
 
 module.exports = validate;
 }).call(this,require("buffer").Buffer)
-},{"../utils":469,"buffer":21,"q":255,"syntax-error":429}],472:[function(require,module,exports){
+},{"../utils":471,"buffer":21,"q":255,"syntax-error":429}],474:[function(require,module,exports){
 'use strict';
 
 var regexpGenerator = require('../regexpGenerator'),
@@ -108393,4 +108433,4 @@ module.exports.isGreaterThan = isGreaterThan;
 module.exports.isGreaterThanOrEqual = isGreaterThanOrEqual;
 module.exports.isValidEndpoint = isValidEndpoint;
 module.exports.isValidBase64 = isValidBase64;
-},{"../regexpGenerator":464,"xregexp":431}]},{},[443]);
+},{"../regexpGenerator":466,"xregexp":431}]},{},[443]);
