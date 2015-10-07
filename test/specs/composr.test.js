@@ -13,7 +13,9 @@ describe('CompoSR core API', function() {
     expect(composr).to.respondTo('clientLogin');
     expect(composr).to.respondTo('registerData');
     expect(composr).to.respondTo('loadPhrases');
+    expect(composr).to.respondTo('loadPhrase');
     expect(composr).to.respondTo('loadSnippets');
+    expect(composr).to.respondTo('loadSnippet');
     expect(composr).to.respondTo('documentation');
     expect(composr).to.respondTo('reset');
     expect(composr).to.respondTo('status');

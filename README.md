@@ -20,3 +20,24 @@
 [codeclimate-url]: https://codeclimate.com/github/bq/composr-core
 
 [coverage-badge]: https://codeclimate.com/github/bq/composr-core/badges/coverage.svg
+
+
+TODO: add a regenerate driver method
+
+var corbelDriver = corbel.getDriver(corbelConfig);
+
+function regenerateDriver(){
+    return corbelDriver.iam.token().create().then(function() {
+        logger.debug('corbel:connection:success');
+        return corbelDriver;
+    }).catch(function(error) {
+        logger.error('error:composer:corbel:token', error.response.body);
+        pmx.notify('error:composer:corbel:token',  error.response.body);
+        throw new ComposrError('error:composer:corbel:token', '', 401);
+    });
+}
+
+var onConnectPromise = regenerateDriver();
+
+
+//TODO add a loadAndRegisterPhrase / loadAndRegisterSnippet by id methods
