@@ -40,8 +40,8 @@ describe('loadSnippet', function() {
   it('invokes the resources.resource', function(done) {
     loader('myId')
       .should.be.fulfilled
-      .then(function(response) {
-        expect(response.data.name).to.equals('test');
+      .then(function(item) {
+        expect(item.name).to.equals('test');
         expect(stubResource.calledOnce).to.equals(true);
         expect(stubResource.calledWith('testCol', 'myId')).to.equals(true);
         expect(stubGetResource.calledOnce).to.equals(true);
