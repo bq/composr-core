@@ -101574,11 +101574,14 @@ var loadPhrase = function loadPhrase(id) {
   if(!id){
     return Promise.reject('missing:id');
   }
-  
+
   if (this.corbelDriver) {
     return this.corbelDriver.resources
       .resource(this.resources.phrasesCollection, id)
-      .get();
+      .get()
+      .then(function(response){
+        return response.data;
+      });
   } else {
     return Promise.reject('missing:driver');
   }
@@ -101615,7 +101618,10 @@ var loadSnippet = function loadSnippet(id) {
   if (this.corbelDriver) {
     return this.corbelDriver.resources
       .resource(this.resources.snippetsCollection, id)
-      .get();
+      .get()
+      .then(function(response){
+        return response.data;
+      });
   } else {
     return Promise.reject('missing:driver');
   }
@@ -103700,7 +103706,27 @@ module.exports.isValidBase64 = isValidBase64;
 
             var data = response.response;
 
-            if (statusType === 4 || response.error) {
+            if (statusType < 3) {
+
+                if (response.response) {
+                    data = request.parse(response.response, response.responseType, response.dataType);
+                }
+
+                if (callbackSuccess) {
+                    callbackSuccess.call(this, data, statusCode, response.responseObject, response.headers);
+                }
+
+                promiseResponse = {
+                    data: data,
+                    status: statusCode,
+                    headers: response.headers
+                };
+
+                promiseResponse[response.responseObjectType] = response.responseObject;
+
+                resolver.resolve(promiseResponse);
+
+            } else if (statusType === 4) {
 
                 if (callbackError) {
                     callbackError.call(this, response.error, statusCode, response.responseObject, response.headers);
@@ -103720,26 +103746,6 @@ module.exports.isValidBase64 = isValidBase64;
                 promiseResponse[response.responseObjectType] = response.responseObject;
 
                 resolver.reject(promiseResponse);
-
-            } else if (statusType < 3) {
-
-                if (response.response) {
-                    data = request.parse(response.response, response.responseType, response.dataType);
-                }
-
-                if (callbackSuccess) {
-                    callbackSuccess.call(this, data, statusCode, response.responseObject, response.headers);
-                }
-
-                promiseResponse = {
-                    data: data,
-                    status: statusCode,
-                    headers: response.headers
-                };
-
-                promiseResponse[response.responseObjectType] = response.responseObject;
-
-                resolver.resolve(promiseResponse);
             }
 
         };
@@ -103887,13 +103893,6 @@ module.exports.isValidBase64 = isValidBase64;
 
             //response fail ()
             httpReq.onerror = function(xhr) {
-                var error;
-
-                // Error flag to support disconnection errors
-                if (xhr.type === 'error') {
-                    error = true;
-                }
-
                 xhr = xhr.target || xhr; // only for fake sinon response xhr
 
                 processResponse.call(this, {
@@ -103903,7 +103902,7 @@ module.exports.isValidBase64 = isValidBase64;
                     response: xhr.response || xhr.responseText,
                     status: xhr.status,
                     responseObjectType: 'xhr',
-                    error: xhr.error || error
+                    error: xhr.error
                 }, resolver, params.callbackSuccess, params.callbackError);
 
             }.bind(this);
@@ -103978,9 +103977,9 @@ module.exports.isValidBase64 = isValidBase64;
                                         //@TODO: see if we need to upgrade the token to access assets.
                                         return requestWithRetries();
                                     })
-                                    .catch(function(err) {
+                                    .catch(function() {
                                         //Has failed refreshing, reject request and reset the retries counter
-                                        console.log('corbeljs:services:token:refresh:fail', err);
+                                        console.log('corbeljs:services:token:refresh:fail');
                                         that.driver.config.set(corbel.Services._UNAUTHORIZED_NUM_RETRIES, 0);
                                         return Promise.reject(response);
                                     });

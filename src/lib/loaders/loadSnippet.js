@@ -8,7 +8,10 @@ var loadSnippet = function loadSnippet(id) {
   if (this.corbelDriver) {
     return this.corbelDriver.resources
       .resource(this.resources.snippetsCollection, id)
-      .get();
+      .get()
+      .then(function(response){
+        return response.data;
+      });
   } else {
     return Promise.reject('missing:driver');
   }
