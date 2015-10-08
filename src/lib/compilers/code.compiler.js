@@ -187,9 +187,9 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
     itemOrItemIds = [itemOrItemIds];
   }
 
-  itemOrItemIds.forEach(function(item) {
-    module.events.emit('debug', module.itemName + ':unregister:' + item.id);
-    return module._unregister(domain, item);
+  itemOrItemIds.forEach(function(id) {
+    module.events.emit('debug', module.itemName + ':unregister:' + id);
+    return module._unregister(domain, id);
   });
 };
 
