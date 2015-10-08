@@ -103397,14 +103397,12 @@ module.exports.isValidBase64 = isValidBase64;
                 try {
                     decoded[0] = JSON.parse(serialize(decoded[0]));
                 } catch (e) {
-                    console.log('error:jwt:decode:0');
                     decoded[0] = false;
                 }
 
                 try {
                     decoded[1] = JSON.parse(serialize(decoded[1]));
                 } catch (e) {
-                    console.log('error:jwt:decode:1');
                     decoded[1] = false;
                 }
 
@@ -103702,27 +103700,7 @@ module.exports.isValidBase64 = isValidBase64;
 
             var data = response.response;
 
-            if (statusType < 3) {
-
-                if (response.response) {
-                    data = request.parse(response.response, response.responseType, response.dataType);
-                }
-
-                if (callbackSuccess) {
-                    callbackSuccess.call(this, data, statusCode, response.responseObject, response.headers);
-                }
-
-                promiseResponse = {
-                    data: data,
-                    status: statusCode,
-                    headers: response.headers
-                };
-
-                promiseResponse[response.responseObjectType] = response.responseObject;
-
-                resolver.resolve(promiseResponse);
-
-            } else if (statusType === 4) {
+            if (statusType === 4 || response.error) {
 
                 if (callbackError) {
                     callbackError.call(this, response.error, statusCode, response.responseObject, response.headers);
@@ -103742,6 +103720,26 @@ module.exports.isValidBase64 = isValidBase64;
                 promiseResponse[response.responseObjectType] = response.responseObject;
 
                 resolver.reject(promiseResponse);
+
+            } else if (statusType < 3) {
+
+                if (response.response) {
+                    data = request.parse(response.response, response.responseType, response.dataType);
+                }
+
+                if (callbackSuccess) {
+                    callbackSuccess.call(this, data, statusCode, response.responseObject, response.headers);
+                }
+
+                promiseResponse = {
+                    data: data,
+                    status: statusCode,
+                    headers: response.headers
+                };
+
+                promiseResponse[response.responseObjectType] = response.responseObject;
+
+                resolver.resolve(promiseResponse);
             }
 
         };
@@ -103804,10 +103802,7 @@ module.exports.isValidBase64 = isValidBase64;
                     responseType: responseType,
                     response: body,
                     status: status,
-                    headers: {
-                        Location: response && response.headers ? response.headers.Location : '',
-                        'Set-Cookie': response && response.headers ? response.headers['set-cookie'] : ''
-                    },
+                    headers: response.headers || {},
                     responseObjectType: 'response',
                     error: error
                 }, resolver, params.callbackSuccess, params.callbackError);
@@ -103827,6 +103822,31 @@ module.exports.isValidBase64 = isValidBase64;
             } else {
                 return false;
             }
+        };
+
+        /**
+         * https://gist.github.com/monsur/706839
+         * @param  {string} headerStr Headers in string format as returned in xhr.getAllResponseHeaders()
+         * @return {Object}
+         */
+        request._parseResponseHeaders = function(headerStr) {
+            var headers = {};
+            if (!headerStr) {
+                return headers;
+            }
+            var headerPairs = headerStr.split('\u000d\u000a');
+            for (var i = 0; i < headerPairs.length; i++) {
+                var headerPair = headerPairs[i];
+                // Can't use split() here because it does the wrong thing
+                // if the header value has the string ": " in it.
+                var index = headerPair.indexOf('\u003a\u0020');
+                if (index > 0) {
+                    var key = headerPair.substring(0, index);
+                    var val = headerPair.substring(index + 2);
+                    headers[key] = val;
+                }
+            }
+            return headers;
         };
 
         request._browserAjax = function(params, resolver) {
@@ -103857,9 +103877,7 @@ module.exports.isValidBase64 = isValidBase64;
                     responseType: xhr.responseType || xhr.getResponseHeader('content-type'),
                     response: xhr.response || xhr.responseText,
                     status: xhr.status,
-                    headers: {
-                        Location: xhr.getResponseHeader('Location')
-                    },
+                    headers: request._parseResponseHeaders(xhr.getAllResponseHeaders()),
                     responseObjectType: 'xhr',
                     error: xhr.error
                 }, resolver, params.callbackSuccess, params.callbackError);
@@ -103869,6 +103887,13 @@ module.exports.isValidBase64 = isValidBase64;
 
             //response fail ()
             httpReq.onerror = function(xhr) {
+                var error;
+
+                // Error flag to support disconnection errors
+                if (xhr.type === 'error') {
+                    error = true;
+                }
+
                 xhr = xhr.target || xhr; // only for fake sinon response xhr
 
                 processResponse.call(this, {
@@ -103878,7 +103903,7 @@ module.exports.isValidBase64 = isValidBase64;
                     response: xhr.response || xhr.responseText,
                     status: xhr.status,
                     responseObjectType: 'xhr',
-                    error: xhr.error
+                    error: xhr.error || error
                 }, resolver, params.callbackSuccess, params.callbackError);
 
             }.bind(this);
@@ -103930,19 +103955,46 @@ module.exports.isValidBase64 = isValidBase64;
              */
             request: function(args) {
 
-                var params = this._buildParams(args);
-
                 var that = this;
-                return this._doRequest(params).catch(function(response) {
-                    var tokenObject = that.driver.config.get(corbel.Iam.IAM_TOKEN, {});
-                    return that._refreshHandler(tokenObject, response)
-                        .then(function() {
-                            return that._doRequest(that._buildParams(args));
-                        })
-                        .catch(function() {
-                            return Promise.reject(response);
+
+                function requestWithRetries() {
+                    var params = that._buildParams(args);
+
+                    return that._doRequest(params)
+                        .catch(function(response) {
+
+                            var retries = that.driver.config.get(corbel.Services._UNAUTHORIZED_NUM_RETRIES, 0);
+                            var maxRetries = corbel.Services._UNAUTHORIZED_MAX_RETRIES;
+
+                            if (retries < maxRetries &&
+                                response.status === corbel.Services._UNAUTHORIZED_STATUS_CODE) {
+
+                                var tokenObject = that.driver.config.get(corbel.Iam.IAM_TOKEN, {});
+                                //A 401 request within, refresh the token and retry the request.
+                                return that._refreshHandler(tokenObject)
+                                    .then(function() {
+                                        //Has refreshed the token, retry request
+                                        that.driver.config.set(corbel.Services._UNAUTHORIZED_NUM_RETRIES, retries + 1);
+                                        //@TODO: see if we need to upgrade the token to access assets.
+                                        return requestWithRetries();
+                                    })
+                                    .catch(function(err) {
+                                        //Has failed refreshing, reject request and reset the retries counter
+                                        console.log('corbeljs:services:token:refresh:fail', err);
+                                        that.driver.config.set(corbel.Services._UNAUTHORIZED_NUM_RETRIES, 0);
+                                        return Promise.reject(response);
+                                    });
+
+                            } else {
+                                that.driver.config.set(corbel.Services._UNAUTHORIZED_NUM_RETRIES, 0);
+                                console.log('corbeljs:services:token:no_refresh', response.status);
+                                return Promise.reject(response);
+                            }
+
                         });
-                });
+                }
+
+                return requestWithRetries();
 
             },
 
@@ -103957,6 +104009,7 @@ module.exports.isValidBase64 = isValidBase64;
                 return corbel.request.send(params).then(function(response) {
 
                     that.driver.config.set(corbel.Services._FORCE_UPDATE_STATUS, 0);
+                    that.driver.config.set(corbel.Services._UNAUTHORIZED_NUM_RETRIES, 0);
 
                     return Promise.resolve(response);
 
@@ -103988,20 +104041,14 @@ module.exports.isValidBase64 = isValidBase64;
              * Default token refresh handler
              * @return {Promise}
              */
-            _refreshHandler: function(tokenObject, response) {
-
-                if (response.status === corbel.Services._UNAUTHORIZED_STATUS_CODE) {
-                    if (tokenObject.refreshToken) {
-                        console.log('corbeljs:services:token:refresh');
-                        return this.driver.iam.token()
-                            .refresh(tokenObject.refreshToken, this.driver.config.get(corbel.Iam.IAM_TOKEN_SCOPES));
-                    } else {
-                        console.log('corbeljs:services:token:create');
-                        return this.driver.iam.token().create();
-                    }
+            _refreshHandler: function(tokenObject) {
+                if (tokenObject.refreshToken) {
+                    console.log('corbeljs:services:token:refresh');
+                    return this.driver.iam.token()
+                        .refresh(tokenObject.refreshToken, this.driver.config.get(corbel.Iam.IAM_TOKEN_SCOPES));
                 } else {
-                    console.log('corbeljs:services:token:no_refresh', response.status, !!tokenObject);
-                    return Promise.reject(response);
+                    console.log('corbeljs:services:token:create');
+                    return this.driver.iam.token().create();
                 }
             },
 
@@ -104139,6 +104186,23 @@ module.exports.isValidBase64 = isValidBase64;
             _FORCE_UPDATE_STATUS_CODE: 403,
 
             /**
+             * _UNAUTHORIZED_MAX_RETRIES constant
+             * @constant
+             * @memberof corbel.Services
+             * @type {number}
+             * @default
+             */
+            _UNAUTHORIZED_MAX_RETRIES: 1,
+
+            /**
+             * _UNAUTHORIZED_NUM_RETRIES constant
+             * @constant
+             * @memberof corbel.Services
+             * @type {string}
+             * @default
+             */
+            _UNAUTHORIZED_NUM_RETRIES: 'un_r',
+            /**
              * _UNAUTHORIZED_STATUS_CODE constant
              * @constant
              * @memberof corbel.Services
@@ -104182,7 +104246,6 @@ module.exports.isValidBase64 = isValidBase64;
         return Services;
 
     })();
-
 
     //----------corbel modules----------------
 
@@ -104836,11 +104899,18 @@ module.exports.isValidBase64 = isValidBase64;
                 params = params || {};
                 // if there are oauth params this mean we should do use the GET verb
                 var promise;
-                if (params.oauth) {
-                    promise = this._doGetTokenRequest(this.uri, params, setCookie);
+                try {
+                    if (params.oauth) {
+                        promise = this._doGetTokenRequest(this.uri, params, setCookie);
+                    }
+
+                    // otherwise we use the traditional POST verb.
+                    promise = this._doPostTokenRequest(this.uri, params, setCookie);
+
+                } catch (e) {
+                    console.log('error', e);
+                    return Promise.reject(e);
                 }
-                // otherwise we use the traditional POST verb.
-                promise = this._doPostTokenRequest(this.uri, params, setCookie);
 
                 var that = this;
                 return promise.then(function(response) {
