@@ -108,7 +108,7 @@ PhraseManager.prototype._compile = function(phrase) {
       }
     });
 
-    module.events.emit('debug', 'phrase:compiled', compiled);
+    module.events.emit('debug', 'phrase:compiled', compiled.id, Object.keys(compiled.codes));
 
     return compiled;
 

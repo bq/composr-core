@@ -45,7 +45,7 @@ function documentation(phrases, domain) {
       return raml2html.render(data, config);
     })
     .then(function(result) {
-      module.events.emit('debug', 'generated:documentation', result);
+      module.events.emit('debug', 'generated:documentation');
       dfd.resolve(result);
     }, function(error) {
       module.events.emit('warn', 'generating:documentation', error);

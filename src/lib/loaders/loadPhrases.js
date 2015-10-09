@@ -6,7 +6,7 @@ var loadPhrases = function loadPhrases(){
     return module.corbelDriver.resources.collection(module.resources.phrasesCollection).get({
       pagination: {
         page: pageNumber,
-        size: pageSize
+        pageSize: pageSize
       }
     });
   };

@@ -6,7 +6,7 @@ var loadSnippets = function loadSnippets(){
     return module.corbelDriver.resources.collection(module.resources.snippetsCollection).get({
       pagination: {
         page: pageNumber,
-        size: pageSize
+        pageSize: pageSize
       }
     });
   };

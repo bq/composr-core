@@ -26,7 +26,7 @@ SnippetsManager.prototype._compile = function(snippet) {
 
     compiled.code = this._evaluateCode(code, ['exports']);
 
-    this.events.emit('debug', 'snippet:compiled', compiled);
+    this.events.emit('debug', 'snippet:compiled', compiled.id, compiled.name);
 
     return compiled;
 

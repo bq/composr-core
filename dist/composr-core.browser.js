@@ -100532,7 +100532,7 @@ PhraseManager.prototype._compile = function(phrase) {
       }
     });
 
-    module.events.emit('debug', 'phrase:compiled', compiled);
+    module.events.emit('debug', 'phrase:compiled', compiled.id, Object.keys(compiled.codes));
 
     return compiled;
 
@@ -100871,7 +100871,7 @@ SnippetsManager.prototype._compile = function(snippet) {
 
     compiled.code = this._evaluateCode(code, ['exports']);
 
-    this.events.emit('debug', 'snippet:compiled', compiled);
+    this.events.emit('debug', 'snippet:compiled', compiled.id, compiled.name);
 
     return compiled;
 
@@ -101377,7 +101377,7 @@ function documentation(phrases, domain) {
       return raml2html.render(data, config);
     })
     .then(function(result) {
-      module.events.emit('debug', 'generated:documentation', result);
+      module.events.emit('debug', 'generated:documentation');
       dfd.resolve(result);
     }, function(error) {
       module.events.emit('warn', 'generating:documentation', error);
@@ -101462,12 +101462,11 @@ var fetchData = function fetchData() {
   q.spread(promises, function(phrases, snippets) {
     module.data.phrases = phrases;
     module.data.snippets = snippets;
-    module.events.emit('data:loaded');
+    module.events.emit('debug', 'data:loaded', 'phrases', phrases.length, 'snippets', snippets.length);
     dfd.resolve();
   })
   .catch(function(err) {
-
-    module.events.emit('data:error:loading');
+    module.events.emit('warn', 'data:error:loading');
     dfd.reject(err);
   });
 
@@ -101598,7 +101597,7 @@ var loadPhrases = function loadPhrases(){
     return module.corbelDriver.resources.collection(module.resources.phrasesCollection).get({
       pagination: {
         page: pageNumber,
-        size: pageSize
+        pageSize: pageSize
       }
     });
   };
@@ -101638,7 +101637,7 @@ var loadSnippets = function loadSnippets(){
     return module.corbelDriver.resources.collection(module.resources.snippetsCollection).get({
       pagination: {
         page: pageNumber,
-        size: pageSize
+        pageSize: pageSize
       }
     });
   };

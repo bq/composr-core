@@ -11,12 +11,11 @@ var fetchData = function fetchData() {
   q.spread(promises, function(phrases, snippets) {
     module.data.phrases = phrases;
     module.data.snippets = snippets;
-    module.events.emit('data:loaded');
+    module.events.emit('debug', 'data:loaded', 'phrases', phrases.length, 'snippets', snippets.length);
     dfd.resolve();
   })
   .catch(function(err) {
-
-    module.events.emit('data:error:loading');
+    module.events.emit('warn', 'data:error:loading');
     dfd.reject(err);
   });
 
