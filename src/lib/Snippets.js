@@ -57,19 +57,18 @@ SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
   return true;
 };
 
-SnippetsManager.prototype._unregister = function(domain, name) {
-  if (!domain || !name) {
-    this.events.emit('warn', 'snippet:unregister:missing:parameters', domain, name);
+SnippetsManager.prototype._unregister = function(domain, id) {
+  if (!domain || !id) {
+    this.events.emit('warn', 'snippet:unregister:missing:parameters', domain, id);
     return false;
   }
-  var snippetId = domain + '!' + name;
 
-  if (this.__snippets[domain] && this.__snippets[domain][snippetId]) {
-    delete this.__snippets[domain][snippetId];
-    this.events.emit('debug', 'snippet:unregistered', snippetId);
+  if (this.__snippets[domain] && this.__snippets[domain][id]) {
+    delete this.__snippets[domain][id];
+    this.events.emit('debug', 'snippet:unregistered', id);
     return true;
   } else {
-    this.events.emit('warn', 'snippet:unregister:not:found', domain, name);
+    this.events.emit('warn', 'snippet:unregister:not:found', domain, id);
     return false;
   }
 };

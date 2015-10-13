@@ -492,8 +492,8 @@ describe('== Snippets ==', function() {
         .should.notify(done);
     });
 
-    it('not retrieve a snippet after unregistering it', function() {
-      var hasBeenUnregistered = Snippets.unregister('domainTest', 'snippetOne');
+    it('should not retrieve a snippet after unregistering it', function() {
+      var hasBeenUnregistered = Snippets.unregister('domainTest', 'domainTest!snippetOne');
 
       var isRegisteredOne = Snippets.getByName('domainTest', 'snippetOne');
       expect(isRegisteredOne).to.be.a('null');
