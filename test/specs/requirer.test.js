@@ -112,7 +112,6 @@ describe('Requirer', function() {
     expect(_lodash.flatten).to.be.a('function');
   });
 
-
   it('Can require its own snippets', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
     var requirerMethodOtherDomain = composr.requirer.forDomain('otherDomain');
@@ -138,7 +137,6 @@ describe('Requirer', function() {
     expect(TheSnippet3).to.be.a('string');
     expect(TheSnippet3).to.be.equals('My test');
   });
-
 
   it('Can not request other domain snippets', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');

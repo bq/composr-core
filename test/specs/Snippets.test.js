@@ -299,7 +299,7 @@ describe('== Snippets ==', function() {
     beforeEach(function() {
       spyExtractDomain = sinon.spy(Snippets, '_extractDomainFromId');
     });
-  
+
     afterEach(function() {
       spyExtractDomain.restore();
     });
@@ -323,7 +323,7 @@ describe('== Snippets ==', function() {
         codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
       };
 
-      Snippets.register('domain', snippet)
+      Snippets.register('mydomain', snippet)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -344,6 +344,9 @@ describe('== Snippets ==', function() {
           expect(result.error).to.equals(null);
           expect(result.compiled.name).to.equals('TheSnippet');
           expect(result.compiled.id).to.equals('mydomain!TheSnippet');
+          var snippetObtained = Snippets.getByName('mydomain', 'TheSnippet');
+          expect(snippetObtained).to.be.an('object');
+          expect(snippetObtained.id).to.equals('mydomain!TheSnippet');
         })
         .should.notify(done);
     });
@@ -467,7 +470,39 @@ describe('== Snippets ==', function() {
 
   });
 
-  xdescribe('Snippets execution', function(){
+  describe('Snippets unregistration', function() {
+    beforeEach(function(done) {
+      var snippetsToRegister = [{
+        id: 'domainTest!snippetOne',
+        codehash: new Buffer('exports("thing");').toString('base64')
+      }, {
+        id: 'domainTest!snippetTwo',
+        codehash: new Buffer('exports("otherthing");').toString('base64')
+      }];
+
+      Snippets.register('domainTest', snippetsToRegister)
+        .should.be.fulfilled
+        .then(function() {
+          var isRegisteredOne = Snippets.getByName('domainTest', 'snippetOne');
+          var isRegisteredTwo = Snippets.getByName('domainTest', 'snippetTwo');
+
+          expect(isRegisteredOne).to.be.an('object');
+          expect(isRegisteredTwo).to.be.an('object');
+        })
+        .should.notify(done);
+    });
+
+    it('not retrieve a snippet after unregistering it', function() {
+      var hasBeenUnregistered = Snippets.unregister('domainTest', 'snippetOne');
+
+      var isRegisteredOne = Snippets.getByName('domainTest', 'snippetOne');
+      expect(isRegisteredOne).to.be.a('null');
+      expect(hasBeenUnregistered).to.equals(true);
+    });
+
+  });
+
+  xdescribe('Snippets execution', function() {
 
   });
 

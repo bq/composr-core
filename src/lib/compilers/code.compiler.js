@@ -187,10 +187,17 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
     itemOrItemIds = [itemOrItemIds];
   }
 
-  itemOrItemIds.forEach(function(id) {
+  var results = itemOrItemIds.map(function(id) {
     module.events.emit('debug', module.itemName + ':unregister:' + id);
     return module._unregister(domain, id);
   });
+
+  if (isArray === false) {
+    return results[0];
+  } else {
+    return results;
+  }
+
 };
 
 //Extracts the domain from a database item
@@ -198,25 +205,26 @@ CodeCompiler.prototype._extractDomainFromId = function(id) {
   return id.split('!')[0];
 };
 
-
-
 /********************************
   Mandatory implementations 
 ********************************/
 
 CodeCompiler.prototype._compile = function(item) {
   //Implement freely
+  this.events.emit('warn', '_compile not implemented');
   return item;
 };
 
 CodeCompiler.prototype._addToList = function() {
   //Implement freely
+  this.events.emit('warn', '_addToList not implemented');
   return true;
 };
 
 //Removes item from memory
 CodeCompiler.prototype._unregister = function() {
   //Implement freely
+  this.events.emit('warn', '_unregister not implemented');
 };
 
 /********************************
@@ -225,12 +233,12 @@ CodeCompiler.prototype._unregister = function() {
 
 //Pre compile call 
 CodeCompiler.prototype.__preCompile = function() {
-
+  this.events.emit('warn', '__preCompile not implemented');
 };
 
 //Pre add call
 CodeCompiler.prototype.__preAdd = function() {
-
+  this.events.emit('warn', '__preAdd not implemented');
 };
 
 module.exports = CodeCompiler;

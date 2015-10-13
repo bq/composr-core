@@ -16,7 +16,7 @@ var fetchData = function fetchData() {
   })
   .catch(function(err) {
     module.events.emit('warn', 'data:error:loading');
-    dfd.reject(err);
+    dfd.reject(err && err.data ? err.data : err);
   });
 
   return dfd.promise;
