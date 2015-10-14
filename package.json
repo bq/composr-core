@@ -19,6 +19,10 @@
     "composr-core",
     "bq"
   ],
+  "engines": {
+    "node": "4.2.1",
+    "npm": "3.3.6"
+  },
   "dependencies": {
     "ascii-art": "0.0.2-alpha",
     "async": "^1.4.2",
