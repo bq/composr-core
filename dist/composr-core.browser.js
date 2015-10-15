@@ -107064,7 +107064,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   var callerParameters = {};
 
-  var resWrapper = mockedExpress.res();
+  var resWrapper = mockedExpress.res(params ? params.res : null);
   var nextWrapper = mockedExpress.next();
 
   if (!params) {
@@ -107098,6 +107098,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   if (params.res) {
     var previousRes = params.res;
+
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
     }).catch(function(errResponse) {
@@ -108186,8 +108187,10 @@ module.exports = function(options) {
 },{}],370:[function(require,module,exports){
 'use strict';
 
-function MockedResponse() {
+function MockedResponse(originalRes) {
   var module = this;
+  this.originalRes = originalRes;
+  this.cookies = {};
   this.statusCode = 200;
   this.promise = new Promise(function(resolve, reject) {
     module.resolve = resolve;
@@ -108203,6 +108206,16 @@ MockedResponse.prototype.status = function(statusCode) {
   return this;
 };
 
+MockedResponse.prototype.cookie = function(name, value, options) {
+  if (this.originalRes && typeof(this.originalRes.cookie) === 'function') {
+    this.originalRes.cookie(name, value, options);
+  }
+  
+  this.cookies[name] = value;
+
+  return this;
+};
+
 MockedResponse.prototype.send = function(data) {
   this._action = 'send';
 
@@ -108214,7 +108227,8 @@ MockedResponse.prototype.send = function(data) {
   } else {
     this.resolve({
       status: this.statusCode,
-      body: data
+      body: data,
+      cookies : this.cookies
     });
   }
 
@@ -108223,12 +108237,16 @@ MockedResponse.prototype.send = function(data) {
 
 MockedResponse.prototype.json = function(data) {
   this._action = 'json';
-  this.resolve(data);
+  this.resolve({
+    status: this.statusCode,
+    body: data,
+    cookies : this.cookies
+  });
   return this.promise;
 };
 
-module.exports = function(options) {
-  return new MockedResponse(options);
+module.exports = function(originalRes) {
+  return new MockedResponse(originalRes);
 };
 },{}],371:[function(require,module,exports){
 'use strict';

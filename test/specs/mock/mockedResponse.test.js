@@ -15,6 +15,7 @@ describe('Mocked Response', function() {
     expect(res).to.respondTo('json');
     expect(res).to.respondTo('status');
     expect(res).to.respondTo('send');
+    expect(res).to.respondTo('cookie');
     expect(res).to.have.ownProperty('promise');
   });
 
@@ -42,7 +43,7 @@ describe('Mocked Response', function() {
     })
       .should.be.fulfilled
       .then(function(response) {
-        expect(response.user).to.equals('test');
+        expect(response.body.user).to.equals('test');
         expect(res._action).to.equals('json');
       })
       .should.notify(done);
@@ -106,6 +107,31 @@ describe('Mocked Response', function() {
         expect(res._action).to.equals('send');
       })
       .should.notify(done);
+  });
+
+  it('should invoke the cookie method on the original response object', function(){
+    var originalRes = {
+      cookie : sinon.stub()
+    };
+
+    var res = mockedResponse(originalRes);
+
+    res.cookie('yes', 'no', 'maybe');
+
+    expect(originalRes.cookie.calledOnce).to.equals(true);
+    expect(originalRes.cookie.calledWith('yes', 'no', 'maybe')).to.equals(true);
+  });
+
+  it('doesnt break if the original response object has no cookie function', function(){
+    var originalRes = {};
+
+    var res = mockedResponse(originalRes);
+
+    var fn = function(){
+      res.cookie('yes', 'no', 'maybe');
+    };
+
+    expect(fn).to.not.throw(Error);
   });
 
 });

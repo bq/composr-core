@@ -178,7 +178,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   var callerParameters = {};
 
-  var resWrapper = mockedExpress.res();
+  var resWrapper = mockedExpress.res(params ? params.res : null);
   var nextWrapper = mockedExpress.next();
 
   if (!params) {
@@ -212,6 +212,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   if (params.res) {
     var previousRes = params.res;
+
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
     }).catch(function(errResponse) {
