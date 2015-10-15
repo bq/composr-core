@@ -31,6 +31,7 @@
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
+    "query-string": "^3.0.0",
     "raml-parser": "^0.8.11",
     "raml2html": "^2.0.2",
     "request": "^2.60.0",

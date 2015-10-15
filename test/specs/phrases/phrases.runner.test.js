@@ -24,7 +24,7 @@ describe('Phrases runner', function() {
   var phrasesToRegister = [{
     'url': 'user/:name',
     'get': {
-      'code': 'var name = req.params.name; res.send({ username: name });',
+      'code': 'var name = req.params.name; res.send({ name: name });',
       'doc': {
 
       }
@@ -73,6 +73,14 @@ describe('Phrases runner', function() {
     'url': 'timeout',
     'get': {
       'code': 'var a = 3; while(true){ a = a + 3; };',
+      'doc': {
+
+      }
+    }
+  }, {
+    'url': 'queryparameters',
+    'get': {
+      'code': 'res.send(req.query)',
       'doc': {
 
       }
@@ -169,8 +177,8 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
         expect(response.body).to.be.an('object');
-        expect(response.body.username).to.exist;
-        expect(response.body.username).to.equals('Pepito the user');
+        expect(response.body.name).to.exist;
+        expect(response.body.name).to.equals('Pepito the user');
       })
       .should.notify(done);
   });
@@ -191,26 +199,115 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  it('Automatically extracts the path params with the runByPath', function(done) {
-    var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get');
+  describe('Path params', function() {
 
-    expect(result).to.exist;
+    it('Automatically extracts the path params with the runByPath', function(done) {
+      var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get');
 
-    result
-      .should.be.fulfilled
-      .then(function(response) {
-        expect(spyRun.callCount).to.equals(1);
-        expect(response).to.be.an('object');
-        expect(response).to.include.keys(
-          'status',
-          'body'
-        );
-        expect(response.status).to.equals(200);
-        expect(response.body).to.be.an('object');
-        expect(response.body.username).to.exist;
-        expect(response.body.username).to.equals('sanfrancisco');
-      })
-      .should.notify(done);
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.name).to.exist;
+          expect(response.body.name).to.equals('sanfrancisco');
+        })
+        .should.notify(done);
+    });
+
+    it('Prefers to use reqParams if provided', function(done) {
+      var reqParams = {
+        name: 'sanmigueldeaquinohay'
+      };
+
+      var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
+        reqParams: reqParams
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.name).to.exist;
+          expect(response.body.name).to.equals('sanmigueldeaquinohay');
+        })
+        .should.notify(done);
+    });
+
+  });
+
+  describe('Query parameters', function() {
+
+    it('Automatically extracts the query params with the runByPath', function(done) {
+      var result = Phrases.runByPath(domain, 'queryparameters?name=Pepito manolo&age=15&size=1000', 'get');
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.name).to.equals('Pepito manolo');
+          expect(response.body.age).to.equals('15');
+          expect(response.body.size).to.equals('1000');
+        })
+        .should.notify(done);
+    });
+
+    it('Prefers using reqQuery if provided', function(done) {
+      var reqQuery = {
+        name: 'santiago hernandez',
+        age: '34',
+        size: '1300'
+      };
+      var result = Phrases.runByPath(domain, 'queryparameters?name=Pepito manolo&age=15&size=1000', 'get', {
+        reqQuery: reqQuery
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.name).to.equals('santiago hernandez');
+          expect(response.body.age).to.equals('34');
+          expect(response.body.size).to.equals('1300');
+        })
+        .should.notify(done);
+    });
+
   });
 
   it('Executes correctly if the path has no params', function(done) {

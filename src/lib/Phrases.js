@@ -3,6 +3,7 @@ var phraseValidator = require('./validators/phrase.validator');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
+var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
 var mockedExpress = require('./mock');
 var utils = require('./utils');
@@ -155,6 +156,12 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
       params.reqParams = paramsExtractor.extract(path, phrase.regexpReference);
     }
 
+    if (!params.reqQuery && !(params.req && params.req.query && Object.keys(params.req.query).length > 0)) {
+      //If no reqQuery object or req.querty params are sent, extract them
+      var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
+      params.reqQuery = queryString.parse(queryParamsString);
+    }
+
     return this._run(phrase, verb, params, domain);
   } else {
     return q.reject('phrase:cant:be:runned');
@@ -174,7 +181,6 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 //Executes a phrase
 PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
-
 
   var callerParameters = {};
 
@@ -198,6 +204,10 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
     if (params.reqParams) {
       reqParams.params = params.reqParams;
+    }
+
+    if(params.reqQuery){
+      reqParams.query = params.reqQuery;
     }
 
     callerParameters.req = mockedExpress.req(reqParams);
@@ -334,9 +344,9 @@ PhraseManager.prototype.getPhrases = function(domain) {
 };
 
 /** 
-      CORE Entry point. One of the purposes of composr-core is to provide a fast and reliable
-      getByMatchingPath method.
-     **/
+  CORE Entry point. One of the purposes of composr-core is to provide a fast and reliable
+  getByMatchingPath method.
+ **/
 PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
   var candidate = null;
 
