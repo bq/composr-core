@@ -37,6 +37,7 @@ describe('Config initialization', function() {
           expect(composr.config).to.have.property('timeout');
           expect(composr.config).to.have.property('urlBase');
           expect(spyRequirerConfigure.callCount).to.equals(1);
+          expect(stubInitCorbelDriver.callCount).to.equals(0);
           done();
         })
         .catch(function(err) {
@@ -55,7 +56,7 @@ describe('Config initialization', function() {
         timeout: 3000
       };
 
-      composr.init(options)
+      composr.init(options, true)
         .then(function() {
           expect(composr).to.have.property('config');
           expect(composr.config).to.have.property('credentials');
@@ -109,7 +110,7 @@ describe('Config initialization', function() {
         timeout: 3000
       };
 
-      composr.init(options)
+      composr.init(options, true)
         .catch(function() {
           expect(spyEvents.callCount).to.be.above(0);
           //TODO: Find the bug with the "error" word on the catch.

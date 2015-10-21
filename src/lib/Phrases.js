@@ -182,7 +182,10 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
 
-  var callerParameters = {};
+  var callerParameters = {
+    console : console,
+    Promise : Promise
+  };
 
   var resWrapper = mockedExpress.res(params ? params.res : null);
   var nextWrapper = mockedExpress.next();
@@ -277,7 +280,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 //Runs VM script mode
 PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout) {
   script.runInNewContext(parameters, {
-    timeout: timeout || 10000
+    timeout: timeout || 10000,
+    displayErrors: true
   });
 };
 
