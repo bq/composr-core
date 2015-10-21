@@ -85,6 +85,22 @@ describe('Phrases runner', function() {
 
       }
     }
+  }, {
+    'url': 'promise',
+    'get': {
+      'code': 'var a = Promise.resolve(); a.then(function(){ res.send({hello: "world"}) });',
+      'doc': {
+
+      }
+    }
+  }, {
+    'url': 'console',
+    'get': {
+      'code': 'console.log("hey"); res.send();',
+      'doc': {
+
+      }
+    }
   }];
 
   beforeEach(function(done) {
@@ -326,6 +342,45 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
         expect(response.body).to.equals('testValue');
+      })
+      .should.notify(done);
+  });
+
+  it('Executes correctly with Promise', function(done) {
+    var result = Phrases.runByPath(domain, 'promise', 'get');
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+        expect(response.status).to.equals(200);
+        expect(response.body).to.include.keys('hello');
+      })
+      .should.notify(done);
+  });
+
+  it('Executes correctly with Console', function(done) {
+    var result = Phrases.runByPath(domain, 'console', 'get');
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+        expect(response.status).to.equals(200);
       })
       .should.notify(done);
   });

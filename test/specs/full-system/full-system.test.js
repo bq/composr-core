@@ -29,7 +29,7 @@ describe('Full system usage', function() {
   it('Can register phrases', function(done) {
     var options = {};
 
-    composr.init(options)
+    composr.init(options, true)
       .then(function() {
         return composr.Phrases.register('myDomain', phrasesFixtures.correct);
       })
@@ -50,7 +50,7 @@ describe('Full system usage', function() {
 
   it('Can Register Snippets', function(done) {
 
-    composr.init({})
+    composr.init({}, true)
       .then(function() {
         return composr.Snippets.register('myDomain', snippetsFixtures.correct);
       })
