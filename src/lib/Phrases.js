@@ -268,7 +268,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   } catch (e) {
     //vm throws an error when timedout
-    this.events.emit('warn', 'phrase:timedout', phrase.url, e);
+    this.events.emit('warn', 'phrase:timedout', e, phrase.url);
     resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
   }
 
