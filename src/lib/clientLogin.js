@@ -25,7 +25,7 @@ function clientLogin() {
     })
     .catch(function(err) {
       //Invalid credentials, 401, 404
-      var error = err && err.data && err.data.body ? err.data.body : err;
+      var error = err && err.data && err.data ? err.data : err;
       module.events.emit('error', 'login:invalid:credentials', err.status, error);
       dfd.reject(error);
     });

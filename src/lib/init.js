@@ -31,7 +31,7 @@ function init(options, fetch) {
         dfd.resolve();
       })
       .catch(function(err) {
-        console.log(err);
+        err = err && err.data ? err.data : err;
         //something failed, then reset the module to it's original state
         //TODO: emit('error') causes an unhandled execption in node.
         module.events.emit('errore', 'error:initializing', err);
