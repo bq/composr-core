@@ -1,6 +1,5 @@
 'use strict';
 
-var q = require('q');
 var corbel = require('corbel-js');
 
 /**
@@ -16,7 +15,7 @@ var getAllRecursively = function getAllRecursively(caller, pageNumber, pageSize,
   items = items || [];
   pageNumber = pageNumber || 0;
   pageSize = pageSize || 20;
-  promise = promise || q.resolve();
+  promise = promise || Promise.resolve();
 
   return promise.then(function() {
 

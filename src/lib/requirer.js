@@ -50,10 +50,12 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
       if (snippet) {
 
         if (module.functionMode) {
-          snippet.fn(function(res) {
+          module.events.emit('debug', 'executing:' + libName + ':functionmode');
+          snippet.code.fn(function(res) {
             returnedResult = res;
           });
         } else {
+          module.events.emit('debug', 'executing:' + libName + ':scriptmode');
           snippet.code.script.runInNewContext({
             exports: function(res) {
               returnedResult = res;
