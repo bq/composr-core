@@ -6,6 +6,7 @@ var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
 var mockedExpress = require('./mock');
+var vm = require('vm');
 var utils = require('./utils');
 
 var q = require('q');
@@ -166,7 +167,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
     return this._run(phrase, verb, params, domain);
   } else {
-    return q.reject('phrase:cant:be:runned');
+    return Promise.reject('phrase:cant:be:runned');
   }
 
 };
@@ -290,7 +291,8 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
     options.filename = file;
   }
 
-  script.runInNewContext(parameters, options);
+  var context = new vm.createContext(parameters);
+  script.runInContext(context, options);
 };
 
 //Runs VM function mode (DEPRECATED)
