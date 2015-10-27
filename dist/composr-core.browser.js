@@ -107344,6 +107344,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   callerParameters.require = this.requirer.forDomain(domain);
 
   //trigger the execution 
+  
+  var context;
   try {
 
     if (params.browser) {
@@ -107352,7 +107354,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
       this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
     } else {
       var phraseScript = phrase.codes[verb].script;
-      this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
+      context = new vm.createContext(callerParameters);
+      this.__executeScriptMode(phraseScript, context, params.timeout, params.file);
     }
 
   } catch (e) {
@@ -107362,12 +107365,16 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   }
 
   //Resolve on any promise resolution or rejection, either res or next
-  return Promise.race([resWrapper.promise, nextWrapper.promise]);
+  return Promise.race([resWrapper.promise, nextWrapper.promise])
+    .then(function(res){
+      context = null;
+      return res;
+    });
 
 };
 
 //Runs VM script mode
-PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout, file) {
+PhraseManager.prototype.__executeScriptMode = function(script, context, timeout, file) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
@@ -107377,7 +107384,6 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
     options.filename = file;
   }
 
-  var context = new vm.createContext(parameters);
   script.runInContext(context, options);
 };
 

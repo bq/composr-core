@@ -6,7 +6,6 @@ var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
 var mockedExpress = require('./mock');
-var vm = require('vm');
 var utils = require('./utils');
 
 var q = require('q');
@@ -107,7 +106,7 @@ PhraseManager.prototype._compile = function(phrase) {
         }
 
         var debugInfo = phrase.debug ? phrase.debug[method] : null;
-        
+
         compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
       }
     });
@@ -186,8 +185,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
 
   var callerParameters = {
-    console : console,
-    Promise : Promise
+    console: console,
+    Promise: Promise
   };
 
   var resWrapper = mockedExpress.res(params ? params.res : null);
@@ -212,7 +211,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
       reqParams.params = params.reqParams;
     }
 
-    if(params.reqQuery){
+    if (params.reqQuery) {
       reqParams.query = params.reqQuery;
     }
 
@@ -258,8 +257,6 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   callerParameters.require = this.requirer.forDomain(domain);
 
   //trigger the execution 
-  
-  var context;
   try {
 
     if (params.browser) {
@@ -268,8 +265,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
       this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
     } else {
       var phraseScript = phrase.codes[verb].script;
-      context = new vm.createContext(callerParameters);
-      this.__executeScriptMode(phraseScript, context, params.timeout, params.file);
+      this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
     }
 
   } catch (e) {
@@ -279,31 +275,34 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   }
 
   //Resolve on any promise resolution or rejection, either res or next
-  return Promise.race([resWrapper.promise, nextWrapper.promise])
-    .then(function(res){
-      context = null;
-      return res;
-    });
+  return Promise.race([resWrapper.promise, nextWrapper.promise]);
 
 };
 
 //Runs VM script mode
-PhraseManager.prototype.__executeScriptMode = function(script, context, timeout, file) {
+PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout, file) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
   };
 
-  if(file){
+  if (file) {
     options.filename = file;
   }
 
-  script.runInContext(context, options);
+  script.runInNewContext(parameters, options);
 };
 
 //Runs VM function mode (DEPRECATED)
 PhraseManager.prototype.__executeFunctionMode = function(code, parameters) {
-  code.apply(null, _.values(parameters));
+
+  code.apply(null, [parameters.req,
+    parameters.res,
+    parameters.next,
+    parameters.corbelDriver,
+    parameters.domain,
+    parameters.require
+  ]);
 };
 
 //Returns a list of elements matching the same regexp

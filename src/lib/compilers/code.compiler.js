@@ -159,7 +159,8 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
   var result = {
     fn: null,
     script: null,
-    error: false
+    error: false,
+    code : functionBody
   };
 
   try {
@@ -174,6 +175,7 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
     }
     
     result.script = new vm.Script(functionBody, options);
+
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
     this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);

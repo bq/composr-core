@@ -157,7 +157,6 @@ describe('Phrases runner', function() {
     expect(result).to.exist;
 
     result
-      .should.be.fulfilled
       .then(function(response) {
         expect(spyRun.callCount).to.equals(1);
         expect(response).to.be.an('object');
@@ -534,7 +533,7 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  describe('timeout phrases', function() {
+  describe.skip('timeout phrases', function() {
     this.timeout(3000);
 
     it('cuts the phrase execution at 500 ms', function(done) {

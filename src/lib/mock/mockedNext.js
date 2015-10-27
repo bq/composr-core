@@ -7,13 +7,13 @@ function MockedNext() {
     module.resolve = resolve;
     module.reject = reject;
   });
+
+  this.execute = function(data) {
+    module.resolve(data);
+
+    return module.promise;
+  };
 }
-
-MockedNext.prototype.execute = function(data) {
-  this.resolve(data);
-
-  return this.promise;
-};
 
 module.exports = function(options) {
   return new MockedNext(options);

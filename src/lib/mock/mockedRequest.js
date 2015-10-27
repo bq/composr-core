@@ -1,6 +1,7 @@
 'use strict';
 
 function MockedRequest(options) {
+  var module = this;
 
   if (!options) {
     options = {};
@@ -10,11 +11,11 @@ function MockedRequest(options) {
   this.query = options.query || {};
   this.headers = options.headers || {};
   this.body = options.body || {};
-}
 
-MockedRequest.prototype.get = function(headerName) {
-  return this.headers[headerName];
-};
+  this.get = function(headerName) {
+    return module.headers[headerName];
+  };
+}
 
 module.exports = function(options) {
   return new MockedRequest(options);
