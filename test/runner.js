@@ -4,6 +4,8 @@ require('./specs/initCorbelDriver.test.js');
 require('./specs/bindConfiguration.test.js');
 require('./specs/clientLogin.test.js');
 require('./specs/fetchData.test.js');
+require('./specs/addPhrasesToDataStructure.test.js');
+require('./specs/addSnippetsToDataStructure.test.js');
 require('./specs/registerData.test.js');
 require('./specs/utils.test.js');
 require('./specs/events.test.js');
