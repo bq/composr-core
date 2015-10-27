@@ -210,6 +210,19 @@ function executePhrase(endpointPath, req, res, next) {
 }
 ```
 
+## Debugging phrases
+
+When registering some phrase models, pass the url to the "code" file in order to allow `vm.Script` to find the reference:
+
+```javascript
+phraseModel.debug = {
+  'get' : '/myAbsolute/path/phrase.code.js'
+};
+
+composr.Phrases.register(phraseModel);
+```
+
+Later on, from your project, you can launch `node-inspector` debug and add breackpoints in the `phrase.code.js` file.
 
 # API
 
