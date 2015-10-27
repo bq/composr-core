@@ -108639,9 +108639,11 @@ var ALLOWED_LIBRARIES = {
   'request': require('request'),
   'async': require('async'),
   'corbel-js': require('corbel-js'),
-  'lodash': require('lodash'),
-  'ComposrError' : require('./ComposrError'),
-  'composrUtils' : require('./utils')
+  'lodash': require('lodash')
+};
+var LOCAL_LIBRARIES = {
+  'ComposrError': './ComposrError',
+  'composrUtils': './utils'
 };
 
 var driverObtainFunction = function(defaults) {
@@ -108657,9 +108659,7 @@ function Requirer(options) {
 }
 
 Requirer.prototype.configure = function(config) {
-  ALLOWED_LIBRARIES['corbel-js'].generateDriver = driverObtainFunction({
-    urlBase: config.urlBase
-  });
+  this.urlBase = config.urlBase;
 };
 
 Requirer.prototype.forDomain = function(domain) {
@@ -108677,9 +108677,9 @@ Requirer.prototype.forDomain = function(domain) {
 
       var returnedResult = null;
       //Execute the exports function
-      if(snippet){
+      if (snippet) {
         snippet.code.script.runInNewContext({
-          exports : function(res){
+          exports: function(res) {
             returnedResult = res;
           }
         });
@@ -108688,16 +108688,24 @@ Requirer.prototype.forDomain = function(domain) {
       return returnedResult;
 
     } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
+      var lib = require(libName);
+      if (libName === 'corbel-js') {
+        lib.generateDriver = driverObtainFunction({
+          urlBase: module.urlBase
+        });
+      }
+      return lib;
+    } else if (libName && Object.keys(LOCAL_LIBRARIES).indexOf(libName) !== -1) {
+      var locallib = require(LOCAL_LIBRARIES[libName]);
+      return locallib;
 
-      return ALLOWED_LIBRARIES[libName];
     }
-
     return null;
   };
 };
 
 module.exports = Requirer;
-},{"./ComposrError":448,"./utils":475,"async":1,"corbel-js":3,"http":236,"lodash":253,"q":254,"request":339}],473:[function(require,module,exports){
+},{"async":1,"corbel-js":3,"http":236,"lodash":253,"q":254,"request":339}],473:[function(require,module,exports){
 'use strict';
 
 function reset() {
