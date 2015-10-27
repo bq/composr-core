@@ -254,7 +254,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   callerParameters.domain = domain;
 
-  callerParameters.require = this.requirer.forDomain(domain);
+  callerParameters.require = params.browser ? this.requirer.forDomain(domain, true) :this.requirer.forDomain(domain);
 
   //trigger the execution 
   try {

@@ -31,8 +31,9 @@ Requirer.prototype.configure = function(config) {
   this.urlBase = config.urlBase;
 };
 
-Requirer.prototype.forDomain = function(domain) {
+Requirer.prototype.forDomain = function(domain, functionMode) {
   var module = this;
+  this.functionMode = functionMode;
 
   return function(libName) {
     if (!libName || typeof(libName) !== 'string') {
@@ -47,11 +48,19 @@ Requirer.prototype.forDomain = function(domain) {
       var returnedResult = null;
       //Execute the exports function
       if (snippet) {
-        snippet.code.script.runInNewContext({
-          exports: function(res) {
+
+        if (module.functionMode) {
+          snippet.fn(function(res) {
             returnedResult = res;
-          }
-        });
+          });
+        } else {
+          snippet.code.script.runInNewContext({
+            exports: function(res) {
+              returnedResult = res;
+            }
+          });
+        }
+
       }
 
       return returnedResult;

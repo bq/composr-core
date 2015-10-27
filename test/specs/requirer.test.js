@@ -128,6 +128,22 @@ describe('Requirer', function() {
     expect(TheSnippet6).to.be.a('number');
   });
 
+  it('Can require its own snippets with function mode', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain', true);
+    var requirerMethodOtherDomain = composr.requirer.forDomain('otherDomain');
+
+    var TheSnippet1 = requirerMethod('snippet-TheSnippet1');
+
+    expect(TheSnippet1).to.exist;
+    expect(TheSnippet1).to.be.a('function');
+
+
+    var TheSnippet6 = requirerMethodOtherDomain('snippet-TheSnippet6');
+
+    expect(TheSnippet6).to.exist;
+    expect(TheSnippet6).to.be.a('number');
+  });
+
   it('Returns the expected value', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
 

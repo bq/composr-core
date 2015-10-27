@@ -575,6 +575,7 @@ describe('Phrases runner', function() {
         .then(function(response) {
           expect(spyBrowser.callCount).to.equals(1);
           expect(spyScript.callCount).to.equals(0);
+          expect(response.status).to.equals(401);
         })
         .should.notify(done);
     });
@@ -587,6 +588,7 @@ describe('Phrases runner', function() {
         .then(function(response) {
           expect(spyBrowser.callCount).to.equals(0);
           expect(spyScript.callCount).to.equals(1);
+          expect(response.status).to.equals(401);
         })
         .should.notify(done);
     });
