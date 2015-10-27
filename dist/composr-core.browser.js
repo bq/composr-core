@@ -107092,6 +107092,7 @@ var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
 var mockedExpress = require('./mock');
+var vm = require('vm');
 var utils = require('./utils');
 
 var q = require('q');
@@ -107252,7 +107253,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
     return this._run(phrase, verb, params, domain);
   } else {
-    return q.reject('phrase:cant:be:runned');
+    return Promise.reject('phrase:cant:be:runned');
   }
 
 };
@@ -107376,7 +107377,8 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
     options.filename = file;
   }
 
-  script.runInNewContext(parameters, options);
+  var context = new vm.createContext(parameters);
+  script.runInContext(context, options);
 };
 
 //Runs VM function mode (DEPRECATED)
@@ -107505,7 +107507,7 @@ PhraseManager.prototype._generateId = function(url, domain) {
 
 
 module.exports = PhraseManager;
-},{"./ComposrError":448,"./compilers/code.compiler":457,"./mock":468,"./paramsExtractor":472,"./regexpGenerator":473,"./utils":478,"./validators/phrase.validator":479,"lodash":253,"q":254,"query-string":255,"xregexp":435}],450:[function(require,module,exports){
+},{"./ComposrError":448,"./compilers/code.compiler":457,"./mock":468,"./paramsExtractor":472,"./regexpGenerator":473,"./utils":478,"./validators/phrase.validator":479,"lodash":253,"q":254,"query-string":255,"vm":250,"xregexp":435}],450:[function(require,module,exports){
 'use strict';
 
 var Publisher = {
