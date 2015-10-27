@@ -107188,7 +107188,9 @@ PhraseManager.prototype._compile = function(phrase) {
           code = phrase[method].code;
         }
 
-        compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS);
+        var debugInfo = phrase.debug ? phrase.debug[method] : null;
+        
+        compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
       }
     });
 
@@ -107346,12 +107348,12 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
       this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
     } else {
       var phraseScript = phrase.codes[verb].script;
-      this.__executeScriptMode(phraseScript, callerParameters, params.timeout);
+      this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
     }
 
   } catch (e) {
     //vm throws an error when timedout
-    this.events.emit('warn', 'phrase:timedout', phrase.url, e);
+    this.events.emit('warn', 'phrase:timedout', e, phrase.url);
     resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
   }
 
@@ -107361,11 +107363,17 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 };
 
 //Runs VM script mode
-PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout) {
-  script.runInNewContext(parameters, {
+PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout, file) {
+  var options = {
     timeout: timeout || 10000,
     displayErrors: true
-  });
+  };
+
+  if(file){
+    options.filename = file;
+  }
+
+  script.runInNewContext(parameters, options);
 };
 
 //Runs VM function mode (DEPRECATED)
@@ -107664,7 +107672,7 @@ function clientLogin() {
     })
     .catch(function(err) {
       //Invalid credentials, 401, 404
-      var error = err && err.data && err.data.body ? err.data.body : err;
+      var error = err && err.data && err.data ? err.data : err;
       module.events.emit('error', 'login:invalid:credentials', err.status, error);
       dfd.reject(error);
     });
@@ -107829,7 +107837,7 @@ CodeCompiler.prototype.compile = function(itemOrItems) {
 
 
 //Creates a function based on a function body and some params.
-CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
+CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFilePath) {
   var functionParams = params ? params : [];
 
   var result = {
@@ -107841,9 +107849,15 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
   try {
     /* jshint evil:true */
     result.fn = Function.apply(null, functionParams.concat(functionBody));
-    result.script = new vm.Script(functionBody, {
+    var options = {
       displayErrors: true
-    });
+    };
+
+    if(debugFilePath){
+      options.filename = debugFilePath;
+    }
+    
+    result.script = new vm.Script(functionBody, options);
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
     this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);
@@ -108208,7 +108222,7 @@ function init(options, fetch) {
         dfd.resolve();
       })
       .catch(function(err) {
-        console.log(err);
+        err = err && err.data ? err.data : err;
         //something failed, then reset the module to it's original state
         //TODO: emit('error') causes an unhandled execption in node.
         module.events.emit('errore', 'error:initializing', err);
