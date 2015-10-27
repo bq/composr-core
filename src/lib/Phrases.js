@@ -105,7 +105,9 @@ PhraseManager.prototype._compile = function(phrase) {
           code = phrase[method].code;
         }
 
-        compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS);
+        var debugInfo = phrase.debug ? phrase.debug[method] : null;
+        
+        compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
       }
     });
 
@@ -263,7 +265,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
       this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
     } else {
       var phraseScript = phrase.codes[verb].script;
-      this.__executeScriptMode(phraseScript, callerParameters, params.timeout);
+      this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
     }
 
   } catch (e) {
@@ -278,11 +280,17 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 };
 
 //Runs VM script mode
-PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout) {
-  script.runInNewContext(parameters, {
+PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout, file) {
+  var options = {
     timeout: timeout || 10000,
     displayErrors: true
-  });
+  };
+
+  if(file){
+    options.filename = file;
+  }
+
+  script.runInNewContext(parameters, options);
 };
 
 //Runs VM function mode (DEPRECATED)

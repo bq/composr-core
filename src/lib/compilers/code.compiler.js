@@ -153,7 +153,7 @@ CodeCompiler.prototype.compile = function(itemOrItems) {
 
 
 //Creates a function based on a function body and some params.
-CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
+CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFilePath) {
   var functionParams = params ? params : [];
 
   var result = {
@@ -165,9 +165,15 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params) {
   try {
     /* jshint evil:true */
     result.fn = Function.apply(null, functionParams.concat(functionBody));
-    result.script = new vm.Script(functionBody, {
+    var options = {
       displayErrors: true
-    });
+    };
+
+    if(debugFilePath){
+      options.filename = debugFilePath;
+    }
+    
+    result.script = new vm.Script(functionBody, options);
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
     this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);
