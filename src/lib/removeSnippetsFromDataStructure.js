@@ -11,14 +11,14 @@ var prepareItems = function prepareItems(items) {
   return  _.cloneDeep(items);
 };
 
-var removeSnippetsFromDataStructure = function removeSnippetsFromDataStructure(snippetsInput) {
+var removeSnippetsFromDataStructure = function removeSnippetsFromDataStructure(snippetsIdsInput) {
   var module = this;
-  var snippets = prepareItems(snippetsInput);
+  var snippetsIds = prepareItems(snippetsIdsInput);
   var index;
   var indexes = [];
-  snippets.forEach(function(newSnippet) {
+  snippetsIds.forEach(function(newSnippetId) {
     index = _.findIndex(module.data.snippets, function(oldSnippet) {
-      return oldSnippet.id === newSnippet.id;
+      return oldSnippet.id === newSnippetId;
     });
     if (index !== -1){
       indexes.push(index);

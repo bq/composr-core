@@ -24,14 +24,14 @@ describe('removeSnippetsFromDataStructure method', function() {
   });
 
   it('Resolves removeSnippetsFromDataStructure correctly with an array', function() {
-    var newSnippets = [snippet1,snippet2];
+    var newSnippets = [snippet1.id,snippet2.id];
     composr.removeSnippetsFromDataStructure(newSnippets);
     expect(composr.data.snippets[0].id).to.equals(0);
     expect(composr.data.snippets.length).to.equals(1);
   });
 
   it('Resolves removeSnippetsFromDataStructure correctly with a string', function() {
-    var newSnippets = snippet1;
+    var newSnippets = snippet1.id;
     composr.removeSnippetsFromDataStructure(newSnippets);
     expect(composr.data.snippets[0].id).to.equals(0);
     expect(composr.data.snippets[1].id).to.equals(2);
@@ -44,7 +44,7 @@ describe('removeSnippetsFromDataStructure method', function() {
   });
 
   it('Resolves removeSnippetsFromDataStructure correctly with an array with two snippets with same id', function() {
-    var newSnippets = [snippet1,snippet1];
+    var newSnippets = [snippet1.id,snippet1.id];
     composr.removeSnippetsFromDataStructure(newSnippets);
     expect(composr.data.snippets[0].id).to.equals(0);
     expect(composr.data.snippets[1].id).to.equals(2);
