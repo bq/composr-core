@@ -170,4 +170,14 @@ describe('Requirer', function() {
     expect(snippet).to.be.a('null');
   });
 
+  it('Event is called when snippet is not found', function() {
+    var requirerMethod = composr.requirer.forDomain('testDomain');
+    var spyEvents = sinon.spy(composr.requirer.events, 'emit');
+    var TheSnippet6 = requirerMethod('snippet-TheSnippet6');
+    expect(spyEvents.calledWith
+      ('warn', 'The snippet with domain (testDomain) and name (TheSnippet6) is not found')).to.equals(true);
+    expect(spyEvents.callCount).to.equals(1);
+    expect(TheSnippet6).to.be.a('null');
+  });
+
 });
