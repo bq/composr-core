@@ -62,7 +62,9 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
             }
           });
         }
-
+      }
+      else {
+        console.warn('The snippet with domain (' + domain + ') and name (' + libName + ') is not found');
       }
 
       return returnedResult;
