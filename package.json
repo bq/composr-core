@@ -1,6 +1,6 @@
 {
   "name": "composr-core",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "CompoSR core functions",
   "main": "src/composr-core.js",
   "directories": {
@@ -39,7 +39,7 @@
     "uuid": "~2.0.1",
     "xregexp": "^2.0.0",
     "yamljs": "^0.2.3",
-    "uglify-js" : "2.5.0"
+    "uglify-js": "2.5.0"
   },
   "devDependencies": {
     "chai": "^2.1.1",
