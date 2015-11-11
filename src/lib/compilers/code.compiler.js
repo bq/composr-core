@@ -3,6 +3,7 @@
 var q = require('q');
 var _ = require('lodash');
 var vm = require('vm');
+var uglifyJs = require('uglify-js');
 
 function CodeCompiler(options) {
   this.itemName = options.itemName;
@@ -154,6 +155,7 @@ CodeCompiler.prototype.compile = function(itemOrItems) {
 
 //Creates a function based on a function body and some params.
 CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFilePath) {
+
   var functionParams = params ? params : [];
 
   var result = {
@@ -163,9 +165,16 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
     code : functionBody
   };
 
+  /**
+   * Optimization code to run in VM
+   */
+
   try {
     /* jshint evil:true */
-    result.fn = Function.apply(null, functionParams.concat(functionBody));
+
+    var optimized = this.__codeOptimization(functionBody);
+
+    result.fn = Function.apply(null, functionParams.concat(optimized));
     var options = {
       displayErrors: true
     };
@@ -173,8 +182,8 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
     if(debugFilePath){
       options.filename = debugFilePath;
     }
-    
-    result.script = new vm.Script(functionBody, options);
+
+    result.script = new vm.Script(optimized, options);
 
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
   } catch (e) {
@@ -183,6 +192,7 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
   }
 
   return result;
+
 };
 
 //Iterates over the items to unregister
@@ -214,7 +224,7 @@ CodeCompiler.prototype._extractDomainFromId = function(id) {
 };
 
 /********************************
-  Mandatory implementations 
+  Mandatory implementations
 ********************************/
 
 CodeCompiler.prototype._compile = function(item) {
@@ -236,10 +246,10 @@ CodeCompiler.prototype._unregister = function() {
 };
 
 /********************************
-  Optional methods 
+  Optional methods
 ********************************/
 
-//Pre compile call 
+//Pre compile call
 CodeCompiler.prototype.__preCompile = function() {
   this.events.emit('warn', '__preCompile not implemented');
 };
@@ -247,6 +257,35 @@ CodeCompiler.prototype.__preCompile = function() {
 //Pre add call
 CodeCompiler.prototype.__preAdd = function() {
   this.events.emit('warn', '__preAdd not implemented');
+};
+
+
+// Code optimization
+CodeCompiler.prototype.__codeOptimization = function(code){
+  var optimized = uglifyJs.minify(code, {
+    fromString : true,
+    mangle : {
+      sort : true
+    },
+    compress : {
+      sequences : true,
+      properties : true,
+      dead_code : true,
+      drop_debugger : true,
+      conditionals : true,
+      evaluate : true,
+      booleans : true,
+      loops : true,
+      unused : true,
+      if_return : true,
+      join_vars : true,
+      cascade : true,
+      drop_console : true
+    }
+  });
+
+
+  return optimized.code;
 };
 
 module.exports = CodeCompiler;

@@ -30,10 +30,11 @@ describe('Code Compiler', function() {
     expect(CodeCompiler.prototype).to.respondTo('resetItems');
     expect(CodeCompiler.prototype).to.respondTo('_evaluateCode');
     expect(CodeCompiler.prototype).to.respondTo('_extractDomainFromId');
+    expect(CodeCompiler.prototype).to.respondTo('__codeOptimization');
   });
 
   describe('Code evaluation', function() {
-    var compiler, stubEvents;
+    var compiler, stubEvents, spyCodeOptimization;
 
     beforeEach(function() {
       compiler = new CodeCompiler({
@@ -42,6 +43,9 @@ describe('Code Compiler', function() {
       });
 
       stubEvents = sinon.stub();
+
+      spyCodeOptimization = sinon.spy(compiler, '__codeOptimization');
+
       //Mock the composr external methods
       compiler.events = {
         emit: stubEvents
@@ -53,6 +57,7 @@ describe('Code Compiler', function() {
       expect(result.fn).to.be.a('function');
       expect(result.script).to.be.a('object');
       expect(result.error).to.equals(false);
+      expect(spyCodeOptimization.callCount).to.equals(1);
     });
 
     it('launches an event with the evaluation', function() {
