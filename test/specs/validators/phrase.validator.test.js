@@ -43,7 +43,6 @@ describe('Phrase validator', function() {
 
         return dfd.promise;
       });
-
       q.all(promises)
         .then(function(){
           done();
@@ -52,7 +51,24 @@ describe('Phrase validator', function() {
           done('Error');
         });
     });
+  });
 
+  describe('Malicious phrases', function() {
+
+    it.skip('should not validate any malicious phrase', function(done) {
+      expect(fixturesPhrases.malicious.length).to.be.above(0);
+
+      var promises = fixturesPhrases.malicious.map(function(phrase) {
+        return validator(phrase);
+      });
+      q.all(promises)
+        .then(function(){
+          done('Error');
+        })
+        .catch(function(){
+          done();
+        });
+    });
   });
 
 });
