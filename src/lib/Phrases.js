@@ -254,7 +254,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   callerParameters.domain = domain;
 
-  callerParameters.require = params.browser ? this.requirer.forDomain(domain, true) :this.requirer.forDomain(domain);
+  callerParameters.require = params.browser ? this.requirer.forDomain(domain, true) : this.requirer.forDomain(domain);
 
   //trigger the execution 
   try {
@@ -262,7 +262,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     if (params.browser) {
 
       var phraseCode = phrase.codes[verb].fn;
-      this.__executeFunctionMode(phraseCode, callerParameters, params.timeout);
+      this.__executeFunctionMode(phraseCode, callerParameters, params.timeout, params.file);
     } else {
       var phraseScript = phrase.codes[verb].script;
       this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
@@ -294,15 +294,27 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
 };
 
 //Runs VM function mode (DEPRECATED)
-PhraseManager.prototype.__executeFunctionMode = function(code, parameters) {
-
-  code.apply(null, [parameters.req,
-    parameters.res,
-    parameters.next,
-    parameters.corbelDriver,
-    parameters.domain,
-    parameters.require
-  ]);
+PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeout, file) {
+  //@TODO: configure timeout
+  if (file) {
+    var fn = require(file);
+    fn(
+      parameters.req,
+      parameters.res,
+      parameters.next,
+      parameters.corbelDriver,
+      parameters.domain,
+      parameters.require
+    );
+  } else {
+    code.apply(null, [parameters.req,
+      parameters.res,
+      parameters.next,
+      parameters.corbelDriver,
+      parameters.domain,
+      parameters.require
+    ]);
+  }
 };
 
 //Returns a list of elements matching the same regexp
