@@ -8,7 +8,8 @@ var utilsPromises = require('../utils/promises');
 
 describe('Config initialization', function() {
 
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubFetchData, spyRequirerConfigure;
+  var stubLogClient, stubRegisterData, stubInitCorbelDriver, 
+    stubFetchData, spyRequirerConfigure, spyPhrasesConfigure;
 
   describe('Correct initialization', function() {
     before(function() {
@@ -17,6 +18,7 @@ describe('Config initialization', function() {
       stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
       stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
       spyRequirerConfigure = sinon.spy(composr.requirer, 'configure');
+      spyPhrasesConfigure = sinon.spy(composr.Phrases, 'configure');
     });
 
     after(function() {
@@ -25,6 +27,7 @@ describe('Config initialization', function() {
       stubFetchData.restore();
       stubRegisterData.restore();
       spyRequirerConfigure.restore();
+      spyPhrasesConfigure.restore();
     });
 
     it('Creates the config object', function(done) {
@@ -37,6 +40,7 @@ describe('Config initialization', function() {
           expect(composr.config).to.have.property('timeout');
           expect(composr.config).to.have.property('urlBase');
           expect(spyRequirerConfigure.callCount).to.equals(1);
+          expect(spyPhrasesConfigure.callCount).to.equals(1);
           expect(stubInitCorbelDriver.callCount).to.equals(0);
           done();
         })
@@ -72,6 +76,8 @@ describe('Config initialization', function() {
           expect(composr.config.credentials.scopes).to.equals('demo');
           expect(composr.config.urlBase).to.equals('demo');
           expect(composr.config.timeout).to.equals(3000);
+          
+          expect(composr.Phrases.config.urlBase).to.equals('demo');
           done();
         })
         .catch(function(err) {

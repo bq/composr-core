@@ -1,0 +1,10 @@
+{
+  "id": "client:demo!config",
+  "url": "config",
+  "post": {
+    "code": "res.send(config);",
+    "doc": {
+      "description": "Phrase for testing purposes"
+    }
+  }
+}

@@ -54,7 +54,7 @@ describe('Phrase validator', function() {
   });
 
   describe('Malicious phrases', function() {
-
+    //@TODO: make core intelligent enough to deal with malicious phrases
     it.skip('should not validate any malicious phrase', function(done) {
       expect(fixturesPhrases.malicious.length).to.be.above(0);
 

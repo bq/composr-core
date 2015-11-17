@@ -17,6 +17,7 @@ var LOCAL_LIBRARIES = {
 
 var driverObtainFunction = function(defaults) {
   return function(options) {
+    console.log('WARNING: corbel.generateDriver is deprecated, use corbel.getDriver with config.urlBase');
     var generatedOptions = _.defaults(_.cloneDeep(options), defaults);
     return ALLOWED_LIBRARIES['corbel-js'].getDriver(generatedOptions);
   };
@@ -33,7 +34,6 @@ Requirer.prototype.configure = function(config) {
 
 Requirer.prototype.forDomain = function(domain, functionMode) {
   var module = this;
-  this.functionMode = functionMode;
 
   return function(libName) {
     if (!libName || typeof(libName) !== 'string') {
@@ -49,7 +49,7 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
       //Execute the exports function
       if (snippet) {
 
-        if (module.functionMode) {
+        if (functionMode) {
           module.events.emit('debug', 'executing:' + libName + ':functionmode');
           snippet.code.fn(function(res) {
             returnedResult = res;
@@ -72,15 +72,16 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
     } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
       var lib = require(libName);
       if (libName === 'corbel-js') {
+        //@TODO: deprecate
         lib.generateDriver = driverObtainFunction({
           urlBase: module.urlBase
         });
       }
+
       return lib;
     } else if (libName && Object.keys(LOCAL_LIBRARIES).indexOf(libName) !== -1) {
       var locallib = require(LOCAL_LIBRARIES[libName]);
       return locallib;
-
     }
     return null;
   };

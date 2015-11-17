@@ -4,6 +4,7 @@ var composr = require('../../src/composr-core'),
   sinon = require('sinon'),
   utils = require('../../src/lib/utils'),
   chaiAsPromised = require('chai-as-promised'),
+  Requirer = require('../../src/lib/requirer'),
   expect = chai.expect,
   should = chai.should();
 
@@ -137,7 +138,6 @@ describe('Requirer', function() {
     expect(TheSnippet1).to.exist;
     expect(TheSnippet1).to.be.a('function');
 
-
     var TheSnippet6 = requirerMethodOtherDomain('snippet-TheSnippet6');
 
     expect(TheSnippet6).to.exist;
@@ -174,10 +174,47 @@ describe('Requirer', function() {
     var requirerMethod = composr.requirer.forDomain('testDomain');
     var spyEvents = sinon.spy(composr.requirer.events, 'emit');
     var TheSnippet6 = requirerMethod('snippet-TheSnippet6');
-    expect(spyEvents.calledWith
-      ('warn', 'The snippet with domain (testDomain) and name (TheSnippet6) is not found')).to.equals(true);
+    expect(spyEvents.calledWith('warn', 'The snippet with domain (testDomain) and name (TheSnippet6) is not found')).to.equals(true);
     expect(spyEvents.callCount).to.equals(1);
     expect(TheSnippet6).to.be.a('null');
+  });
+
+  describe('Function or VM mode require', function() {
+    var requirer, stubEvents;
+
+    beforeEach(function() {
+      stubEvents = sinon.stub();
+
+      requirer = new Requirer({
+        events: {
+          emit: stubEvents
+        },
+        Snippets: composr.Snippets
+      });
+    });
+
+    it('Requires snippets in function mode', function() {
+      var requirerMethod = requirer.forDomain('testDomain', true);
+
+      var TheSnippet1 = requirerMethod('snippet-TheSnippet1');
+
+      expect(TheSnippet1).to.exist;
+      expect(TheSnippet1).to.be.a('function');
+      expect(stubEvents.callCount).to.equals(1);
+      expect(stubEvents.calledWith('debug', 'executing:TheSnippet1:functionmode')).to.equals(true);
+    });
+
+    it('Requires snippets in script mode', function() {
+      var requirerMethod = requirer.forDomain('testDomain');
+
+      var TheSnippet1 = requirerMethod('snippet-TheSnippet1');
+
+      expect(TheSnippet1).to.exist;
+      expect(TheSnippet1).to.be.a('function');
+      expect(stubEvents.callCount).to.equals(1);
+      expect(stubEvents.calledWith('debug', 'executing:TheSnippet1:scriptmode')).to.equals(true);
+    });
+
   });
 
 });

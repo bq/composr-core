@@ -11,6 +11,8 @@ function init(options, fetch) {
 
   this.config = this.bindConfiguration(options);
 
+  this.Phrases.configure(this.config);
+
   this.requirer.configure(this.config);
 
   if (fetch) {

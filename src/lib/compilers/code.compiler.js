@@ -20,7 +20,7 @@ CodeCompiler.prototype.resetItems = function() {
 //Entry point for registering or unregistering items
 CodeCompiler.prototype.register = function(domain, itemOrItems) {
   if (!itemOrItems || !domain) {
-    return q.reject();
+    return Promise.reject();
   }
 
   var dfd = q.defer();
@@ -182,7 +182,7 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
     if(debugFilePath){
       options.filename = debugFilePath;
     }
-
+    
     result.script = new vm.Script(optimized, options);
 
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
@@ -280,7 +280,7 @@ CodeCompiler.prototype.__codeOptimization = function(code){
       if_return : true,
       join_vars : true,
       cascade : true,
-      drop_console : true
+      drop_console : false
     }
   });
 

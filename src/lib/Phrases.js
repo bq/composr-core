@@ -12,12 +12,13 @@ var q = require('q');
 var _ = require('lodash');
 var XRegExp = require('xregexp').XRegExp;
 
-var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require'];
+var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require', 'config'];
 
 
 var PhraseManager = function(options) {
   this.events = options.events;
   this.requirer = options.requirer;
+  this.config = options.config || {};
 };
 
 PhraseManager.prototype = new CodeCompiler({
@@ -25,6 +26,12 @@ PhraseManager.prototype = new CodeCompiler({
   item: '__phrases',
   validator: phraseValidator
 });
+
+PhraseManager.prototype.configure = function(config){
+  this.config = {
+    urlBase : config.urlBase
+  };
+};
 
 PhraseManager.prototype.__preCompile = function(domain, phrase) {
   var phraseId = this._generateId(phrase.url, domain);
@@ -186,7 +193,8 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   var callerParameters = {
     console: console,
-    Promise: Promise
+    Promise: Promise,
+    config : {}
   };
 
   var resWrapper = mockedExpress.res(params ? params.res : null);
@@ -195,6 +203,10 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   if (!params) {
     params = {};
   }
+
+  var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase;
+
+  callerParameters.config.urlBase = urlBase;
 
   if (!params.req) {
     var reqParams = {};
@@ -270,6 +282,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   } catch (e) {
     //vm throws an error when timedout
+    console.log(e);
     this.events.emit('warn', 'phrase:timedout', e, phrase.url);
     resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
   }
@@ -296,6 +309,7 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
 //Runs VM function mode (DEPRECATED)
 PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeout, file) {
   //@TODO: configure timeout
+  //@TODO: enable VM if memory bug gets solved
   if (file) {
     var fn = require(file);
     fn(
@@ -304,7 +318,8 @@ PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeo
       parameters.next,
       parameters.corbelDriver,
       parameters.domain,
-      parameters.require
+      parameters.require,
+      parameters.config
     );
   } else {
     code.apply(null, [parameters.req,
@@ -312,7 +327,8 @@ PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeo
       parameters.next,
       parameters.corbelDriver,
       parameters.domain,
-      parameters.require
+      parameters.require,
+      parameters.config
     ]);
   }
 };

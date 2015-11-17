@@ -101,6 +101,14 @@ describe('Phrases runner', function() {
 
       }
     }
+  }, {
+    'url': 'config',
+    'get': {
+      'code': 'res.send(config)',
+      'doc': {
+
+      }
+    }
   }];
 
   beforeEach(function(done) {
@@ -109,6 +117,9 @@ describe('Phrases runner', function() {
     Phrases = new PhraseManager({
       events: {
         emit: stubEvents
+      },
+      config: {
+        urlBase: 'demo'
       }
     });
 
@@ -210,6 +221,22 @@ describe('Phrases runner', function() {
           'body'
         );
         expect(response.status).to.equals(401);
+      })
+      .should.notify(done);
+  });
+
+  it('receives a config object', function(done) {
+    var result = Phrases.runById(domain, domain + '!config');
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response.body).to.include.keys(
+          'urlBase'
+        );
+        expect(response.status).to.equals(200);
+        expect(response.body.urlBase).to.equals('demo');
       })
       .should.notify(done);
   });
@@ -533,7 +560,8 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  describe.skip('timeout phrases', function() {
+  describe('timeout phrases', function() {
+    //@TODO: add the timeout handler for function mode
     this.timeout(3000);
 
     it('cuts the phrase execution at 500 ms', function(done) {
@@ -548,7 +576,6 @@ describe('Phrases runner', function() {
           expect(stubEvents.calledWith('warn', 'phrase:timedout')).to.equals(true);
         })
         .should.notify(done);
-
     });
   });
 

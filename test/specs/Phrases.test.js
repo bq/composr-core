@@ -27,6 +27,7 @@ describe('== Phrases ==', function() {
 
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
+      expect(Phrases).to.respondTo('configure');
       expect(Phrases).to.respondTo('validate');
       expect(Phrases).to.respondTo('_generateId');
       expect(Phrases).to.respondTo('runById');
@@ -579,10 +580,10 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('array');
-          expect(result.length).to.equals(1);
+          expect(result.length).to.equals(2);
           expect(spyGenerateId.callCount).to.be.above(0);
         })
-        .should.be.fulfilled.notify(done);
+        .should.notify(done);
     });
 
     it('Should reject if the domain is missing', function(done) {
