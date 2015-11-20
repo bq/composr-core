@@ -187,58 +187,47 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
   }
 };
 
-//Executes a phrase
-PhraseManager.prototype._run = function(phrase, verb, params, domain) {
-  this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
+/*
+  Fills the sandbox with parameters
+ */
+function buildSandbox(sb, options, urlBase, domain, requirer, resWrapper, nextWrapper){
+  sb.console = console;
+  sb.Promise = Promise;
+  sb.config = {};
 
-  var callerParameters = {
-    console: console,
-    Promise: Promise,
-    config : {}
-  };
+  sb.config.urlBase = urlBase;
 
-  var resWrapper = mockedExpress.res(params ? params.res : null);
-  var nextWrapper = mockedExpress.next();
-
-  if (!params) {
-    params = {};
-  }
-
-  var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase;
-
-  callerParameters.config.urlBase = urlBase;
-
-  if (!params.req) {
+  if (!options.req) {
     var reqParams = {};
 
-    if (params.reqHeaders) {
-      reqParams.headers = params.reqHeaders;
+    if (options.reqHeaders) {
+      reqParams.headers = options.reqHeaders;
     }
 
-    if (params.reqBody) {
-      reqParams.body = params.reqBody;
+    if (options.reqBody) {
+      reqParams.body = options.reqBody;
     }
 
-    if (params.reqParams) {
-      reqParams.params = params.reqParams;
+    if (options.reqParams) {
+      reqParams.params = options.reqParams;
     }
 
-    if (params.reqQuery) {
-      reqParams.query = params.reqQuery;
+    if (options.reqQuery) {
+      reqParams.query = options.reqQuery;
     }
 
-    callerParameters.req = mockedExpress.req(reqParams);
+    sb.req = mockedExpress.req(reqParams);
   } else {
     //Overwrite params extraction
-    if (params.reqParams) {
-      params.req.params = params.reqParams;
+    if (options.reqParams) {
+      options.req.params = options.reqParams;
     }
 
-    callerParameters.req = params.req;
+    sb.req = options.req;
   }
 
-  if (params.res) {
-    var previousRes = params.res;
+  if (options.res) {
+    var previousRes = options.res;
 
     resWrapper.promise.then(function(response) {
       return previousRes.status(response.status)[resWrapper._action](response.body);
@@ -247,37 +236,53 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     });
   }
 
-  callerParameters.res = resWrapper;
+  sb.res = resWrapper;
 
-  if (params.next) {
-    var previousNext = params.next;
+  if (options.next) {
+    var previousNext = options.next;
     nextWrapper.promise.then(function() {
       previousNext();
     });
   }
 
-  callerParameters.next = nextWrapper.resolve;
+  sb.next = nextWrapper.resolve;
 
-  if (!params.corbelDriver) {
-    callerParameters.corbelDriver = null;
+  if (!options.corbelDriver) {
+    sb.corbelDriver = null;
   } else {
-    callerParameters.corbelDriver = params.corbelDriver;
+    sb.corbelDriver = options.corbelDriver;
   }
 
-  callerParameters.domain = domain;
+  sb.domain = domain;
 
-  callerParameters.require = params.browser ? this.requirer.forDomain(domain, true) : this.requirer.forDomain(domain);
+  sb.require = options.browser ? requirer.forDomain(domain, true) : requirer.forDomain(domain);
+}
 
+//Executes a phrase
+PhraseManager.prototype._run = function(phrase, verb, params, domain) {
+  this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
+  
+  if (!params) {
+    params = {};
+  }
+
+  var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase;
+  var resWrapper = mockedExpress.res(params.res ? params.res : null);
+  var nextWrapper = mockedExpress.next();
+  var sandbox = {};
+
+  //Fill the sandbox params
+  buildSandbox(sandbox, params, urlBase, domain, this.requirer, resWrapper, nextWrapper);
+  
   //trigger the execution 
   try {
 
     if (params.browser) {
-
       var phraseCode = phrase.codes[verb].fn;
-      this.__executeFunctionMode(phraseCode, callerParameters, params.timeout, params.file);
+      this.__executeFunctionMode(phraseCode, sandbox, params.timeout, params.file);
     } else {
       var phraseScript = phrase.codes[verb].script;
-      this.__executeScriptMode(phraseScript, callerParameters, params.timeout, params.file);
+      this.__executeScriptMode(phraseScript, sandbox, params.timeout, params.file);
     }
 
   } catch (e) {
