@@ -5,7 +5,7 @@ var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
-var mockedExpress = require('./mock');
+var mockedServer = require('./mock');
 var utils = require('./utils');
 
 var q = require('q');
@@ -160,15 +160,15 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
       params = {};
     }
 
-    if (!params.reqParams) {
+    if (!params.params) {
       //extract params from path
-      params.reqParams = paramsExtractor.extract(path, phrase.regexpReference);
+      params.params = paramsExtractor.extract(path, phrase.regexpReference);
     }
 
-    if (!params.reqQuery && !(params.req && params.req.query && Object.keys(params.req.query).length > 0)) {
+    if (!params.query && !(params.req && params.req.query && Object.keys(params.req.query).length > 0)) {
       //If no reqQuery object or req.querty params are sent, extract them
       var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
-      params.reqQuery = queryString.parse(queryParamsString);
+      params.query = queryString.parse(queryParamsString);
     }
 
     return this._run(phrase, verb, params, domain);
@@ -190,60 +190,16 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox(sb, options, urlBase, domain, requirer, resWrapper, nextWrapper){
+function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper){
   sb.console = console;
   sb.Promise = Promise;
   sb.config = {};
 
   sb.config.urlBase = urlBase;
 
-  if (!options.req) {
-    var reqParams = {};
-
-    if (options.reqHeaders) {
-      reqParams.headers = options.reqHeaders;
-    }
-
-    if (options.reqBody) {
-      reqParams.body = options.reqBody;
-    }
-
-    if (options.reqParams) {
-      reqParams.params = options.reqParams;
-    }
-
-    if (options.reqQuery) {
-      reqParams.query = options.reqQuery;
-    }
-
-    sb.req = mockedExpress.req(reqParams);
-  } else {
-    //Overwrite params extraction
-    if (options.reqParams) {
-      options.req.params = options.reqParams;
-    }
-
-    sb.req = options.req;
-  }
-
-  if (options.res) {
-    var previousRes = options.res;
-
-    resWrapper.promise.then(function(response) {
-      return previousRes.status(response.status)[resWrapper._action](response.body);
-    }).catch(function(errResponse) {
-      return previousRes.status(errResponse.status)[resWrapper._action](errResponse.body);
-    });
-  }
+  sb.req = reqWrapper;
 
   sb.res = resWrapper;
-
-  if (options.next) {
-    var previousNext = options.next;
-    nextWrapper.promise.then(function() {
-      previousNext();
-    });
-  }
 
   sb.next = nextWrapper.resolve;
 
@@ -267,12 +223,14 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   }
 
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase;
-  var resWrapper = mockedExpress.res(params.res ? params.res : null);
-  var nextWrapper = mockedExpress.next();
+
+  var resWrapper = mockedServer.res(params.server, params.res);
+  var reqWrapper = mockedServer.req(params.server, params.req, params);
+  var nextWrapper = mockedServer.next(params.next);
   var sandbox = {};
 
   //Fill the sandbox params
-  buildSandbox(sandbox, params, urlBase, domain, this.requirer, resWrapper, nextWrapper);
+  buildSandbox(sandbox, params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper);
   
   //trigger the execution 
   try {

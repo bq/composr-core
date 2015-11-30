@@ -11,15 +11,16 @@ describe('Mocked Next', function() {
     var next = mockedNext();
 
     expect(next).to.have.ownProperty('promise');
-    expect(next).to.respondTo('execute');
   });
 
   it('should resolve', function(done) {
     var next = mockedNext();
 
-    next.execute({
+    next.resolve({
       myThing: 'test'
-    })
+    });
+
+    next.promise
       .should.be.fulfilled
       .then(function(data) {
         expect(data.myThing).to.equals('test');

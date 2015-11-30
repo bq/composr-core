@@ -23,7 +23,7 @@ describe('MockedRequest', function() {
   });
 
   it('should pass the params', function() {
-    var req = mockedRequest({
+    var req = mockedRequest(null, {
       params: {
         userId: 1,
         name: 'test'
@@ -40,7 +40,7 @@ describe('MockedRequest', function() {
   });
 
   it('should pass the query parameters', function() {
-    var req = mockedRequest({
+    var req = mockedRequest(null, {
       query: {
         userId: 1,
         name: 'test'
@@ -57,7 +57,7 @@ describe('MockedRequest', function() {
   });
 
   it('should receive the headers', function() {
-    var req = mockedRequest({
+    var req = mockedRequest(null, {
       headers: {
         userId: 1,
         name: 'test'
@@ -69,7 +69,7 @@ describe('MockedRequest', function() {
   });
 
   it('should receive the body', function() {
-    var req = mockedRequest({
+    var req = mockedRequest(null, {
       body: {
         userId: 1,
         name: 'test'

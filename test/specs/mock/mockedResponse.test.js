@@ -114,7 +114,7 @@ describe('Mocked Response', function() {
       cookie : sinon.stub()
     };
 
-    var res = mockedResponse(originalRes);
+    var res = mockedResponse(null, originalRes);
 
     res.cookie('yes', 'no', 'maybe');
 
@@ -125,7 +125,7 @@ describe('Mocked Response', function() {
   it('doesnt break if the original response object has no cookie function', function(){
     var originalRes = {};
 
-    var res = mockedResponse(originalRes);
+    var res = mockedResponse(null, originalRes);
 
     var fn = function(){
       res.cookie('yes', 'no', 'maybe');

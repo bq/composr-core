@@ -265,13 +265,13 @@ describe('Phrases runner', function() {
         .should.notify(done);
     });
 
-    it('Prefers to use reqParams if provided', function(done) {
+    it('Prefers to use params if provided', function(done) {
       var reqParams = {
         name: 'sanmigueldeaquinohay'
       };
 
       var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
-        reqParams: reqParams
+        params: reqParams
       });
 
       expect(result).to.exist;
@@ -327,7 +327,7 @@ describe('Phrases runner', function() {
         size: '1300'
       };
       var result = Phrases.runByPath(domain, 'queryparameters?name=Pepito manolo&age=15&size=1000', 'get', {
-        reqQuery: reqQuery
+        query: reqQuery
       });
 
       expect(result).to.exist;
@@ -411,7 +411,7 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
-  it('Should be able to receive a res object, and wrap it on a RESOLVED promise', function(done) {
+  it('Should be able to receive a ExpressJS res object, and wrap it on a RESOLVED promise', function(done) {
     var stubSend = sinon.stub();
     var res = {
       status: function() {
@@ -424,7 +424,8 @@ describe('Phrases runner', function() {
     var spyStatus = sinon.spy(res, 'status');
 
     var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
-      res: res
+      res: res,
+      server : 'express'
     });
 
     expect(result).to.exist;
@@ -445,7 +446,33 @@ describe('Phrases runner', function() {
 
   });
 
-  it('Should be able to receive a res object, and wrap it on a REJECTED promise', function(done) {
+  it('Should be able to receive a RESTIFY res object, wrap it on a RESOLVED promise', function(done) {
+    var stubSend = sinon.stub();
+    var res = {
+      send: stubSend
+    };
+
+    var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
+      res: res,
+      server : 'restify'
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(stubSend.callCount).to.equals(1);
+        expect(stubSend.calledWith(response.status, response.body)).to.equals(true);
+
+        expect(response.status).to.equals(200);
+        expect(response.body).to.exist;
+      })
+      .should.notify(done);
+
+  });
+
+  it('Should be able to receive a EXPRESSJS res object, and wrap it on a REJECTED promise', function(done) {
     var stubSend = sinon.stub();
     var res = {
       status: function() {
@@ -458,7 +485,8 @@ describe('Phrases runner', function() {
     var spyStatus = sinon.spy(res, 'status');
 
     var result = Phrases.runByPath(domain, 'changestatus', 'get', {
-      res: res
+      res: res,
+      server : 'express'
     });
 
     expect(result).to.exist;
@@ -471,6 +499,31 @@ describe('Phrases runner', function() {
 
         expect(stubSend.callCount).to.equals(1);
         expect(stubSend.calledWith(response.body)).to.equals(true);
+
+        expect(response.status).to.equals(401);
+        expect(response.body).to.exist;
+      })
+      .should.notify(done);
+
+  });
+
+  it('Should be able to receive a RESTIFY res object, and wrap it on a REJECTED promise', function(done) {
+    var stubSend = sinon.stub();
+    var res = {
+      send: stubSend
+    };
+
+    var result = Phrases.runByPath(domain, 'changestatus', 'get', {
+      res: res
+    });
+
+    expect(result).to.exist;
+
+    result
+      .should.be.rejected
+      .then(function(response) {
+        expect(stubSend.callCount).to.equals(1);
+        expect(stubSend.calledWith(response.status, response.body)).to.equals(true);
 
         expect(response.status).to.equals(401);
         expect(response.body).to.exist;

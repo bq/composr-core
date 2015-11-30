@@ -1,20 +1,21 @@
 'use strict';
 
-function MockedNext() {
+function MockedNext(next) {
   var module = this;
 
-  this.promise = new Promise(function(resolve, reject) {
-    module.resolve = resolve;
-    module.reject = reject;
+  this.next = next;
+
+  this.promise = new Promise(function(resolve) {
+    module.resolve = function(data){
+      if(module.next){
+        return resolve(next(data));
+      }
+
+      return resolve(data);
+    };
   });
-
-  this.execute = function(data) {
-    module.resolve(data);
-
-    return module.promise;
-  };
 }
 
-module.exports = function(options) {
-  return new MockedNext(options);
+module.exports = function(next) {
+  return new MockedNext(next);
 };

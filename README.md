@@ -115,25 +115,30 @@ var executionPromise = composr.Phrases.runByPath(domain, url, method, params);
 ## Using mocked handlers
 
 You can send an object containing the request headers and other for the body.
-Use reqParams if you don't want to extract the params from the url or if you are using `composr.Phrases.runByID`
+Use `params` if you don't want to extract the params from the url or if you are using `composr.Phrases.runByID`
 
 ```javascript
-var reqHeaders = {
+var headers = {
   'Authorization' : 'Token'
 };
 
-var reqBody = {
+var body = {
   'name' : 'test'
 };
 
-var reqParams = {
+var params = {
   'user' : '123'
 };
 
+var query = {
+  'foo' : 'bar'
+};
+
 var params = {
-  reqHeaders,
-  reqBody,
-  reqParams
+  headers,
+  body,
+  query,
+  params
 }
 ```
 
@@ -146,7 +151,21 @@ Whoa, just execute your dinamics endpoints.
 var params = {
   req,
   res,
-  next
+  next,
+  server : 'express'
+}
+```
+
+## Using restify handlers 
+
+**Use restify `queryParser` module** in order to have access to the query parameters.
+
+```javascript
+var params = {
+  req,
+  res,
+  next,
+  server : 'restify'
 }
 ```
 
@@ -200,6 +219,7 @@ function executePhrase(endpointPath, req, res, next) {
     req: req,
     res: res,
     next: next,
+    server : 'express',
     timeout: 10000 
   };
 

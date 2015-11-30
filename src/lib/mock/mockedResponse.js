@@ -1,17 +1,45 @@
 'use strict';
 
-function MockedResponse(originalRes) {
+function MockedResponse(serverType, res) {
   var module = this;
-  this.originalRes = originalRes;
+  this.res = res;
+  this.serverType = serverType === 'express' ? 'express' : 'restify';
+
   this.cookies = {};
   this.statusCode = 200;
   this.promise = new Promise(function(resolve, reject) {
-    module.resolve = resolve;
-    module.reject = reject;
+    module.resolve = function(response) {
+      if (module.res) {
+        module.respond(response);
+      }
+      resolve(response);
+    };
+    module.reject = function(response) {
+      if (module.res) {
+        module.respond(response);
+      }
+      reject(response);
+    };
   });
 
   this._action = null;
 }
+
+MockedResponse.prototype.respond = function(response) {
+  if (this.serverType === 'express') {
+    this.expressResponse(response);
+  } else {
+    this.restifyResponse(response);
+  }
+};
+
+MockedResponse.prototype.expressResponse = function(response) {
+  this.res.status(response.status)[this._action](response.body);
+};
+
+MockedResponse.prototype.restifyResponse = function(response) {
+  this.res.send(response.status, response.body);
+};
 
 MockedResponse.prototype.status = function(statusCode) {
   this.statusCode = statusCode;
@@ -20,10 +48,10 @@ MockedResponse.prototype.status = function(statusCode) {
 };
 
 MockedResponse.prototype.cookie = function(name, value, options) {
-  if (this.originalRes && typeof(this.originalRes.cookie) === 'function') {
-    this.originalRes.cookie(name, value, options);
+  if (this.res && typeof(this.res.cookie) === 'function') {
+    this.res.cookie(name, value, options);
   }
-  
+
   this.cookies[name] = value;
 
   return this;
@@ -41,7 +69,7 @@ MockedResponse.prototype.send = function(data) {
     this.resolve({
       status: this.statusCode,
       body: data,
-      cookies : this.cookies
+      cookies: this.cookies
     });
   }
 
@@ -53,11 +81,11 @@ MockedResponse.prototype.json = function(data) {
   this.resolve({
     status: this.statusCode,
     body: data,
-    cookies : this.cookies
+    cookies: this.cookies
   });
   return this.promise;
 };
 
-module.exports = function(originalRes) {
-  return new MockedResponse(originalRes);
+module.exports = function(serverType, res) {
+  return new MockedResponse(serverType, res);
 };
