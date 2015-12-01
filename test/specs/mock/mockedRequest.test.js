@@ -23,7 +23,7 @@ describe('MockedRequest', function() {
   });
 
   it('should pass the params', function() {
-    var req = mockedRequest(null, {
+    var req = mockedRequest(null, null, {
       params: {
         userId: 1,
         name: 'test'
@@ -40,7 +40,7 @@ describe('MockedRequest', function() {
   });
 
   it('should pass the query parameters', function() {
-    var req = mockedRequest(null, {
+    var req = mockedRequest(null, null, {
       query: {
         userId: 1,
         name: 'test'
@@ -57,19 +57,33 @@ describe('MockedRequest', function() {
   });
 
   it('should receive the headers', function() {
-    var req = mockedRequest(null, {
+    var req = mockedRequest(null, null, {
       headers: {
-        userId: 1,
-        name: 'test'
+        UserId: 1,
+        Name: 'test',
+        'Content-Type': 'fake'
       }
     });
 
-    expect(req.get('userId')).to.equals(1);
-    expect(req.get('name')).to.equals('test');
+    expect(req.get('UserId')).to.equals(1);
+    expect(req.get('Name')).to.equals('test');
+    expect(req.get('Content-Type')).to.equals('fake');
+  });
+
+  it('should capitalize the headers', function() {
+    var req = mockedRequest('restify', null, {
+      headers: {
+        userId: 1,
+        name: 'test',
+        'content-type': 'fake'
+      }
+    });
+
+    expect(req.headers).to.include.keys('UserId', 'Name', 'Content-Type');
   });
 
   it('should receive the body', function() {
-    var req = mockedRequest(null, {
+    var req = mockedRequest(null, null, {
       body: {
         userId: 1,
         name: 'test'
