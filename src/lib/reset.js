@@ -12,8 +12,8 @@ function reset() {
 
   //Loaded resources
   this.data = {
-    phrases: null,
-    snippets: null
+    phrases: [],
+    snippets: []
   };
 
   this.corbelDriver = null;
