@@ -9,8 +9,8 @@ function MockedRequest(serverType, req, options) {
     options = {};
   }
 
-  this.params = req ? req.params : options.params || {};
-  this.query = req ? req.query : options.query || {};
+  this.params = options.params ? options.params : (req && req.params ? req.params : {});
+  this.query = options.query ? options.query : (req && req.query ? req.query : {});
   this.headers = req ? req.headers : options.headers || {};
   this.body = req ? req.body : options.body || {};
 
