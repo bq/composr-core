@@ -14,7 +14,7 @@ function MockedRequest(serverType, req, options) {
   this.headers = req ? req.headers : options.headers || {};
   this.body = req ? req.body : options.body || {};
 
-  if (this.serverType === 'restify' && this.headers) {
+  if (this.headers && typeof(this.headers) === 'object') {
     this.capitalizeHeaders();
   }
 
