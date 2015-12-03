@@ -80,6 +80,11 @@ CodeCompiler.prototype._register = function(domain, item) {
 
         var added = module._addToList(domain, compiled);
         module.events.emit('debug', module.itemName + ':registered', added, item.id);
+
+        if (added) {
+          module.events.emit(module.itemName + ':registered', item);
+        }
+
         return compiled;
       } else {
         module.events.emit('warn', module.itemName + ':not:registered', item.id);
@@ -162,7 +167,7 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
     fn: null,
     script: null,
     error: false,
-    code : functionBody
+    code: functionBody
   };
 
   /**
@@ -179,10 +184,10 @@ CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFileP
       displayErrors: true
     };
 
-    if(debugFilePath){
+    if (debugFilePath) {
       options.filename = debugFilePath;
     }
-    
+
     result.script = new vm.Script(optimized, options);
 
     this.events.emit('debug', this.itemName + ':evaluatecode:good');
@@ -261,26 +266,26 @@ CodeCompiler.prototype.__preAdd = function() {
 
 
 // Code optimization
-CodeCompiler.prototype.__codeOptimization = function(code){
+CodeCompiler.prototype.__codeOptimization = function(code) {
   var optimized = uglifyJs.minify(code, {
-    fromString : true,
-    mangle : {
-      sort : true
+    fromString: true,
+    mangle: {
+      sort: true
     },
-    compress : {
-      sequences : true,
-      properties : true,
-      dead_code : true,
-      drop_debugger : true,
-      conditionals : true,
-      evaluate : true,
-      booleans : true,
-      loops : true,
-      unused : true,
-      if_return : true,
-      join_vars : true,
-      cascade : true,
-      drop_console : false
+    compress: {
+      sequences: true,
+      properties: true,
+      dead_code: true,
+      drop_debugger: true,
+      conditionals: true,
+      evaluate: true,
+      booleans: true,
+      loops: true,
+      unused: true,
+      if_return: true,
+      join_vars: true,
+      cascade: true,
+      drop_console: false
     }
   });
 
