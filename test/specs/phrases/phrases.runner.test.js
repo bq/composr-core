@@ -86,6 +86,14 @@ describe('Phrases runner', function() {
       }
     }
   }, {
+    'url': 'queryparameters/:optional',
+    'get': {
+      'code': 'res.send({ query : req.query, params : req.params })',
+      'doc': {
+
+      }
+    }
+  }, {
     'url': 'promise',
     'get': {
       'code': 'var a = Promise.resolve(); a.then(function(){ res.send({hello: "world"}) });',
@@ -346,6 +354,32 @@ describe('Phrases runner', function() {
           expect(response.body.name).to.equals('santiago hernandez');
           expect(response.body.age).to.equals('34');
           expect(response.body.size).to.equals('1300');
+        })
+        .should.notify(done);
+    });
+
+    it('Can parse params and query parameters', function(done) {
+      var result = Phrases.runByPath(domain, 'queryparameters/safe?name=Pepito manolo&age=15&size=1000', 'get');
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+
+          console.log(JSON.stringify(response.body), null, 2);
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.query.name).to.equals('Pepito manolo');
+          expect(response.body.query.age).to.equals('15');
+          expect(response.body.query.size).to.equals('1000');
+          expect(response.body.params.optional).to.equals('safe');
         })
         .should.notify(done);
     });

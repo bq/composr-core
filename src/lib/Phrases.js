@@ -160,15 +160,19 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
       params = {};
     }
 
-    if (!params.params) {
-      //extract params from path
-      params.params = paramsExtractor.extract(path, phrase.regexpReference);
-    }
+
+    var queryParamsString = '';
 
     if (!params.query && !(params.req && params.req.query && Object.keys(params.req.query).length > 0)) {
       //If no reqQuery object or req.querty params are sent, extract them
-      var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
+      queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : '';
       params.query = queryString.parse(queryParamsString);
+    }
+
+    if (!params.params) {
+      //extract params from path
+      var sanitizedPath = path.replace(queryParamsString, '');
+      params.params = paramsExtractor.extract(sanitizedPath, phrase.regexpReference);
     }
 
     return this._run(phrase, verb, params, domain);
