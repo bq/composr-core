@@ -1,6 +1,7 @@
 var PhraseManager = require('../../../src/lib/Phrases'),
   SnippetsManager = require('../../../src/lib/Snippets'),
   Requirer = require('../../../src/lib/requirer'),
+  events = require('../../../src/lib/events'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -113,6 +114,14 @@ describe('Phrases runner', function() {
     'url': 'config',
     'get': {
       'code': 'res.send(config)',
+      'doc': {
+
+      }
+    }
+  }, {
+    'url': 'metrics',
+    'get': {
+      'code': 'metrics.emit("Phrase executed"); res.send(200)',
       'doc': {
 
       }
@@ -245,6 +254,21 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
         expect(response.body.urlBase).to.equals('demo');
+      })
+      .should.notify(done);
+  });
+
+  it('Calls the metrics', function(done) {
+    var stub = sinon.stub();
+    events.on('metrics', 'TestsPhrasesRunner', stub);
+
+    var result = Phrases.runById(domain, domain + '!metrics');
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyRun.callCount).to.equals(1);
+        expect(stub.callCount).to.equals(1);
+        expect(stub.calledWith({ domain : domain, data : "Phrase executed" })).to.equals(true);
       })
       .should.notify(done);
   });

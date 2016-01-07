@@ -49,5 +49,6 @@ function emit() {
 module.exports = {
   on: on,
   emit: emit,
-  resetSuscriptions: resetSuscriptions
+  resetSuscriptions: resetSuscriptions,
+  emitter : eventEmitter
 };
