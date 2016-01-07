@@ -5,14 +5,14 @@ var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
+var MetricsFirer = require('./MetricsFirer');
 var mockedServer = require('./mock');
 var utils = require('./utils');
 
-var q = require('q');
 var _ = require('lodash');
 var XRegExp = require('xregexp').XRegExp;
 
-var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require', 'config'];
+var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require', 'config', 'metrics'];
 
 
 var PhraseManager = function(options) {
@@ -142,7 +142,7 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
   if (this.canBeRun(phrase, verb)) {
     return this._run(phrase, verb, params, domain);
   } else {
-    return q.reject('phrase:cant:be:runned');
+    return Promise.reject('phrase:cant:be:runned');
   }
 
 };
@@ -197,9 +197,6 @@ PhraseManager.prototype.canBeRun = function(phrase, verb) {
 function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper){
   sb.console = console;
   sb.Promise = Promise;
-  sb.config = {};
-
-  sb.config.urlBase = urlBase;
 
   sb.req = reqWrapper;
 
@@ -216,6 +213,12 @@ function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWra
   sb.domain = domain;
 
   sb.require = options.browser ? requirer.forDomain(domain, true) : requirer.forDomain(domain);
+  
+  sb.config = {};
+
+  sb.config.urlBase = urlBase;
+
+  sb.metrics = new MetricsFirer(domain);
 }
 
 //Executes a phrase
@@ -273,7 +276,7 @@ PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeo
   script.runInNewContext(parameters, options);
 };
 
-//Runs VM function mode (DEPRECATED)
+//Runs function mode (DEPRECATED)
 PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeout, file) {
   //@TODO: configure timeout
   //@TODO: enable VM if memory bug gets solved
@@ -286,7 +289,8 @@ PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeo
       parameters.corbelDriver,
       parameters.domain,
       parameters.require,
-      parameters.config
+      parameters.config,
+      parameters.metrics
     );
   } else {
     code.apply(null, [parameters.req,
@@ -295,7 +299,8 @@ PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeo
       parameters.corbelDriver,
       parameters.domain,
       parameters.require,
-      parameters.config
+      parameters.config,
+      parameters.metrics
     ]);
   }
 };
