@@ -114,12 +114,25 @@ describe('Mocked Response', function() {
       cookie : sinon.stub()
     };
 
-    var res = mockedResponse(null, originalRes);
+    var res = mockedResponse('express', originalRes);
 
     res.cookie('yes', 'no', 'maybe');
 
     expect(originalRes.cookie.calledOnce).to.equals(true);
     expect(originalRes.cookie.calledWith('yes', 'no', 'maybe')).to.equals(true);
+  });
+
+  it('should invoke the cookie method on the original response object, restify', function(){
+    var originalRes = {
+      setCookie : sinon.stub()
+    };
+
+    var res = mockedResponse(null, originalRes);
+
+    res.cookie('yes', 'no', 'maybe');
+
+    expect(originalRes.setCookie.calledOnce).to.equals(true);
+    expect(originalRes.setCookie.calledWith('yes', 'no', 'maybe')).to.equals(true);
   });
 
   it('doesnt break if the original response object has no cookie function', function(){

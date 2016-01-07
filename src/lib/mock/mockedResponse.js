@@ -48,8 +48,14 @@ MockedResponse.prototype.status = function(statusCode) {
 };
 
 MockedResponse.prototype.cookie = function(name, value, options) {
-  if (this.res && typeof(this.res.cookie) === 'function') {
-    this.res.cookie(name, value, options);
+  if (this.serverType === 'express'){
+    if (this.res && typeof(this.res.cookie) === 'function') {
+      this.res.cookie(name, value, options);
+    }
+  }else{
+    if (this.res && typeof(this.res.setCookie) === 'function') {
+      this.res.setCookie(name, value, options);
+    }
   }
 
   this.cookies[name] = value;
