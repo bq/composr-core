@@ -247,22 +247,37 @@ Later on, from your project, you can launch `node-inspector` debug and add breac
 # API
 
 **composr.Phrases.validate**
+
 **composr.Phrases.compile**
+
 **composr.Phrases.register**
+
 **composr.Phrases.unregister**
+
 **composr.Phrases.runById**
+
 **composr.Phrases.runByPath**
+
 **composr.Phrases.getPhrases**
+
 **composr.Phrases.getById**
+
 **composr.Phrases.getByMatchingPath**
 
 **composr.Snippets.validate**
+
 **composr.Snippets.compile**
+
 **composr.Snippets.register**
+
 **composr.Snippets.unregister**
+
 **composr.Snippets.runByName**
+
 **composr.Snippets.getByName**
+
 **composr.Snippets.getSnippets**
+
 
 
 [npm-badge]: https://badge.fury.io/js/composr-core.svg
