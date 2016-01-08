@@ -11,7 +11,7 @@ var raml2html = require('raml2html');
  * @param  {Object} phrases
  * @return {String}
  */
-function documentation(phrases, domain) {
+function documentation(phrases, domain, version) {
   /*jshint validthis:true */
   if (!phrases) {
     phrases = [];
@@ -40,7 +40,7 @@ function documentation(phrases, domain) {
           incorrectPhrases.push(result.reason);
         }
       });
-      var data = ramlCompiler.transform(correctPhrases, urlBase, domain);
+      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version);
       var config = raml2html.getDefaultConfig();
       return raml2html.render(data, config);
     })

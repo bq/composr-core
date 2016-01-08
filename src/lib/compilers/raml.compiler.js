@@ -22,6 +22,9 @@ var buildPhraseDefinition = function(phrase) {
   url = '/' + url;
   doc[url] = {};
 
+  // model version
+  doc[url].description = 'release ' + phrase.version;
+
   ['get', 'post', 'put', 'delete', 'options'].forEach(function(method) {
     if (phrase[method]) {
       doc[url][method] = phrase[method].doc;
@@ -36,7 +39,7 @@ var buildPhraseDefinition = function(phrase) {
   return doc;
 };
 
-function transform(phrases, urlBase, domain) {
+function transform(phrases, urlBase, domain, version) {
   var doc = {};
 
   phrases.forEach(function(phrase) {
@@ -48,6 +51,7 @@ function transform(phrases, urlBase, domain) {
     '---',
     'title: ' + domain,
     'baseUri: ' + urlBase + domain,
+    'version: ' + version,
     'securitySchemes:',
     '    - oauth_2_0:',
     '        description: Corbel supports OAuth 2.0 for authenticating all API requests.',
@@ -89,13 +93,14 @@ function transform(phrases, urlBase, domain) {
  * @param  {Object} phrase
  * @return {String}
  */
-var compile = function(phrases, urlBase, domain) {
+var compile = function(phrases, urlBase, domain, version) {
   var dfd = q.defer();
 
   urlBase = urlBase || 'http://test.com';
   domain = domain || 'test-domain';
+  version = version || '';
 
-  var definition = transform(phrases, urlBase, domain);
+  var definition = transform(phrases, urlBase, domain, version);
 
   //Use the raml.load to parse the formed raml
   raml.load(definition)
