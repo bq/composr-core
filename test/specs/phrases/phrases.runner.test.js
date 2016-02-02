@@ -258,6 +258,25 @@ describe('Phrases runner', function() {
       .should.notify(done);
   });
 
+  it('receives a config object, function mode', function(done) {
+    var result = Phrases.runById(domain, domain + '!config', null, {
+      browser: true
+    });
+    
+    result
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response.body).to.include.keys(
+          'urlBase'
+        );
+        expect(response.status).to.equals(200);
+        expect(response.body.urlBase).to.equals('demo');
+      })
+      .should.notify(done);
+  });
+
   it('Calls the metrics', function(done) {
     var stub = sinon.stub();
     events.on('metrics', 'TestsPhrasesRunner', stub);
