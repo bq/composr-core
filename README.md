@@ -8,13 +8,16 @@
 
 > The core package for Corbel's Composr. [NPM page][npm-url]
 
- 
+
 # Usage
 
 ```
 npm install --save composr-core
 ```
 
+## Read:
+
+[What are Phrases or Snippets?](https://github.com/corbel-platform/composr-core/wiki/Phrases)
 
 ## Setup for fetching remote data from Corbel
 
@@ -230,6 +233,8 @@ function executePhrase(endpointPath, req, res, next) {
 }
 ```
 
+
+
 ## Debugging phrases
 
 When registering some phrase models, pass the url to the "code" file in order to allow `vm.Script` to find the reference:
@@ -277,6 +282,7 @@ Later on, from your project, you can launch `node-inspector` debug and add breac
 **composr.Snippets.getByName**
 
 **composr.Snippets.getSnippets**
+
 
 
 
