@@ -258,7 +258,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     if (params.browser) {
       //Function mode only throws an error when errored
       this.events.emit('warn', 'phrase:internal:error', e, phrase.url);
-      resWrapper.status(500).send(new ComposrError('error:phrase:error:' + phrase.url, 'The phrase endpoint failing', 500));
+      resWrapper.status(500).send(new ComposrError('error:phrase:error:' + phrase.url, e, 500));
     } else {
       //vm throws an error when timedout
       this.events.emit('warn', 'phrase:timedout', e, phrase.url);
