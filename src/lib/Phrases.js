@@ -251,10 +251,19 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     }
 
   } catch (e) {
-    //vm throws an error when timedout
-    console.log(e);
-    this.events.emit('warn', 'phrase:timedout', e, phrase.url);
-    resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
+    //@TODO this errors can be: 
+    //- corbel errors
+    //- Any thrown error in phrase
+    // How do we handle it?
+    if (params.browser) {
+      //Function mode only throws an error when errored
+      this.events.emit('warn', 'phrase:internal:error', e, phrase.url);
+      resWrapper.status(500).send(new ComposrError('error:phrase:error:' + phrase.url, 'The phrase endpoint failing', 500));
+    } else {
+      //vm throws an error when timedout
+      this.events.emit('warn', 'phrase:timedout', e, phrase.url);
+      resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
+    }
   }
 
   //Resolve on any promise resolution or rejection, either res or next
