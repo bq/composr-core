@@ -2,7 +2,7 @@
 
 var ComposrError = require('./ComposrError');
 
-function getComposrError(e, defaultError) {
+function parseToComposrError(e, defaultError) {
 
   var status = 500;
   var error = defaultError;
@@ -26,4 +26,4 @@ function getComposrError(e, defaultError) {
   return new ComposrError(error, errorDescription, status);
 }
 
-module.exports = getComposrError;
+module.exports = parseToComposrError;

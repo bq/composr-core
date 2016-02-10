@@ -13,7 +13,7 @@ require('./specs/utils.test.js');
 require('./specs/events.test.js');
 require('./specs/requirer.test.js');
 require('./specs/ComposrError.test.js');
-require('./specs/getComposrError.test.js');
+require('./specs/parseToComposrError.test.js');
 
 require('./specs/loaders/loadPhrases.test.js');
 require('./specs/loaders/loadPhrase.test.js');
