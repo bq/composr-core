@@ -26,6 +26,7 @@ CompoSR.prototype.registerData = require('./lib/registerData');
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
 CompoSR.prototype.status = require('./lib/status');
+CompoSR.prototype.ComposrError = require('./lib/ComposrError');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
