@@ -42,7 +42,7 @@ MockedResponse.prototype.restifyResponse = function(response) {
 };
 
 MockedResponse.prototype.status = function(statusCode) {
-  this.statusCode = statusCode;
+  this.statusCode = parseInt(statusCode, 10);
 
   return this;
 };

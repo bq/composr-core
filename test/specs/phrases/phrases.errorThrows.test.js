@@ -24,6 +24,15 @@ describe('Phrases runner', function() {
 
       }
     }
+  },
+  {
+    'url': 'senderror/:code',
+    'get': {
+      'code': 'var ComposrError = require("ComposrError"); res.status(req.params.code).send(new ComposrError("error", "description", req.params.code));',
+      'doc': {
+
+      }
+    }
   }];
 
   beforeEach(function(done) {
@@ -88,6 +97,30 @@ describe('Phrases runner', function() {
         .should.notify(done);
     });
 
+    it('Handles an error sended correctly', function(done) {
+      var result = Phrases.runByPath(domain, 'senderror/507', 'get', {
+        browser : true
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(507);
+          expect(response.body).to.be.an('object');
+          expect(response.body.error).to.equals('error');
+          expect(response.body.errorDescription).to.equals('description');
+          
+        })
+        .should.notify(done);
+    });
     
   });
 
