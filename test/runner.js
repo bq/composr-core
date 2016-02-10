@@ -13,6 +13,7 @@ require('./specs/utils.test.js');
 require('./specs/events.test.js');
 require('./specs/requirer.test.js');
 require('./specs/ComposrError.test.js');
+require('./specs/getComposrError.test.js');
 
 require('./specs/loaders/loadPhrases.test.js');
 require('./specs/loaders/loadPhrase.test.js');
@@ -38,6 +39,7 @@ require('./specs/Publisher.test.js');
 require('./specs/Phrases.test.js');
 require('./specs/phrases/phrases.getbymatchingpath.test.js');
 require('./specs/phrases/phrases.runner.test.js');
+require('./specs/phrases/phrases.errorThrows.test.js');
 
 require('./specs/Snippets.test.js');
 

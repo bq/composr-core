@@ -6,6 +6,7 @@ var paramsExtractor = require('./paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('./ComposrError');
 var MetricsFirer = require('./MetricsFirer');
+var getComposrError = require('./getComposrError');
 var mockedServer = require('./mock');
 var utils = require('./utils');
 
@@ -258,7 +259,10 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     if (params.browser) {
       //Function mode only throws an error when errored
       this.events.emit('warn', 'phrase:internal:error', e, phrase.url);
-      resWrapper.status(500).send(new ComposrError('error:phrase:error:' + phrase.url, e, 500));
+
+      var error = getComposrError(e);
+
+      resWrapper.status(error.status).send(error);
     } else {
       //vm throws an error when timedout
       this.events.emit('warn', 'phrase:timedout', e, phrase.url);

@@ -14,7 +14,7 @@ var ComposrError = function(error, description, status) {
   Object.setPrototypeOf(err, ComposrError.prototype);
 
   //set properties specific to the custom error
-  err.status = status;
+  err.status = parseInt(status, 10);
   err.error = error;
   err.errorDescription = description;
 
