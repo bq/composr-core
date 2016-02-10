@@ -33,6 +33,15 @@ describe('Phrases runner', function() {
 
       }
     }
+  },
+  {
+    'url': 'texterror',
+    'get': {
+      'code': 'throw("hola");',
+      'doc': {
+
+      }
+    }
   }];
 
   beforeEach(function(done) {
@@ -118,6 +127,47 @@ describe('Phrases runner', function() {
           expect(response.body.error).to.equals('error');
           expect(response.body.errorDescription).to.equals('description');
           
+        })
+        .should.notify(done);
+    });
+
+    it('Handles a string error', function(done) {
+      var result = Phrases.runByPath(domain, 'texterror', 'get', {
+        browser : true
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(500);
+          expect(response.body).to.be.an('object');
+          expect(response.body.error).to.equals('error:phrase:exception:texterror');
+          expect(response.body.errorDescription).to.equals('hola');
+          
+        })
+        .should.notify(done);
+    });
+
+    it('Returns phrase cant be runned if missing', function(done) {
+      //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status
+      var result = Phrases.runByPath(domain, 'missingendpoint', 'get', {
+        browser : true
+      });
+
+      expect(result).to.exist;
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(response).to.equals('phrase:cant:be:runned');
         })
         .should.notify(done);
     });

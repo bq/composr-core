@@ -143,6 +143,7 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
   if (this.canBeRun(phrase, verb)) {
     return this._run(phrase, verb, params, domain);
   } else {
+    //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     return Promise.reject('phrase:cant:be:runned');
   }
 
@@ -178,6 +179,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
     return this._run(phrase, verb, params, domain);
   } else {
+    //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     return Promise.reject('phrase:cant:be:runned');
   }
 
