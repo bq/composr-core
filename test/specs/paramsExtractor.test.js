@@ -88,6 +88,12 @@ describe('in paramsExtractor module', function() {
       test: {
         name: 'onix-from-MySupplier-1437644873433-1437644873433'
       }
+    }, {
+      url: 'user/:name',
+      callee: 'user/Grupo Planeta - México',
+      test: {
+        name: 'Grupo Planeta - México'
+      }
     }];
 
     before(function() {
