@@ -39,7 +39,8 @@
     "uuid": "~2.0.1",
     "xregexp": "^2.0.0",
     "yamljs": "^0.2.3",
-    "uglify-js": "2.5.0"
+    "uglify-js": "2.5.0",
+    "jsonschema": "1.0.3"
   },
   "devDependencies": {
     "chai": "^2.1.1",

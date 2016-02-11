@@ -3,6 +3,7 @@
 var events = require('./lib/events');
 var PhraseManager = require('./lib/Phrases');
 var SnippetsManager = require('./lib/Snippets');
+var VirtualDomainManager = require('./lib/VirtualDomain');
 var Requirer = require('./lib/requirer');
 
 function CompoSR() {
@@ -31,10 +32,14 @@ CompoSR.prototype.parseToComposrError = require('./lib/parseToComposrError');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
+var VirtualDomain = new VirtualDomainManager({
+  events: events
+});
+CompoSR.prototype.VirtualDomain = VirtualDomain;
+
 var Snippets = new SnippetsManager({
   events: events
 });
-
 
 var requirer = new Requirer({
   events: events,

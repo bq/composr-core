@@ -26,6 +26,7 @@ require('./specs/full-system/phrases-project.test.js');
 require('./specs/validators/validate.utils.test.js');
 require('./specs/validators/phrase.validator.test.js');
 require('./specs/validators/snippet.validator.test.js');
+require('./specs/validators/virtualDomain.validator.test.js');
 
 require('./specs/compilers/raml.compiler.test.js');
 require('./specs/compilers/code.compiler.test.js');
