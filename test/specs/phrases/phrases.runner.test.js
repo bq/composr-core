@@ -262,7 +262,7 @@ describe('Phrases runner', function() {
     var result = Phrases.runById(domain, domain + '!config', null, {
       browser: true
     });
-    
+
     result
       .should.be.fulfilled
       .then(function(response) {
@@ -287,7 +287,10 @@ describe('Phrases runner', function() {
       .then(function(response) {
         expect(spyRun.callCount).to.equals(1);
         expect(stub.callCount).to.equals(1);
-        expect(stub.calledWith({ domain : domain, data : "Phrase executed" })).to.equals(true);
+        expect(stub.calledWith({
+          domain: domain,
+          data: "Phrase executed"
+        })).to.equals(true);
       })
       .should.notify(done);
   });
@@ -316,6 +319,28 @@ describe('Phrases runner', function() {
         .should.notify(done);
     });
 
+    it('Automatically extracts the path params with spaces and tilde', function(done) {
+      var result = Phrases.runByPath(domain, 'user/Grupo Planeta - México', 'get');
+
+      expect(result).to.exist;
+
+      result
+        .should.be.fulfilled
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response).to.be.an('object');
+          expect(response).to.include.keys(
+            'status',
+            'body'
+          );
+          expect(response.status).to.equals(200);
+          expect(response.body).to.be.an('object');
+          expect(response.body.name).to.exist;
+          expect(response.body.name).to.equals('Grupo Planeta - México');
+        })
+        .should.notify(done);
+    });
+    
     it('Prefers to use params if provided', function(done) {
       var reqParams = {
         name: 'sanmigueldeaquinohay'
@@ -502,7 +527,7 @@ describe('Phrases runner', function() {
 
     var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
       res: res,
-      server : 'express'
+      server: 'express'
     });
 
     expect(result).to.exist;
@@ -531,7 +556,7 @@ describe('Phrases runner', function() {
 
     var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get', {
       res: res,
-      server : 'restify'
+      server: 'restify'
     });
 
     expect(result).to.exist;
@@ -563,7 +588,7 @@ describe('Phrases runner', function() {
 
     var result = Phrases.runByPath(domain, 'changestatus', 'get', {
       res: res,
-      server : 'express'
+      server: 'express'
     });
 
     expect(result).to.exist;
