@@ -18,19 +18,19 @@ describe('in regexpGenerator module', function() {
       url: ':param',
       test: ['param', 'param/', '/param', '/param/'],
       testfail: ['', '/', 'asdd/asdsad', '/as/asd/asdas'],
-      regexp: '^\/?(?<param>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?$',
+      regexp: '^\/?(?<param>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?$',
       params: ['param']
     }, {
       url: ':param?',
       test: ['param', 'param/', '', '/'],
       testfail: ['optional/single', '/as/asd/asdas'],
-      regexp: '^\/?((?<param>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?)?$',
+      regexp: '^\/?((?<param>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?)?$',
       params: ['param']
     }, {
       url: 'logoutuser/:type?',
       test: ['logoutuser/all', 'logoutuser/', 'logoutuser', '/logoutuser/'],
       testfail: ['', '/', 'asdd/asdsad', 'logoutuser/asdsa/asdsad'],
-      regexp: '^\/?logoutuser(\/((?<type>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?)?)?$',
+      regexp: '^\/?logoutuser(\/((?<type>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?)?)?$',
       params: ['type']
     }, {
       url: 'pepito',
@@ -48,25 +48,25 @@ describe('in regexpGenerator module', function() {
       url: 'test/:arg/:arg2',
       test: ['test/param/param', '/test/param/param', '/test/param/param/'],
       testfail: ['asdad', '/', '-1', '/test/asd/', 'test/asdad', 'test/adsad/asdasd/adssad'],
-      regexp: '^\/?test\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?\/(?<arg2>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?$',
+      regexp: '^\/?test\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?\/(?<arg2>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?$',
       params: ['arg', 'arg2']
     }, {
       url: 'test/:arg/:optional?',
       test: ['test/arg/arg', 'test/arg', 'test/arg', '/test/arg/', '/test/arg/arg/'],
       testfail: ['asdad', '/', '-1', '/test/asd/asdas/asdad'],
-      regexp: '^\/?test\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?(\/((?<optional>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?)?)?$',
+      regexp: '^\/?test\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?(\/((?<optional>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?)?)?$',
       params: ['arg', 'optional']
     }, {
       url: 'user/:arg?/:optional/name',
       test: ['user/arg/name', 'user/arg/arg/name', '/user/arg/name', '/user/arg/arg/name', '/user/arg/arg/name/'],
       testfail: ['asdad', '/', '-1', 'user/asdasd/asda/paquito/name', 'user/asdasd/asda/paquito', '/user/arg/name/asda'],
-      regexp: '^\/?user(\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?)?\/(?<optional>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?\/name\/?$',
+      regexp: '^\/?user(\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?)?\/(?<optional>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?\/name\/?$',
       params: ['arg', 'optional']
     }, {
       url: 'user/:arg',
-      test: ['user/onix-from-MySupplier-1437644873433-1437644873433'],
+      test: ['user/onix-from-MySupplier-1437644873433-1437644873433', 'user/paco-porras', 'user/Grupo Planeta', 'user/paco México', 'user/juan-pálomçò'],
       testfail: [],
-      regexp: '^\/?user\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!]+)\/?$',
+      regexp: '^\/?user\/(?<arg>[\\w-._~:?#\\[\\]@!$&()*+,;=!\\sáéíóúàèìòùç]+)\/?$',
       params: ['arg']
     }, {
       url: 'https://google.com',
