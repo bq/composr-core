@@ -1,6 +1,6 @@
 {
   "name": "composr-core",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "CompoSR core functions",
   "main": "src/composr-core.js",
   "directories": {
@@ -64,6 +64,11 @@
     "type": "git",
     "url": "git@github.com:bq/composr-core.git"
   },
-  "author": "Rafael Pedrola",
+  "authors":  [
+    "Rafael Pedrola <@rafinskipg>",
+    "Josep Arpí <@jarpi>",
+    "Samuel Martin <@samuelmartingc>",
+    "Jorge Serrano <@jscmr>"
+  ],
   "license": "ISC"
 }
