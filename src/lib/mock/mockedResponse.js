@@ -1,12 +1,15 @@
 'use strict';
 
+var _ = require('lodash');
+var DEFAULT_STATUS_CODE = 200;
+
 function MockedResponse(serverType, res) {
   var module = this;
   this.res = res;
   this.serverType = serverType === 'express' ? 'express' : 'restify';
 
   this.cookies = {};
-  this.statusCode = 200;
+  this.statusCode = DEFAULT_STATUS_CODE;
   this.promise = new Promise(function(resolve, reject) {
     module.resolve = function(response) {
       if (module.res) {
@@ -43,6 +46,10 @@ MockedResponse.prototype.restifyResponse = function(response) {
 
 MockedResponse.prototype.status = function(statusCode) {
   this.statusCode = parseInt(statusCode, 10);
+  
+  if(!_.isInteger(this.statusCode)){
+    this.statusCode = DEFAULT_STATUS_CODE;
+  }
 
   return this;
 };

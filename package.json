@@ -1,6 +1,6 @@
 {
   "name": "composr-core",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "CompoSR core functions",
   "main": "src/composr-core.js",
   "directories": {
@@ -28,7 +28,7 @@
     "async": "^1.4.2",
     "atob": "^1.1.2",
     "corbel-js": "0.3.7",
-    "lodash": "^3.8.0",
+    "lodash": "^4.3.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
     "query-string": "^3.0.0",
@@ -64,7 +64,7 @@
     "type": "git",
     "url": "git@github.com:bq/composr-core.git"
   },
-  "authors":  [
+  "authors": [
     "Rafael Pedrola <@rafinskipg>",
     "Josep Arpí <@jarpi>",
     "Samuel Martin <@samuelmartingc>",
