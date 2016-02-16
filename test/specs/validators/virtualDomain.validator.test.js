@@ -11,8 +11,8 @@ describe('Validate Virtual Domain', function () {
 
     // 3 errors: name too short, no version, validate_middleware not a boolean
     var domain = {
-      'id': 'xxx',
-      'name': 'co',
+      'id': 'd!p',
+      'name': 'composr',
       'git': '',
       'mock_middleware': false,
       'validate_middleware': 'wrong',
@@ -21,7 +21,7 @@ describe('Validate Virtual Domain', function () {
     }
 
 
-    validator.validate(domain)
+    validator(domain)
       .then(function () {
         done('Validation error should have been thrown')
       })
@@ -35,7 +35,7 @@ describe('Validate Virtual Domain', function () {
   it('when it is ok', function (done) {
 
     var domain = {
-      'id': 'xxx',
+      'id': 'domain!project',
       'name': 'composr-cli',
       'author': 'jorge-serrano',
       'version': '1.0.0',
@@ -48,7 +48,7 @@ describe('Validate Virtual Domain', function () {
       '_apiRML': {}
     }
 
-    validator.validate(domain)
+    validator(domain)
       .then(function () {
         done();
       })

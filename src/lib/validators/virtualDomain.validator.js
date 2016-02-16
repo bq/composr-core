@@ -7,8 +7,8 @@ var virtualDomainSchema = {
   'id': '/VirtualDomain',
   'type': 'object',
   'properties': {
-    'id': {'type': 'string', 'required': true, minLength: 5},
-    'name': {'type': 'string', 'required': true, minLength: 3},
+    'id': {'type': 'string', 'required': true, 'minLength': 5, 'pattern': '^.+!.+$'},
+    'name': {'type': 'string', 'required': true, 'minLength': 3},
     'author': {'type': 'string'},
     'version': {'type': 'string', 'required': true},
     'source_location': {'type': 'string'},
@@ -31,6 +31,6 @@ function validate(virtualDomain) {
   dfd.resolve(virtualDomain);
 
   return dfd.promise;
-};
+}
 
 module.exports = validate;

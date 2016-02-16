@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var CodeCompiler = require('./compilers/code.compiler.js');
 var virtualDomainValidator = require('./validators/virtualDomain.validator');
 
