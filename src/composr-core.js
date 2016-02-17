@@ -8,16 +8,22 @@ var Requirer = require('./lib/requirer');
 
 function CompoSR() {
   this.reset();
+
+  //Loaded resources
+  this.data = {
+    phrases: [],
+    snippets: [],
+    virtualDomains: []
+  };
 }
 
 CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
 CompoSR.prototype.clientLogin = require('./lib/clientLogin');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
-CompoSR.prototype.loadPhrases = require('./lib/loaders/loadPhrases');
-CompoSR.prototype.loadPhrase = require('./lib/loaders/loadPhrase');
-CompoSR.prototype.loadSnippets = require('./lib/loaders/loadSnippets');
-CompoSR.prototype.loadSnippet = require('./lib/loaders/loadSnippet');
+CompoSR.prototype.phraseDao = require('./lib/loaders/phraseDao');
+CompoSR.prototype.snippetDao = require('./lib/loaders/snippetDao');
+CompoSR.prototype.virtualDomainDao = require('./lib/loaders/virtualDomainDao');
 CompoSR.prototype.addPhrasesToDataStructure = require('./lib/addPhrasesToDataStructure');
 CompoSR.prototype.addSnippetsToDataStructure = require('./lib/addSnippetsToDataStructure');
 CompoSR.prototype.removePhrasesFromDataStructure = require('./lib/removePhrasesFromDataStructure');

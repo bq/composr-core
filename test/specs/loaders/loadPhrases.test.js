@@ -1,4 +1,4 @@
-var loadPhrases = require('../../../src/lib/loaders/loadPhrases'),
+var phraseDao = require('../../../src/lib/loaders/phraseDao'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -28,7 +28,7 @@ describe('loadPhrases', function() {
       get: stubGetCollection
     });
 
-    loader = loadPhrases.bind({
+    loader = phraseDao.bind({
       corbelDriver: {
         resources: {
           collection: stubCollection
@@ -42,7 +42,7 @@ describe('loadPhrases', function() {
   });
 
   it('invokes the resources.collection as long as it has items', function(done) {
-    loader()
+    loader.loadAll()
       .should.be.fulfilled
       .then(function() {
         expect(stubCollection.calledTwice).to.equals(true);
@@ -53,14 +53,14 @@ describe('loadPhrases', function() {
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = loadPhrases.bind({
+    var loaderWithoutDriver = phraseDao.bind({
       utils: composrUtils,
       resources: {
         phrasesCollection: 'testCol'
       }
     });
 
-    loaderWithoutDriver()
+    loaderWithoutDriver.loadAll()
       .should.be.rejected.notify(done);
   });
 

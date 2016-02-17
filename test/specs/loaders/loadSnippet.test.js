@@ -1,4 +1,4 @@
-var loadSnippet = require('../../../src/lib/loaders/loadSnippet'),
+var snippetDao = require('../../../src/lib/loaders/snippetDao'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -24,7 +24,7 @@ describe('loadSnippet', function() {
       get: stubGetResource
     });
 
-    loader = loadSnippet.bind({
+    loader = snippetDao.bind({
       corbelDriver: {
         resources: {
           resource: stubResource
@@ -38,7 +38,7 @@ describe('loadSnippet', function() {
   });
 
   it('invokes the resources.resource', function(done) {
-    loader('myId')
+    loader.load('myId')
       .should.be.fulfilled
       .then(function(item) {
         expect(item.name).to.equals('test');
@@ -50,19 +50,19 @@ describe('loadSnippet', function() {
   });
 
   it('rejects without id', function(done) {
-    loader()
+    loader.load()
       .should.be.rejected.notify(done);
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = loadSnippet.bind({
+    var loaderWithoutDriver = snippetDao.bind({
       utils: composrUtils,
       resources: {
         snippetsCollection: 'testCol'
       }
     });
     
-    loaderWithoutDriver()
+    loaderWithoutDriver.load()
       .should.be.rejected.notify(done);
   });
 
