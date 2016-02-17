@@ -1,5 +1,6 @@
 'use strict';
 var phraseValidator = require('./validators/phrase.validator');
+var PhraseModel = require('./models/phraseModel');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
@@ -25,6 +26,7 @@ var PhraseManager = function(options) {
 PhraseManager.prototype = new CodeCompiler({
   itemName: 'phrase',
   item: '__phrases',
+  model : PhraseModel,
   validator: phraseValidator
 });
 
