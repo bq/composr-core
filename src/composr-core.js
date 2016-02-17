@@ -38,10 +38,6 @@ CompoSR.prototype.parseToComposrError = require('./lib/parseToComposrError');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
-var VirtualDomain = new VirtualDomainManager({
-  events: events
-});
-CompoSR.prototype.VirtualDomain = VirtualDomain;
 
 var Snippets = new SnippetsManager({
   events: events
@@ -56,10 +52,20 @@ CompoSR.prototype.requirer = requirer;
 
 CompoSR.prototype.Snippets = Snippets;
 
-CompoSR.prototype.Phrases = new PhraseManager({
+var Phrases = new PhraseManager({
   events: events,
   requirer : requirer
 });
+
+CompoSR.prototype.Phrases = Phrases;
+
+
+var VirtualDomain = new VirtualDomainManager({
+  events: events,
+  Phrases : Phrases
+});
+
+CompoSR.prototype.VirtualDomain = VirtualDomain;
 
 CompoSR.prototype.Publisher = require('./lib/Publisher');
 //CompoSR.prototype._logger = require('./lib/logger');

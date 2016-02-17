@@ -1,5 +1,6 @@
 'use strict';
 var CodeCompiler = require('./compilers/code.compiler.js');
+var SnippetModel = require('./models/snippetModel.js');
 var snippetValidator = require('./validators/snippet.validator.js');
 var utils = require('./utils.js');
 
@@ -10,6 +11,7 @@ var SnippetsManager = function(options) {
 SnippetsManager.prototype = new CodeCompiler({
   itemName: 'snippet',
   item: '__snippets',
+  model : SnippetModel,
   validator: snippetValidator
 });
 

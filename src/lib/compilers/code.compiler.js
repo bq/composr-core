@@ -8,6 +8,7 @@ var uglifyJs = require('uglify-js');
 function CodeCompiler(options) {
   this.itemName = options.itemName;
   this.item = options.item;
+  this.model = options.model;
   this.validator = options.validator;
   this[options.item] = {};
 }
@@ -73,19 +74,21 @@ CodeCompiler.prototype._register = function(domain, item) {
 
       module.__preCompile(domain, item);
 
-      var compiled = module.compile(item);
+      //Returns the MODEL
+      var modelInstance = module.compile(item);
 
-      if (compiled) {
-        module.__preAdd(domain, compiled);
+      if (modelInstance) {
+        module.__preAdd(domain, modelInstance);
 
-        var added = module._addToList(domain, compiled);
-        module.events.emit('debug', module.itemName + ':registered', added, item.id);
+        var added = module._addToList(domain, modelInstance);
+        module.events.emit('debug', module.itemName + ':registered', added, modelInstance.getId());
 
         if (added) {
-          module.events.emit(module.itemName + ':registered', item);
+          //Corbel-composr listens to this event for registering routes. And uses item.id;
+          module.events.emit(module.itemName + ':registered', modelInstance);
         }
 
-        return compiled;
+        return modelInstance;
       } else {
         module.events.emit('warn', module.itemName + ':not:registered', item.id);
         throw new Error('not:registered');
@@ -235,7 +238,7 @@ CodeCompiler.prototype._extractDomainFromId = function(id) {
 CodeCompiler.prototype._compile = function(item) {
   //Implement freely
   this.events.emit('warn', '_compile not implemented');
-  return item;
+  return new this.model(item);
 };
 
 CodeCompiler.prototype._addToList = function() {
