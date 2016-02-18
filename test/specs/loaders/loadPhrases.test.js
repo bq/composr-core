@@ -28,7 +28,7 @@ describe('loadPhrases', function() {
       get: stubGetCollection
     });
 
-    loader = phraseDao.bind({
+    loader = phraseDao.loadAll.bind({
       corbelDriver: {
         resources: {
           collection: stubCollection
@@ -42,7 +42,7 @@ describe('loadPhrases', function() {
   });
 
   it('invokes the resources.collection as long as it has items', function(done) {
-    loader.loadAll()
+    loader()
       .should.be.fulfilled
       .then(function() {
         expect(stubCollection.calledTwice).to.equals(true);
@@ -53,14 +53,14 @@ describe('loadPhrases', function() {
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = phraseDao.bind({
+    var loaderWithoutDriver = phraseDao.loadAll.bind({
       utils: composrUtils,
       resources: {
         phrasesCollection: 'testCol'
       }
     });
 
-    loaderWithoutDriver.loadAll()
+    loaderWithoutDriver()
       .should.be.rejected.notify(done);
   });
 

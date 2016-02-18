@@ -11,16 +11,14 @@ var utilsPromises = require('../utils/promises');
 
 describe('fetchData method', function() {
 
-  var stubFetchPhrases, stubFetchSnippets;
+  var stubFetchVirtualDomains;
 
   before(function() {
-    stubFetchPhrases = sinon.stub(composr.phraseDao, 'loadAll', utilsPromises.resolvedCurriedPromise(['test']));
-    stubFetchSnippets = sinon.stub(composr.snippetDao, 'loadAll', utilsPromises.resolvedCurriedPromise(['test']));
+    stubFetchVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise(['test']));
   });
 
   after(function() {
-    stubFetchPhrases.restore();
-    stubFetchSnippets.restore();
+    stubFetchVirtualDomains.restore();
   });
 
   it('Resolves correctly', function(done) {
@@ -38,24 +36,15 @@ describe('fetchData method', function() {
 });
 
 describe('fail fetchData', function() {
-  var stubFetchPhrases, stubFetchSnippets;
+  var stubFetchVirtualDomains;
 
   it('fails if loadPhrases fails', function(done) {
-    stubFetchPhrases = sinon.stub(composr.phraseDao, 'loadAll', utilsPromises.rejectedPromise);
-    stubFetchSnippets = sinon.stub(composr.snippetDao, 'loadAll', utilsPromises.resolvedCurriedPromise(['test']));
-
-    composr.fetchData().should.be.rejected.notify(done);
-  });
-
-  it('fails if loadSnippets fails', function(done) {
-    stubFetchPhrases = sinon.stub(composr.phraseDao, 'loadAll', utilsPromises.resolvedCurriedPromise(['test']));
-    stubFetchSnippets = sinon.stub(composr.snippetDao, 'loadAll', utilsPromises.rejectedPromise);
+    stubFetchVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.rejectedPromise);
 
     composr.fetchData().should.be.rejected.notify(done);
   });
 
   afterEach(function() {
-    stubFetchPhrases.restore();
-    stubFetchSnippets.restore();
+    stubFetchVirtualDomains.restore();
   });
 });

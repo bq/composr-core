@@ -1,9 +1,8 @@
 'use strict';
 
-var PhraseDao = function () {
-};
+var PhraseDao = function() {};
 
-PhraseDao.prototype.load = function (id) {
+PhraseDao.load = function (id) {
   if (!id) {
     return Promise.reject('missing:id');
   }
@@ -19,7 +18,7 @@ PhraseDao.prototype.load = function (id) {
   }
 };
 
-PhraseDao.prototype.loadAll = function () {
+PhraseDao.loadAll = function () {
   var module = this;
   var caller = function (pageNumber, pageSize) {
     return module.corbelDriver.resources.collection(module.resources.phrasesCollection).get({
@@ -33,5 +32,7 @@ PhraseDao.prototype.loadAll = function () {
   return this.utils.getAllRecursively(caller);
 };
 
-
-module.exports = PhraseDao;
+module.exports = {
+  load: PhraseDao.load,
+  loadAll: PhraseDao.loadAll
+};

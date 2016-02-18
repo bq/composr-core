@@ -1,9 +1,8 @@
 'use strict';
 
-var VirtualDomainDao = function () {
-};
+var VirtualDomainDao = {};
 
-VirtualDomainDao.prototype.load = function (id) {
+VirtualDomainDao.load = function (id) {
   if (!id) {
     return Promise.reject('missing:id');
   }
@@ -19,7 +18,7 @@ VirtualDomainDao.prototype.load = function (id) {
   }
 };
 
-VirtualDomainDao.prototype.loadAll = function () {
+VirtualDomainDao.loadAll = function () {
   var module = this;
   var caller = function (pageNumber, pageSize) {
     return module.corbelDriver.resources.collection(module.resources.virtualDomainCollection).get({
@@ -33,4 +32,7 @@ VirtualDomainDao.prototype.loadAll = function () {
   return this.utils.getAllRecursively(caller);
 };
 
-module.exports = VirtualDomainDao;
+module.exports = {
+  load: VirtualDomainDao.load,
+  loadAll: VirtualDomainDao.loadAll
+};

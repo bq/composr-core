@@ -28,7 +28,7 @@ describe('loadSnippets', function() {
       get: stubGetCollection
     });
 
-    loader = snippetDao.bind({
+    loader = snippetDao.loadAll.bind({
       corbelDriver: {
         resources: {
           collection: stubCollection
@@ -42,7 +42,7 @@ describe('loadSnippets', function() {
   });
 
   it('invokes the resources.collection as long as it has items', function(done) {
-    loader.loadAll()
+    loader()
       .should.be.fulfilled
       .then(function() {
         expect(stubCollection.calledTwice).to.equals(true);
@@ -53,14 +53,14 @@ describe('loadSnippets', function() {
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = snippetDao.bind({
+    var loaderWithoutDriver = snippetDao.loadAll.bind({
       utils: composrUtils,
       resources: {
         snippetsCollection: 'testCol'
       }
     });
     
-    loaderWithoutDriver.loadAll()
+    loaderWithoutDriver()
       .should.be.rejected.notify(done);
   });
 

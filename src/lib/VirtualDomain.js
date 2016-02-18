@@ -22,8 +22,8 @@ VirtualDomainManager.prototype._compile = function (virtualDomainJson) {
   return new this.model(virtualDomainJson);
 };
 
-VirtualDomainManager.prototype._addToList = function (domain, vmModel) {
-  if (!domain || !vmModel) {
+VirtualDomainManager.prototype._addToList = function (domain, vdModel) {
+  if (!domain || !vdModel) {
     return false;
   }
 
@@ -31,10 +31,9 @@ VirtualDomainManager.prototype._addToList = function (domain, vmModel) {
     this.__virtualDomains[domain] = {};
   }
 
-  this.__virtualDomains[domain] = vmModel;
+  this.__virtualDomains[domain] = vdModel;
 
-  var phrases = vmModel.getRawPhrases();
-  this.Phrases.register(this.domain, phrases);
+  this.Phrases.register(this.domain, vdModel.getRawPhrases());
   
   return true;
 };

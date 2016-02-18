@@ -24,7 +24,7 @@ describe('loadPhrase', function() {
       get: stubGetResource
     });
 
-    loader = phraseDao.bind({
+    loader = phraseDao.load.bind({
       corbelDriver: {
         resources: {
           resource: stubResource
@@ -38,7 +38,7 @@ describe('loadPhrase', function() {
   });
 
   it('invokes the resources.resource', function(done) {
-    loader.load('myId')
+    loader('myId')
       .should.be.fulfilled
       .then(function(item) {
         expect(item.name).to.equals('test');
@@ -50,19 +50,19 @@ describe('loadPhrase', function() {
   });
 
   it('rejects without id', function(done) {
-    loader.load()
+    loader()
       .should.be.rejected.notify(done);
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = phraseDao.bind({
+    var loaderWithoutDriver = phraseDao.load.bind({
       utils: composrUtils,
       resources: {
         phrasesCollection: 'testCol'
       }
     });
     
-    loaderWithoutDriver.load()
+    loaderWithoutDriver()
       .should.be.rejected.notify(done);
   });
 

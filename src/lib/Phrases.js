@@ -1,6 +1,6 @@
 'use strict';
 var phraseValidator = require('./validators/phrase.validator');
-var PhraseModel = require('./models/phraseModel');
+var PhraseModel = require('./models/PhraseModel');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');

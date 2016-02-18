@@ -1,9 +1,8 @@
 'use strict';
 
-var SnippetDao = function () {
-};
+var SnippetDao = {};
 
-SnippetDao.prototype.load = function (id) {
+SnippetDao.load = function (id) {
   if (!id) {
     return Promise.reject('missing:id');
   }
@@ -20,8 +19,7 @@ SnippetDao.prototype.load = function (id) {
   }
 };
 
-
-SnippetDao.prototype.loadAll = function () {
+SnippetDao.loadAll = function () {
   var module = this;
   var caller = function (pageNumber, pageSize) {
     return module.corbelDriver.resources.collection(module.resources.snippetsCollection).get({
@@ -35,5 +33,7 @@ SnippetDao.prototype.loadAll = function () {
   return this.utils.getAllRecursively(caller);
 };
 
-
-module.exports = SnippetDao;
+module.exports = {
+  load: SnippetDao.load,
+  loadAll: SnippetDao.loadAll
+};

@@ -6,7 +6,7 @@ var fetchData = function fetchData() {
   var module = this;
   var dfd = q.defer();
 
-  var promises = [this.phraseDao.loadAll(), this.snippetDao.loadAll(), this.virtualDomainDao.loadAll()];
+  var promises = [this.virtualDomainDao.loadAll()];
 
   q.spread(promises, function(phrases, snippets, virtualDomains) {
     module.data.phrases = phrases;
