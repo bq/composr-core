@@ -18,6 +18,35 @@ PhraseDao.load = function (id) {
   }
 };
 
+PhraseDao.loadSome = function(ids){
+  if (!id || !Array.isArray(ids)) {
+    return Promise.reject('missing:ids');
+  }
+
+  if (this.corbelDriver) {
+
+    var module = this;
+    var caller = function (pageNumber, pageSize) {
+      return module.corbelDriver.resources.collection(module.resources.phrasesCollection)
+      .get({
+        pagination: {
+          page: pageNumber,
+          pageSize: pageSize
+        },
+        query: [{
+          '$in': {
+            'id': ids
+          }
+        }]
+      });
+    };
+    
+    return this.utils.getAllRecursively(caller);
+  } else {
+    return Promise.reject('missing:driver');
+  }
+};
+
 PhraseDao.loadAll = function () {
   var module = this;
   var caller = function (pageNumber, pageSize) {

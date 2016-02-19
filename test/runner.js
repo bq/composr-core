@@ -44,6 +44,8 @@ require('./specs/phrases/phrases.errorThrows.test.js');
 
 require('./specs/Snippets.test.js');
 
+require('./specs/virtualDomain.test.js');
+
 require('./specs/mock/mockedRequest.test.js');
 require('./specs/mock/mockedResponse.test.js');
 require('./specs/mock/mockedNext.test.js');
