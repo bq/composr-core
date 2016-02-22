@@ -24,7 +24,6 @@ SnippetsManager.prototype._compile = function(domain, snippet) {
 
     return snippetModel;
   } catch (e) {
-    console.log(e);
     //Somehow it has tried to compile an invalid snippet. Notify it and return false.
     //Catching errors and returning false here is important for not having an unstable snippets stack.
     this.events.emit('error', 'snippet:not:usable', snippet.id, e);

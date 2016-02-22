@@ -43,10 +43,10 @@ BaseManager.prototype.register = function(domain, itemOrItems) {
   return itemsPromisesGenerator(function(item) {
     return module._register(domain, item);
   }, 
-  function(result, index) {
+  function(result, item) {
     return {
       registered: result.state === 'fulfilled',
-      id: itemOrItems[index].id,
+      id: item.id,
       model: result.state === 'fulfilled' ? result.value : null,
       error: result.reason ? result.reason : null
     };
@@ -86,6 +86,7 @@ BaseManager.prototype._register = function(domain, item) {
 
     })
     .catch(function(err) {
+      console.dir(err);
       module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
       throw err;
     });

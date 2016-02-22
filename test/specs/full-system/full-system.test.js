@@ -10,15 +10,16 @@ var virtualDomainFixtures = require('../../fixtures/virtualdomains');
 
 
 describe.only('Full system usage', function() {
+  this.timeout(10000);
 
   var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubLoadVirtualDomains,
-    stubGetVirtualDomainModel, stubRegisterDomains, stubLoadSomePhrases, stubLoadSomeSnippets;
+    spyGetVirtualModel, stubRegisterDomains, stubLoadSomePhrases, stubLoadSomeSnippets;
 
   before(function() {
     stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
     stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
     stubLoadVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
-    stubGetVirtualDomainModel = sinon.stub(composr, 'getVirtualDomainModel', utilsPromises.resolvedPromise);
+    spyGetVirtualModel = sinon.spy(composr, 'getVirtualDomainModel');
     stubRegisterDomains = sinon.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
     stubLoadSomePhrases = sinon.stub(composr.phraseDao, 'loadSome', utilsPromises.resolvedPromise);
     stubLoadSomeSnippets = sinon.stub(composr.snippetDao, 'loadSome', utilsPromises.resolvedPromise);
@@ -28,7 +29,7 @@ describe.only('Full system usage', function() {
     stubInitCorbelDriver.restore();
     stubLogClient.restore();
     stubLoadVirtualDomains.restore();
-    stubGetVirtualDomainModel.restore();
+    spyGetVirtualModel.restore();
     stubRegisterDomains.restore();
     stubLoadSomePhrases.restore();
     stubLoadSomeSnippets.restore();
@@ -79,26 +80,21 @@ describe.only('Full system usage', function() {
   it('Can register virtualDomains', function(done){
     composr.init({}, true)
       .then(function() {
-        return composr.getVirtualDomainModel(virtualDomainFixtures.correct);
+        return composr.getVirtualDomainModel(virtualDomainFixtures.correct[0]);
       })
       .then(function(vmodel){
-        console.log(vmodel);
         return composr.VirtualDomain.register('myDomain', vmodel);
       })
-      .should.be.fulfilled
-      .then(function(results) {
+      .then(function(result) {
+        expect(result.registered).to.equals(true);
 
-        results.forEach(function(result) {
-          expect(result.registered).to.equals(true);
-        });
-
-        var candidates = composr.Snippets.getSnippets('myDomain');
+        var candidates = composr.VirtualDomain.getVirtualDomains('myDomain');
 
         expect(candidates).to.be.a('object');
 
         expect(Object.keys(candidates).length).to.be.above(0);
-
-      }).should.notify(done);
+      })
+      .should.notify(done);
   });
 
 

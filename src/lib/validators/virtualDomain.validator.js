@@ -1,6 +1,5 @@
 'use strict';
 
-var q = require('q');
 var validator = require('jsonschema').validate;
 
 var virtualDomainSchema = {
@@ -8,9 +7,9 @@ var virtualDomainSchema = {
   'type': 'object',
   'properties': {
     'id': {'type': 'string', 'required': true, 'minLength': 5, 'pattern': '^.+!.+$'},
-    'name': {'type': 'string', 'required': true, 'minLength': 3},
+    'name': {'type': 'string', 'required': false, 'minLength': 3},
     'author': {'type': 'string'},
-    'version': {'type': 'string', 'required': true},
+    'version': {'type': 'string', 'required': false},
     'source_location': {'type': 'string'},
     'git': {'type': 'string'},
     'license': {'type': 'string'},
@@ -34,15 +33,16 @@ var virtualDomainSchema = {
 };
 
 function validate(virtualDomain) {
-  var dfd = q.defer();
 
   var result = validator(virtualDomain, virtualDomainSchema);
-  if (result.errors && result.errors.length > 0) {
-    dfd.reject(result.errors);
-  }
-  dfd.resolve(virtualDomain);
+  return new Promise(function(resolve, reject){
+    if(result.errors && result.errors.length > 0){
+      reject(result.errors);
+    }else{
+      resolve(virtualDomain);
+    }
+  });
 
-  return dfd.promise;
 }
 
 module.exports = validate;

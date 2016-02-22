@@ -53,7 +53,8 @@ CompoSR.prototype.Phrases = Phrases;
 
 var VirtualDomain = new VirtualDomainManager({
   events: events,
-  Phrases : Phrases
+  Phrases : Phrases,
+  Snippets : Snippets
 });
 
 CompoSR.prototype.VirtualDomain = VirtualDomain;

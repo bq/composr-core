@@ -90,7 +90,6 @@ PhraseManager.prototype._compile = function(domain, phrase) {
     return phraseModel;
 
   } catch (e) {
-    console.log(e);
     //Somehow it has tried to compile an invalid phrase. Notify it and return false.
     //Catching errors and returning false here is important for not having an unstable phrases stack.
     this.events.emit('errore', 'phrase:not:usable', phrase.url, e);

@@ -6,7 +6,6 @@ var evaluateCode = require('../compilers/evaluateCode');
 var DEFAULT_SNIPPET_PARAMETERS = ['exports'];
 
 var SnippetModel = function(json, domain){
-  console.log(json);
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
   this.id = json.id;
   this.name = this.id.replace(domain + '!', '');

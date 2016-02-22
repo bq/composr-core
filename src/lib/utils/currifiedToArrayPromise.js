@@ -33,7 +33,9 @@ function currifiedToArrayPromise(itemOrItems) {
       q.allSettled(promises)
       .then(function(results) {
         if(cb){
-          results = results.map(cb);
+          results = results.map(function(result, index){
+            return cb(result, theItems[index]);
+          });
         }else{
           results = results.map(function(result){
             return result.value;

@@ -17,7 +17,7 @@ VirtualDomainManager.prototype = new BaseManager({
 });
 
 //Compilation
-VirtualDomainManager.prototype._compile = function (vdomain) {
+VirtualDomainManager.prototype._compile = function (domain, vdomain) {
   return vdomain;
 };
 
@@ -32,8 +32,8 @@ VirtualDomainManager.prototype._addToList = function (domain, vdModel) {
 
   this.__virtualDomains[domain] = vdModel;
 
-  this.Phrases.register(this.domain, vdModel.getRawPhrases());
-  this.Snippets.register(this.domain, vdModel.getRawSnippets());
+  this.Phrases.register(domain, vdModel.getRawPhrases());
+  this.Snippets.register(domain, vdModel.getRawSnippets());
   
   return true;
 };
