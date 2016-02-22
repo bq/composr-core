@@ -11,12 +11,6 @@ function reset() {
     virtualDomainCollection: 'composr:VirtualDomain'
   };
 
-  //Loaded resources
-  this.data = {
-    phrases: [],
-    snippets: []
-  };
-
   this.corbelDriver = null;
 }
 

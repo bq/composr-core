@@ -8,13 +8,6 @@ var Requirer = require('./lib/requirer');
 
 function CompoSR() {
   this.reset();
-
-  //Loaded resources
-  this.data = {
-    phrases: [],
-    snippets: [],
-    virtualDomains: []
-  };
 }
 
 CompoSR.prototype.init = require('./lib/init');
@@ -24,12 +17,10 @@ CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
 CompoSR.prototype.phraseDao = require('./lib/loaders/phraseDao');
 CompoSR.prototype.snippetDao = require('./lib/loaders/snippetDao');
 CompoSR.prototype.virtualDomainDao = require('./lib/loaders/virtualDomainDao');
-CompoSR.prototype.addPhrasesToDataStructure = require('./lib/addPhrasesToDataStructure');
-CompoSR.prototype.addSnippetsToDataStructure = require('./lib/addSnippetsToDataStructure');
-CompoSR.prototype.removePhrasesFromDataStructure = require('./lib/removePhrasesFromDataStructure');
-CompoSR.prototype.removeSnippetsFromDataStructure = require('./lib/removeSnippetsFromDataStructure');
 CompoSR.prototype.fetchData = require('./lib/fetchData');
 CompoSR.prototype.registerData = require('./lib/registerData');
+CompoSR.prototype.loadVirtualDomain = require('./lib/loadVirtualDomain');
+CompoSR.prototype.getVirtualDomainModel = require('./lib/getVirtualDomainModel');
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
 CompoSR.prototype.status = require('./lib/status');

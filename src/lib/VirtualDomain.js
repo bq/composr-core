@@ -2,7 +2,6 @@
 
 var _ = require('lodash');
 var CodeCompiler = require('./compilers/code.compiler.js');
-var VirtualDomainModel = require('./models/VirtualDomainModel');
 var virtualDomainValidator = require('./validators/virtualDomain.validator');
 
 var VirtualDomainManager = function (options) {
@@ -13,13 +12,12 @@ var VirtualDomainManager = function (options) {
 VirtualDomainManager.prototype = new CodeCompiler({
   itemName: 'virtualDomain',
   item: '__virtualDomains',
-  model : VirtualDomainModel,
   validator: virtualDomainValidator
 });
 
 //Compilation
-VirtualDomainManager.prototype._compile = function (virtualDomainJson) {
-  return new this.model(virtualDomainJson);
+VirtualDomainManager.prototype._compile = function (vdomain) {
+  return vdomain;
 };
 
 VirtualDomainManager.prototype._addToList = function (domain, vdModel) {
@@ -34,6 +32,7 @@ VirtualDomainManager.prototype._addToList = function (domain, vdModel) {
   this.__virtualDomains[domain] = vdModel;
 
   this.Phrases.register(this.domain, vdModel.getRawPhrases());
+  this.Snippets.register(this.domain, vdModel.getRawSnippets());
   
   return true;
 };

@@ -11,7 +11,6 @@ var SnippetsManager = function(options) {
 SnippetsManager.prototype = new CodeCompiler({
   itemName: 'snippet',
   item: '__snippets',
-  model : SnippetModel,
   validator: snippetValidator
 });
 

@@ -17,9 +17,11 @@ var _ = require('lodash');
  *   "_apiRML": {}
  * }
  */
-var VirtualDomainModel = function (json, domain) {
+var VirtualDomainModel = function (json, phrases, snippets) {
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
   // id = domain!apiId
+  this.phrases = phrases;
+  this.snippets = snippets;
   this.id = json.id ? json.id : this._generateId(domain);
 };
 
@@ -39,46 +41,21 @@ VirtualDomainModel.prototype.getApiId = function () {
   return this.id.split('!')[1];
 };
 
-// TODO: Does this belong here or is it part of the cli?
-// TODO: composr-core or corbel-composr?
+
 VirtualDomainModel.prototype.getRawPhrases = function () {
-  var phrases = [];
-  try {
-    this._searchPhrasesOnResource(phrases, this.json._apiRML.resources, '');
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-  return phrases;
+  return this.phrases || [];
+};
+
+VirtualDomainModel.prototype.getRawSnippets = function () {
+  return this.snipets || [];
 };
 
 VirtualDomainModel.prototype._generateId = function (domain) {
   return domain + '!' + this.json.url.replace(/\//g, '!');
 };
 
-VirtualDomainModel.prototype._searchPhrasesOnResource = function (phrases, resources, accumulatedPath) {
-  if (!resources) {
-    return phrases;
-  }
-
-  resources.forEach(function (resource) {
-    var path = accumulatedPath + resource.relativeUri;
-
-    var phrase = {};
-    phrase.url = path;
-    resource.methods.forEach(function (method) {
-      phrase[method.method] = {};
-      // TODO: Are we sending the code here?
-      phrase[method.method].code = method.codehash;
-      // TODO: delete custom raml attributes such as codehash
-      phrase[method.method].doc = method;
-    });
-    phrases.push(phrase);
-
-    this._searchPhrasesOnResource(phrases, resource.resources, path);
-  });
-
-  return phrases;
+VirtualDomainModel.prototype.getMD5 = function(){
+  return this.json.md5;
 };
 
 module.exports = VirtualDomainModel;
