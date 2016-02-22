@@ -1,25 +1,84 @@
 'use strict';
 
 var _ = require('lodash');
+var XRegExp = require('xregexp').XRegExp;
+var utils = require('../utils.js');
+var evaluateCode = require('../compilers/evaluateCode');
+var methods = ['get', 'put', 'post', 'delete', 'options'];
+var DEFAULT_PHRASE_PARAMETERS = [
+  'req', 
+  'res', 
+  'next', 
+  'corbelDriver', 
+  'domain', 
+  'require', 
+  'config', 
+  'metrics'
+  ];
 
-var PhraseModel = function(json, domain, compiled){
+var PhraseModel = function(json, domain){
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
   this.id = json.id ? json.id : this._generateId(domain);
-  this.compiled = compiled;
-};
-
-PhraseModel.prototype.getId = function() {
-  return this.id;
+  this.compiled = {
+    codes : {}
+  };
 };
 
 PhraseModel.prototype._generateId = function(domain) {
   return domain + '!' + this.json.url.replace(/\//g, '!');
 };
 
+PhraseModel.prototype.getId = function() {
+  return this.id;
+};
+
+PhraseModel.prototype.getUrl = function() {
+  return this.json.url;
+};
+
+PhraseModel.prototype.getRegexp = function(){
+  return this.regexpReference.regexp;
+};
+
+PhraseModel.prototype.getRegexpReference = function(){
+  return this.regexpReference;
+};
+
 PhraseModel.prototype.getRawModel = function(){
   return this.json;
 };
 
+PhraseModel.prototype.canRun = function(verb){
+  return this.compiled.codes[verb] && this.compiled.codes[verb].error === false;
+};
+
+PhraseModel.prototype.compile = function(events){
+  var model = this;
+  //The regexp reference dictaminates the routing mechanisms
+  this.compiled.regexpReference = regexpGenerator.regexpReference(this.getUrl());
+
+  this.compiled.codes = {};
+
+  //Create in memory functions with the evaluation of the codes
+  methods.forEach(function(method) {
+    if (model.json[method] && (model.json[method].code || model.json[method].codehash)) {
+      //@TODO: emit events for the evaluation of the codes
+      events.emit('debug', 'phrase:evaluatecode:', method, model.getId());
+      
+      var code;
+
+      if (model.json[method].codehash) {
+        code = utils.decodeFromBase64(model.json[method].codehash);
+      } else {
+        code = model.json[method].code;
+      }
+
+      var debugInfo = model.json.debug ? model.json.debug[method] : null;
+
+      model.compiled.codes[method] = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo, events);
+    }
+  });
+}
 
 //Runs VM script mode
 PhraseModel.prototype.__executeScriptMode = function(verb, parameters, timeout, file) {
@@ -64,4 +123,5 @@ PhraseModel.prototype.__executeFunctionMode = function(verb, parameters, timeout
     ]);
   }
 };
+
 module.exports = PhraseModel;

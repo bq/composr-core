@@ -48,20 +48,11 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
       var returnedResult = null;
       //Execute the exports function
       if (snippet) {
-
-        if (functionMode) {
-          module.events.emit('debug', 'executing:' + libName + ':functionmode');
-          snippet.code.fn(function(res) {
-            returnedResult = res;
-          });
-        } else {
-          module.events.emit('debug', 'executing:' + libName + ':scriptmode');
-          snippet.code.script.runInNewContext({
-            exports: function(res) {
-              returnedResult = res;
-            }
-          });
-        }
+        module.events.emit('debug', 'executing:' + libName + ':functionmode:' + functionmode);
+        snippet.execute(functionMode, function(res){
+          //TODO: What that bug!!
+          returnedResult = res;
+        });
       }
       else {
         module.events.emit('warn','The snippet with domain (' + domain + ') and name (' + libName + ') is not found');

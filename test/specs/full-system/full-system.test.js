@@ -9,7 +9,7 @@ var snippetsFixtures = require('../../fixtures/snippets');
 var virtualDomainFixtures = require('../../fixtures/virtualdomains');
 
 
-describe('Full system usage', function() {
+describe.only('Full system usage', function() {
 
   var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubLoadVirtualDomains,
     stubGetVirtualDomainModel, stubRegisterDomains, stubLoadSomePhrases, stubLoadSomeSnippets;

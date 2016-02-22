@@ -1,11 +1,29 @@
 'use strict';
 
 var q = require('q');
-var vm = require('vm');
-var uglifyJs = require('uglify-js');
 var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise');
 
-function CodeCompiler(options) {
+/** 
+  BaseManager: 
+  Class that creates a flow of execution and some base methods
+  This class provides the following interface:
+  - register
+    - _register
+  - unregister
+    - _unregister
+  - compile
+    - _compile
+  - validate
+  - _extractDomainFromId
+  - _addToList
+
+
+  The mandatory methods for the child classes to implement are:
+  _compile
+  _addToList
+  _unregister
+ */
+function BaseManager(options) {
   this.itemName = options.itemName;
   this.item = options.item;
   this.validator = options.validator;
@@ -13,12 +31,12 @@ function CodeCompiler(options) {
 }
 
 //Reset the stack
-CodeCompiler.prototype.resetItems = function() {
+BaseManager.prototype.resetItems = function() {
   this[this.item] = {};
 };
 
 //Entry point for registering or unregistering items
-CodeCompiler.prototype.register = function(domain, itemOrItems) {
+BaseManager.prototype.register = function(domain, itemOrItems) {
   var itemsPromisesGenerator = currifiedToArrayPromise(itemOrItems);
 
   return itemsPromisesGenerator(function(item) {
@@ -32,11 +50,10 @@ CodeCompiler.prototype.register = function(domain, itemOrItems) {
       error: result.reason ? result.reason : null
     };
   });
-
 };
 
 //Register an item on the stack
-CodeCompiler.prototype._register = function(domain, item) {
+BaseManager.prototype._register = function(domain, item) {
 
   var module = this;
 
@@ -61,19 +78,19 @@ CodeCompiler.prototype._register = function(domain, item) {
 
         return modelInstance;
       } else {
-        module.events.emit('warn', module.itemName + ':not:registered', item.id);
+        module.events.emit('warn', module.itemName + ':not:registered', item.getId());
         throw new Error('not:registered');
       }
 
     })
     .catch(function(err) {
-      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
+      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.getId(), err);
       throw err;
     });
 };
 
 //Registers phrases, extracting domain from id (TODO: Test)
-CodeCompiler.prototype.registerWithoutDomain = function(items) {
+BaseManager.prototype.registerWithoutDomain = function(items) {
   var module = this;
 
   var promises = [];
@@ -99,7 +116,7 @@ CodeCompiler.prototype.registerWithoutDomain = function(items) {
 
 
 //Verifies that a JSON for a item is well formed
-CodeCompiler.prototype.validate = function(item) {
+BaseManager.prototype.validate = function(item) {
   return this.validator(item)
     .then(function() {
       return {
@@ -115,7 +132,7 @@ CodeCompiler.prototype.validate = function(item) {
 };
 
 //Iterates over the items to compile
-CodeCompiler.prototype.compile = function(domain, itemOrItems) {
+BaseManager.prototype.compile = function(domain, itemOrItems) {
   var module = this;
 
   var isArray = Array.isArray(itemOrItems);
@@ -131,51 +148,8 @@ CodeCompiler.prototype.compile = function(domain, itemOrItems) {
   return isArray ? compiledResults : compiledResults[0];
 };
 
-
-//Creates a function based on a function body and some params.
-CodeCompiler.prototype._evaluateCode = function(functionBody, params, debugFilePath) {
-
-  var functionParams = params ? params : [];
-
-  var result = {
-    fn: null,
-    script: null,
-    error: false,
-    code: functionBody
-  };
-
-  /**
-   * Optimization code to run in VM
-   */
-
-  try {
-    /* jshint evil:true */
-
-    var optimized = this.__codeOptimization(functionBody);
-
-    result.fn = Function.apply(null, functionParams.concat(optimized));
-    var options = {
-      displayErrors: true
-    };
-
-    if (debugFilePath) {
-      options.filename = debugFilePath;
-    }
-
-    result.script = new vm.Script(optimized, options);
-
-    this.events.emit('debug', this.itemName + ':evaluatecode:good');
-  } catch (e) {
-    this.events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);
-    result.error = true;
-  }
-
-  return result;
-
-};
-
 //Iterates over the items to unregister
-CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
+BaseManager.prototype.unregister = function(domain, itemOrItemIds) {
   var module = this;
 
   var isArray = Array.isArray(itemOrItemIds);
@@ -198,7 +172,7 @@ CodeCompiler.prototype.unregister = function(domain, itemOrItemIds) {
 };
 
 //Extracts the domain from a database item
-CodeCompiler.prototype._extractDomainFromId = function(id) {
+BaseManager.prototype._extractDomainFromId = function(id) {
   return id.split('!')[0];
 };
 
@@ -206,20 +180,20 @@ CodeCompiler.prototype._extractDomainFromId = function(id) {
   Mandatory implementations
 ********************************/
 
-CodeCompiler.prototype._compile = function(domain, item) {
+BaseManager.prototype._compile = function(domain, item) {
   //Implement freely
   this.events.emit('warn', '_compile not implemented');
   return item;
 };
 
-CodeCompiler.prototype._addToList = function() {
+BaseManager.prototype._addToList = function() {
   //Implement freely
   this.events.emit('warn', '_addToList not implemented');
   return true;
 };
 
 //Removes item from memory
-CodeCompiler.prototype._unregister = function() {
+BaseManager.prototype._unregister = function() {
   //Implement freely
   this.events.emit('warn', '_unregister not implemented');
 };
@@ -229,42 +203,13 @@ CodeCompiler.prototype._unregister = function() {
 ********************************/
 
 //Pre compile call
-CodeCompiler.prototype.__preCompile = function() {
+BaseManager.prototype.__preCompile = function() {
   this.events.emit('warn', '__preCompile not implemented');
 };
 
 //Pre add call
-CodeCompiler.prototype.__preAdd = function() {
+BaseManager.prototype.__preAdd = function() {
   this.events.emit('warn', '__preAdd not implemented');
 };
 
-
-// Code optimization
-CodeCompiler.prototype.__codeOptimization = function(code) {
-  var optimized = uglifyJs.minify(code, {
-    fromString: true,
-    mangle: {
-      sort: true
-    },
-    compress: {
-      sequences: true,
-      properties: true,
-      dead_code: true,
-      drop_debugger: true,
-      conditionals: true,
-      evaluate: true,
-      booleans: true,
-      loops: true,
-      unused: true,
-      if_return: true,
-      join_vars: true,
-      cascade: true,
-      drop_console: false
-    }
-  });
-
-
-  return optimized.code;
-};
-
-module.exports = CodeCompiler;
+module.exports = BaseManager;

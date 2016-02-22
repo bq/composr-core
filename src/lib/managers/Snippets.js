@@ -1,37 +1,28 @@
 'use strict';
-var CodeCompiler = require('../compilers/code.compiler.js');
+var BaseManager = require('./base.manager.js');
 var SnippetModel = require('../models/SnippetModel.js');
 var snippetValidator = require('../validators/snippet.validator.js');
-var utils = require('../utils.js');
 
 var SnippetsManager = function(options) {
   this.events = options.events;
 };
 
-SnippetsManager.prototype = new CodeCompiler({
+SnippetsManager.prototype = new BaseManager({
   itemName: 'snippet',
   item: '__snippets',
   validator: snippetValidator
 });
 
 //Compilation
-SnippetsManager.prototype._compile = function(snippet) {
+SnippetsManager.prototype._compile = function(snippet, domain) {
   try {
-    var compiled = {
-      id: snippet.id,
-      name: snippet.id.replace(this._extractDomainFromId(snippet.id) + '!', ''),
-      code: null
-    };
+    var snippetModel = new SnippetModel(snippet, domain);
 
-    var code = utils.decodeFromBase64(snippet.codehash);
+    snippetModel.compile();
 
-    compiled.code = this._evaluateCode(code, ['exports']);
+    this.events.emit('debug', 'snippet:compiled', snippetModel.getId(), snippetModel.getName());
 
-    this.events.emit('debug', 'snippet:compiled', compiled.id, compiled.name);
-
-    return new SnippetModel(snippet, domain, compiled);
-
-
+    return snippetModel;
   } catch (e) {
     console.log(e);
     //Somehow it has tried to compile an invalid snippet. Notify it and return false.
@@ -39,15 +30,14 @@ SnippetsManager.prototype._compile = function(snippet) {
     this.events.emit('error', 'snippet:not:usable', snippet.id, e);
     return false;
   }
-
 };
 
-SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
-  if (!domain || !snippetCompiled) {
+SnippetsManager.prototype._addToList = function(domain, snippetModel) {
+  if (!domain || !snippetModel) {
     return false;
   }
 
-  if (typeof(snippetCompiled) !== 'object' || snippetCompiled.hasOwnProperty('id') === false || !snippetCompiled.id) {
+  if (typeof(snippetModel) !== 'object' || snippetModel.hasOwnProperty('id') === false || !snippetModel.getId()) {
     return false;
   }
 
@@ -55,7 +45,7 @@ SnippetsManager.prototype._addToList = function(domain, snippetCompiled) {
     this.__snippets[domain] = {};
   }
 
-  this.__snippets[domain][snippetCompiled.id] = snippetCompiled;
+  this.__snippets[domain][snippetModel.getId()] = snippetModel;
   return true;
 };
 

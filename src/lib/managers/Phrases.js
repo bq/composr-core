@@ -1,7 +1,7 @@
 'use strict';
 var phraseValidator = require('../validators/phrase.validator');
 var PhraseModel = require('../models/PhraseModel');
-var CodeCompiler = require('../compilers/code.compiler');
+var BaseManager = require('./base.manager');
 var regexpGenerator = require('../regexpGenerator');
 var paramsExtractor = require('../paramsExtractor');
 var queryString = require('query-string');
@@ -14,8 +14,6 @@ var utils = require('../utils');
 var _ = require('lodash');
 var XRegExp = require('xregexp').XRegExp;
 
-var DEFAULT_PHRASE_PARAMETERS = ['req', 'res', 'next', 'corbelDriver', 'domain', 'require', 'config', 'metrics'];
-
 
 var PhraseManager = function(options) {
   this.events = options.events;
@@ -23,7 +21,7 @@ var PhraseManager = function(options) {
   this.config = options.config || {};
 };
 
-PhraseManager.prototype = new CodeCompiler({
+PhraseManager.prototype = new BaseManager({
   itemName: 'phrase',
   item: '__phrases',
   validator: phraseValidator
@@ -43,11 +41,11 @@ PhraseManager.prototype.__preCompile = function(domain, phrase) {
   }
 };
 
-PhraseManager.prototype.__preAdd = function(domain, compiled) {
-  var phrasesWithTheSamePath = this._filterByRegexp(domain, compiled.regexpReference.regexp);
+PhraseManager.prototype.__preAdd = function(domain, phraseModel) {
+  var phrasesWithTheSamePath = this._filterByRegexp(domain, phraseModel.getRegexp());
 
   if (phrasesWithTheSamePath.length > 0) {
-    this.events.emit('warn', 'phrase:path:duplicated', compiled.id);
+    this.events.emit('warn', 'phrase:path:duplicated', phraseModel.getId());
   }
 };
 
@@ -87,42 +85,14 @@ PhraseManager.prototype._unregister = function(domain, id) {
 
 PhraseManager.prototype._compile = function(domain, phrase) {
   try {
-    var module = this;
 
-    var compiled = {};
+    var phraseModel = new PhraseModel(phrase, domain);
+    
+    phraseModel.compile();
 
-    compiled.url = phrase.url;
-    compiled.id = phrase.id;
-    //The regexp reference dictaminates the routing mechanisms
-    compiled.regexpReference = regexpGenerator.regexpReference(phrase.url);
+    this.events.emit('debug', 'phrase:compiled', phraseModel.getId(), Object.keys(phrase.compiled.codes));
 
-    var methods = ['get', 'put', 'post', 'delete', 'options'];
-
-    compiled.codes = {};
-
-    //Create in memory functions with the evaluation of the codes
-    methods.forEach(function(method) {
-      if (phrase[method] && (phrase[method].code || phrase[method].codehash)) {
-        var phraseIdentifier = phrase.id ? phrase.id : phrase.url;
-        module.events.emit('debug', 'phrase_manager:evaluatecode:', method, phraseIdentifier);
-
-        var code;
-
-        if (phrase[method].codehash) {
-          code = utils.decodeFromBase64(phrase[method].codehash);
-        } else {
-          code = phrase[method].code;
-        }
-
-        var debugInfo = phrase.debug ? phrase.debug[method] : null;
-
-        compiled.codes[method] = module._evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
-      }
-    });
-
-    module.events.emit('debug', 'phrase:compiled', compiled.id, Object.keys(compiled.codes));
-    //TODO compile in the phrase model
-    return new PhraseModel(phrase, domain, compiled);
+    return phraseModel;
 
   } catch (e) {
     //Somehow it has tried to compile an invalid phrase. Notify it and return false.
@@ -175,7 +145,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
     if (!params.params) {
       //extract params from path
       var sanitizedPath = path.replace(queryParamsString, '');
-      params.params = paramsExtractor.extract(sanitizedPath, phrase.regexpReference);
+      params.params = paramsExtractor.extract(sanitizedPath, phrase.getRegexpReference());
     }
 
     return this._run(phrase, verb, params, domain);
@@ -188,7 +158,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
 //Checks if it can be run
 PhraseManager.prototype.canBeRun = function(phrase, verb) {
-  if (phrase && phrase.codes[verb] && phrase.codes[verb].error === false) {
+  if (phrase && phrase.canRun(verb)) {
     return true;
   } else {
     return false;
@@ -245,13 +215,11 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   
   //trigger the execution 
   try {
-
     if (params.browser) {
       phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file);
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file);
     }
-
   } catch (e) {
     //@TODO this errors can be: 
     //- corbel errors
@@ -259,15 +227,15 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
     // How do we handle it?
     if (params.browser) {
       //Function mode only throws an error when errored
-      this.events.emit('warn', 'phrase:internal:error', e, phrase.url);
+      this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl());
 
-      var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.url);
+      var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.getUrl());
 
       resWrapper.status(error.status).send(error);
     } else {
       //vm throws an error when timedout
-      this.events.emit('warn', 'phrase:timedout', e, phrase.url);
-      resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
+      this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl());
+      resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503));
     }
   }
 
@@ -282,7 +250,7 @@ PhraseManager.prototype._filterByRegexp = function(domain, regexp) {
   var candidates = this._getPhrasesAsList(domain);
 
   return _.filter(candidates, function(candidate) {
-    return candidate.regexpReference.regexp === regexp;
+    return candidate.getRegexp() === regexp;
   });
 };
 
@@ -368,7 +336,7 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
 
   candidates = _.compact(candidates.map(function(phrase) {
     if (phrase.codes[verb] &&
-      XRegExp.test(path, phrase.regexpReference.xregexp)) {
+      XRegExp.test(path, phrase.getRegexp())) {
       return phrase;
     }
   }));
@@ -380,7 +348,7 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
     return candidate;
   } else {
     candidate = candidates[0];
-    this.events.emit('debug', 'using:candidate:' + candidate.id + ':' + verb);
+    this.events.emit('debug', 'using:candidate:' + candidate.getId() + ':' + verb);
     return candidate;
   }
 

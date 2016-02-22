@@ -1,7 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
-var CodeCompiler = require('../compilers/code.compiler.js');
+var BaseManager = require('./base.manager.js');
 var virtualDomainValidator = require('../validators/virtualDomain.validator');
 
 var VirtualDomainManager = function (options) {
@@ -10,7 +10,7 @@ var VirtualDomainManager = function (options) {
   this.Snippets = options.Snippets;
 };
 
-VirtualDomainManager.prototype = new CodeCompiler({
+VirtualDomainManager.prototype = new BaseManager({
   itemName: 'virtualDomain',
   item: '__virtualDomains',
   validator: virtualDomainValidator
