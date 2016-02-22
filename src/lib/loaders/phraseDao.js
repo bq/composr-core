@@ -61,7 +61,4 @@ PhraseDao.loadAll = function () {
   return this.utils.getAllRecursively(caller);
 };
 
-module.exports = {
-  load: PhraseDao.load,
-  loadAll: PhraseDao.loadAll
-};
+module.exports = PhraseDao;

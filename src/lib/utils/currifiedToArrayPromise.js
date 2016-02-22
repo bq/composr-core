@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var q = require('q');
 /*
@@ -11,25 +13,25 @@ function currifiedToArrayPromise(itemOrItems) {
   if (!itemOrItems) {
     return function(){
       return Promise.reject();
-    }
+    };
   }
 
   var isArray = Array.isArray(itemOrItems);
+  
+  var theItems = _.cloneDeep(itemOrItems);
 
   if (isArray === false) {
-    itemOrItems = [itemOrItems];
+    theItems = [theItems];
   }
 
-  itemOrItems = _.cloneDeep(itemOrItems);
-
   return function(itemCb, cb){
-    var promises = itemOrItems.map(function(item) {
-      return cb(item);
+    var promises = theItems.map(function(item) {
+      return itemCb(item);
     });
 
-    q.allSettled(promises)
+    return new Promise(function(resolve){
+      q.allSettled(promises)
       .then(function(results) {
-
         if(cb){
           results = results.map(cb);
         }else{
@@ -39,15 +41,14 @@ function currifiedToArrayPromise(itemOrItems) {
         }
 
         if (isArray) {
-          dfd.resolve(results);
+          resolve(results);
         } else {
-          dfd.resolve(results[0]);
+          resolve(results[0]);
         }
       });
+    });
+  };
 
-    return dfd.promise;
-  }
-
-};
+}
 
 module.exports = currifiedToArrayPromise;

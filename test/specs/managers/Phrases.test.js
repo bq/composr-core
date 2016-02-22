@@ -1,4 +1,4 @@
-var PhraseManager = require('../../src/lib/managers/Phrases'),
+var PhraseManager = require('../../../src/lib/managers/Phrases'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -8,8 +8,8 @@ var PhraseManager = require('../../src/lib/managers/Phrases'),
 
 chai.use(chaiAsPromised);
 
-var phrasesFixtures = require('../fixtures/phrases');
-var utilsPromises = require('../utils/promises');
+var phrasesFixtures = require('../../fixtures/phrases');
+var utilsPromises = require('../../utils/promises');
 
 describe('== Phrases ==', function() {
   var stubEvents, Phrases;

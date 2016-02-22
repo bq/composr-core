@@ -1,0 +1,15 @@
+{
+      "id": "domain!project",
+      "name": "composr-cli",
+      "author": "jorge-serrano",
+      "version": "1.0.0",
+      "source_location": "./src",
+      "git": "",
+      "license": "MIT",
+      "mock_middleware": false,
+      "validate_middleware": true,
+      "vd_dependencies": {},
+      "_apiRML": {},
+      "phrases" : [],
+      "snippets" : []
+}

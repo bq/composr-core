@@ -1,4 +1,4 @@
-var SnippetManager = require('../../src/lib/managers/Snippets'),
+var SnippetManager = require('../../../src/lib/managers/Snippets'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -9,8 +9,8 @@ var SnippetManager = require('../../src/lib/managers/Snippets'),
 
 chai.use(chaiAsPromised);
 
-var snippetsFixtures = require('../fixtures/snippets');
-var utilsPromises = require('../utils/promises');
+var snippetsFixtures = require('../../fixtures/snippets');
+var utilsPromises = require('../../utils/promises');
 
 describe('== Snippets ==', function() {
   var stubEvents, Phrases;

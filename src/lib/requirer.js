@@ -48,7 +48,7 @@ Requirer.prototype.forDomain = function(domain, functionMode) {
       var returnedResult = null;
       //Execute the exports function
       if (snippet) {
-        module.events.emit('debug', 'executing:' + libName + ':functionmode:' + functionmode);
+        module.events.emit('debug', 'executing:' + libName + ':functionmode:' + functionMode);
         snippet.execute(functionMode, function(res){
           //TODO: What that bug!!
           returnedResult = res;

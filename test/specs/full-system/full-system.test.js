@@ -17,11 +17,11 @@ describe.only('Full system usage', function() {
   before(function() {
     stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
     stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-    stubLoadVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedPromise);
+    stubLoadVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
     stubGetVirtualDomainModel = sinon.stub(composr, 'getVirtualDomainModel', utilsPromises.resolvedPromise);
     stubRegisterDomains = sinon.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
-    stubLoadSomePhrases = sinon.stub(composr.phraseDao, 'loadSome');
-    stubLoadSomeSnippets = sinon.stub(composr.snippetDao, 'loadSome');
+    stubLoadSomePhrases = sinon.stub(composr.phraseDao, 'loadSome', utilsPromises.resolvedPromise);
+    stubLoadSomeSnippets = sinon.stub(composr.snippetDao, 'loadSome', utilsPromises.resolvedPromise);
   });
 
   after(function() {
@@ -41,9 +41,7 @@ describe.only('Full system usage', function() {
       .then(function() {
         return composr.Phrases.register('myDomain', phrasesFixtures.correct);
       })
-      .should.be.fulfilled
       .then(function(results) {
-
         results.forEach(function(result) {
           expect(result.registered).to.equals(true);
         });

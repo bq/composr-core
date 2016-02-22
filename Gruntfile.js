@@ -28,7 +28,7 @@ module.exports = function(grunt) {
         options: {
           reporter: 'spec'
         },
-        src: ['test/runner.js']
+        src: ['test/**/**.test.js']
       }
     },
 

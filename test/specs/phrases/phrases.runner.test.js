@@ -1,5 +1,5 @@
-var PhraseManager = require('../../../src/lib/Phrases'),
-  SnippetsManager = require('../../../src/lib/Snippets'),
+var PhraseManager = require('../../../src/lib/managers/Phrases'),
+  SnippetsManager = require('../../../src/lib/managers/Snippets'),
   Requirer = require('../../../src/lib/requirer'),
   events = require('../../../src/lib/events'),
   _ = require('lodash'),

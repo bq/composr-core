@@ -6,16 +6,13 @@ var evaluateCode = require('../compilers/evaluateCode');
 var DEFAULT_SNIPPET_PARAMETERS = ['exports'];
 
 var SnippetModel = function(json, domain){
+  console.log(json);
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
-  this.id = json.id ? json.id : this._generateId(domain);
+  this.id = json.id;
   this.name = this.id.replace(domain + '!', '');
   this.compiled = {
     code : null
   };
-};
-
-SnippetModel.prototype._generateId = function(domain) {
-  return domain + '!' + this.json.url.replace(/\//g, '!');
 };
 
 SnippetModel.prototype.getId = function() {
@@ -31,8 +28,15 @@ SnippetModel.prototype.getRawModel = function(){
 };
 
 SnippetModel.prototype.compile = function(events){
+  var model = this;
   var code = utils.decodeFromBase64(this.json.codehash);
-  this.compiled.code = evaluateCode(code, DEFAULT_SNIPPET_PARAMETERS, null, events, this.getId());
+  this.compiled.code = evaluateCode(code, DEFAULT_SNIPPET_PARAMETERS, null, function(err){
+    if(err){
+      events.emit('debug', model.getId() + ':evaluatecode:good');
+    }else{
+      events.emit('warn', model.getId() + ':evaluatecode:wrong_code', err);
+    }
+  });
 };
 
 SnippetModel.prototype.execute = function(functionMode, cb) {

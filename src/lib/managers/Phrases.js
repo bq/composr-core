@@ -2,8 +2,6 @@
 var phraseValidator = require('../validators/phrase.validator');
 var PhraseModel = require('../models/PhraseModel');
 var BaseManager = require('./base.manager');
-var regexpGenerator = require('../regexpGenerator');
-var paramsExtractor = require('../paramsExtractor');
 var queryString = require('query-string');
 var ComposrError = require('../ComposrError');
 var MetricsFirer = require('../MetricsFirer');
@@ -12,8 +10,6 @@ var mockedServer = require('../mock');
 var utils = require('../utils');
 
 var _ = require('lodash');
-var XRegExp = require('xregexp').XRegExp;
-
 
 var PhraseManager = function(options) {
   this.events = options.events;
@@ -82,22 +78,22 @@ PhraseManager.prototype._unregister = function(domain, id) {
   }
 };
 
-
 PhraseManager.prototype._compile = function(domain, phrase) {
   try {
 
     var phraseModel = new PhraseModel(phrase, domain);
     
-    phraseModel.compile();
+    phraseModel.compile(this.events);
 
-    this.events.emit('debug', 'phrase:compiled', phraseModel.getId(), Object.keys(phrase.compiled.codes));
+    this.events.emit('debug', 'phrase:compiled', phraseModel.getId(), Object.keys(phraseModel.compiled.codes));
 
     return phraseModel;
 
   } catch (e) {
+    console.log(e);
     //Somehow it has tried to compile an invalid phrase. Notify it and return false.
     //Catching errors and returning false here is important for not having an unstable phrases stack.
-    this.events.emit('error', 'phrase:not:usable', phrase.url, e);
+    this.events.emit('errore', 'phrase:not:usable', phrase.url, e);
     return false;
   }
 
@@ -111,13 +107,12 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
 
   var phrase = this.getById(domain, id);
 
-  if (this.canBeRun(phrase, verb)) {
+  if (phrase && phrase.canRun(verb)) {
     return this._run(phrase, verb, params, domain);
   } else {
     //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     return Promise.reject('phrase:cant:be:runned');
   }
-
 };
 
 //Executes a phrase matching a path
@@ -128,11 +123,10 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
 
   var phrase = this.getByMatchingPath(domain, path, verb);
 
-  if (this.canBeRun(phrase, verb)) {
+  if (phrase && phrase.canRun(verb)) {
     if (!params) {
       params = {};
     }
-
 
     var queryParamsString = '';
 
@@ -145,7 +139,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
     if (!params.params) {
       //extract params from path
       var sanitizedPath = path.replace(queryParamsString, '');
-      params.params = paramsExtractor.extract(sanitizedPath, phrase.getRegexpReference());
+      params.params = phrase.getParamsFromPath(sanitizedPath);
     }
 
     return this._run(phrase, verb, params, domain);
@@ -154,15 +148,6 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
     return Promise.reject('phrase:cant:be:runned');
   }
 
-};
-
-//Checks if it can be run
-PhraseManager.prototype.canBeRun = function(phrase, verb) {
-  if (phrase && phrase.canRun(verb)) {
-    return true;
-  } else {
-    return false;
-  }
 };
 
 /*
@@ -335,8 +320,7 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
   this.events.emit('debug', 'evaluating:' + candidates.length + ':candidates');
 
   candidates = _.compact(candidates.map(function(phrase) {
-    if (phrase.codes[verb] &&
-      XRegExp.test(path, phrase.getRegexp())) {
+    if (phrase.canRun(verb) && phrase.matchesPath(path)) {
       return phrase;
     }
   }));

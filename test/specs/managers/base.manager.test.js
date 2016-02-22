@@ -1,6 +1,6 @@
 'use strict';
 
-var CodeCompiler = require('../../../src/lib/compilers/code.compiler'),
+var BaseManager = require('../../../src/lib/managers/base.manager'),
   chai = require('chai'),
   chaiAsPromised = require('chai-as-promised'),
   sinon = require('sinon'),
@@ -16,28 +16,28 @@ var utilsPromises = require('../../utils/promises');
 describe('Code Compiler', function() {
 
   it('exposes the needed prototype', function() {
-    expect(CodeCompiler.prototype).to.respondTo('register');
-    expect(CodeCompiler.prototype).to.respondTo('registerWithoutDomain');
-    expect(CodeCompiler.prototype).to.respondTo('_register');
-    expect(CodeCompiler.prototype).to.respondTo('unregister');
-    expect(CodeCompiler.prototype).to.respondTo('_unregister');
-    expect(CodeCompiler.prototype).to.respondTo('compile');
-    expect(CodeCompiler.prototype).to.respondTo('_compile');
-    expect(CodeCompiler.prototype).to.respondTo('_addToList');
-    expect(CodeCompiler.prototype).to.respondTo('__preCompile');
-    expect(CodeCompiler.prototype).to.respondTo('__preAdd');
-    expect(CodeCompiler.prototype).to.respondTo('validate');
-    expect(CodeCompiler.prototype).to.respondTo('resetItems');
-    expect(CodeCompiler.prototype).to.respondTo('_evaluateCode');
-    expect(CodeCompiler.prototype).to.respondTo('_extractDomainFromId');
-    expect(CodeCompiler.prototype).to.respondTo('__codeOptimization');
+    expect(BaseManager.prototype).to.respondTo('register');
+    expect(BaseManager.prototype).to.respondTo('registerWithoutDomain');
+    expect(BaseManager.prototype).to.respondTo('_register');
+    expect(BaseManager.prototype).to.respondTo('unregister');
+    expect(BaseManager.prototype).to.respondTo('_unregister');
+    expect(BaseManager.prototype).to.respondTo('compile');
+    expect(BaseManager.prototype).to.respondTo('_compile');
+    expect(BaseManager.prototype).to.respondTo('_addToList');
+    expect(BaseManager.prototype).to.respondTo('__preCompile');
+    expect(BaseManager.prototype).to.respondTo('__preAdd');
+    expect(BaseManager.prototype).to.respondTo('validate');
+    expect(BaseManager.prototype).to.respondTo('resetItems');
+    expect(BaseManager.prototype).to.respondTo('_evaluateCode');
+    expect(BaseManager.prototype).to.respondTo('_extractDomainFromId');
+    expect(BaseManager.prototype).to.respondTo('__codeOptimization');
   });
 
   describe('Code evaluation', function() {
     var compiler, stubEvents, spyCodeOptimization;
 
     beforeEach(function() {
-      compiler = new CodeCompiler({
+      compiler = new BaseManager({
         itemName: 'test-object',
         item: 'myItems'
       });
@@ -81,7 +81,7 @@ describe('Code Compiler', function() {
     var compiler, stubEvents;
 
     beforeEach(function() {
-      compiler = new CodeCompiler({
+      compiler = new BaseManager({
         itemName: 'phrases',
         item: '__myList',
         validator: function(item) {
@@ -193,7 +193,7 @@ describe('Code Compiler', function() {
       var stubEvents, aCompiler;
 
       beforeEach(function() {
-        aCompiler = new CodeCompiler({
+        aCompiler = new BaseManager({
           item: '__myList',
           itemName: 'testObject',
           validator: function(item) {
@@ -283,7 +283,7 @@ describe('Code Compiler', function() {
 
     beforeEach(function() {
 
-      compiler = new CodeCompiler({
+      compiler = new BaseManager({
         item: '__mything'
       });
 
@@ -304,7 +304,7 @@ describe('Code Compiler', function() {
 
   describe('Domain extraction', function() {
 
-    var compiler = new CodeCompiler({
+    var compiler = new BaseManager({
       item: '__mything'
     });
 
@@ -334,7 +334,7 @@ describe('Code Compiler', function() {
     var spyUnregister, compiler, stubEvents;
 
     beforeEach(function() {
-      compiler = new CodeCompiler({
+      compiler = new BaseManager({
         item: '__mything',
         itemName: 'goodies'
       });
@@ -380,7 +380,7 @@ describe('Code Compiler', function() {
     var stubRegister, compiler;
 
     before(function() {
-      compiler = new CodeCompiler({
+      compiler = new BaseManager({
         item: '__mything',
         itemName: 'goodies'
       });

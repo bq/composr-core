@@ -14,11 +14,11 @@ SnippetsManager.prototype = new BaseManager({
 });
 
 //Compilation
-SnippetsManager.prototype._compile = function(snippet, domain) {
+SnippetsManager.prototype._compile = function(domain, snippet) {
   try {
     var snippetModel = new SnippetModel(snippet, domain);
 
-    snippetModel.compile();
+    snippetModel.compile(this.events);
 
     this.events.emit('debug', 'snippet:compiled', snippetModel.getId(), snippetModel.getName());
 

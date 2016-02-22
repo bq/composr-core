@@ -1,6 +1,8 @@
 'use strict';
 
 var _ = require('lodash');
+var regexpGenerator = require('../regexpGenerator');
+var paramsExtractor = require('../paramsExtractor');
 var XRegExp = require('xregexp').XRegExp;
 var utils = require('../utils.js');
 var evaluateCode = require('../compilers/evaluateCode');
@@ -19,6 +21,10 @@ var DEFAULT_PHRASE_PARAMETERS = [
 var PhraseModel = function(json, domain){
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
   this.id = json.id ? json.id : this._generateId(domain);
+
+  //The regexp reference dictaminates the routing mechanisms
+  this.regexpReference = regexpGenerator.regexpReference(this.getUrl());
+
   this.compiled = {
     codes : {}
   };
@@ -37,7 +43,7 @@ PhraseModel.prototype.getUrl = function() {
 };
 
 PhraseModel.prototype.getRegexp = function(){
-  return this.regexpReference.regexp;
+  return this.getRegexpReference().regexp;
 };
 
 PhraseModel.prototype.getRegexpReference = function(){
@@ -52,10 +58,19 @@ PhraseModel.prototype.canRun = function(verb){
   return this.compiled.codes[verb] && this.compiled.codes[verb].error === false;
 };
 
+PhraseModel.prototype.matchesPath = function(path){
+  return XRegExp.test(path, this.getRegexp());
+};
+
+/*
+ Asume that the path is sanitized without query params.
+ */
+PhraseModel.prototype.extractParamsFromPath = function(path){
+  return paramsExtractor.extract(path, this.getRegexpReference());
+};
+
 PhraseModel.prototype.compile = function(events){
   var model = this;
-  //The regexp reference dictaminates the routing mechanisms
-  this.compiled.regexpReference = regexpGenerator.regexpReference(this.getUrl());
 
   this.compiled.codes = {};
 
@@ -75,10 +90,16 @@ PhraseModel.prototype.compile = function(events){
 
       var debugInfo = model.json.debug ? model.json.debug[method] : null;
 
-      model.compiled.codes[method] = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo, events);
+      model.compiled.codes[method] = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo, function(err){
+        if(err){
+          events.emit('debug', model.getId() + ':evaluatecode:good');
+        }else{
+          events.emit('warn', model.getId() + ':evaluatecode:wrong_code', err);
+        }
+      });
     }
   });
-}
+};
 
 //Runs VM script mode
 PhraseModel.prototype.__executeScriptMode = function(verb, parameters, timeout, file) {

@@ -37,6 +37,7 @@ BaseManager.prototype.resetItems = function() {
 
 //Entry point for registering or unregistering items
 BaseManager.prototype.register = function(domain, itemOrItems) {
+  var module = this;
   var itemsPromisesGenerator = currifiedToArrayPromise(itemOrItems);
 
   return itemsPromisesGenerator(function(item) {
@@ -46,7 +47,7 @@ BaseManager.prototype.register = function(domain, itemOrItems) {
     return {
       registered: result.state === 'fulfilled',
       id: itemOrItems[index].id,
-      compiled: result.state === 'fulfilled' ? result.value : null,
+      model: result.state === 'fulfilled' ? result.value : null,
       error: result.reason ? result.reason : null
     };
   });
@@ -78,13 +79,14 @@ BaseManager.prototype._register = function(domain, item) {
 
         return modelInstance;
       } else {
-        module.events.emit('warn', module.itemName + ':not:registered', item.getId());
+
+        module.events.emit('warn', module.itemName + ':not:registered', item.id);
         throw new Error('not:registered');
       }
 
     })
     .catch(function(err) {
-      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.getId(), err);
+      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
       throw err;
     });
 };

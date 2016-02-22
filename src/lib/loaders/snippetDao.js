@@ -62,7 +62,4 @@ SnippetDao.loadAll = function () {
   return this.utils.getAllRecursively(caller);
 };
 
-module.exports = {
-  load: SnippetDao.load,
-  loadAll: SnippetDao.loadAll
-};
+module.exports = SnippetDao;

@@ -1,6 +1,6 @@
-var VirtualDomainManager = require('../../src/lib/managers/VirtualDomain'),
-  SnippetManager = require('../../src/lib/managers/Snippets'),
-  PhraseManager = require('../../src/lib/managers/Phrases'),
+var VirtualDomainManager = require('../../../src/lib/managers/VirtualDomain'),
+  SnippetManager = require('../../../src/lib/managers/Snippets'),
+  PhraseManager = require('../../../src/lib/managers/Phrases'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -10,8 +10,8 @@ var VirtualDomainManager = require('../../src/lib/managers/VirtualDomain'),
 chai.should();
 chai.use(chaiAsPromised);
 
-var virtualDomainFixtures = require('../fixtures/virtualdomains');
-var utilsPromises = require('../utils/promises');
+var virtualDomainFixtures = require('../../fixtures/virtualdomains');
+var utilsPromises = require('../../utils/promises');
 
 describe('== Virtual Domains ==', function() {
   var stubEvents, Phrases;

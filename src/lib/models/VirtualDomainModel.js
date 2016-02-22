@@ -17,7 +17,7 @@ var _ = require('lodash');
  *   "_apiRML": {}
  * }
  */
-var VirtualDomainModel = function (json, phrases, snippets) {
+var VirtualDomainModel = function (json, phrases, snippets, domain) {
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
   // id = domain!apiId
   this.phrases = phrases;

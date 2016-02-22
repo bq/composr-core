@@ -29,7 +29,7 @@ function __codeOptimization(code) {
   return optimized.code;
 }
 
-function evaluateCode(functionBody, params, debugFilePath, events) {
+function evaluateCode(functionBody, params, debugFilePath, cb) {
 
   var functionParams = params ? params : [];
 
@@ -61,13 +61,13 @@ function evaluateCode(functionBody, params, debugFilePath, events) {
 
     result.script = new vm.Script(optimized, options);
 
-    events.emit('debug', this.itemName + ':evaluatecode:good');
+    cb();
   } catch (e) {
-    events.emit('warn', this.itemName + ':evaluatecode:wrong_code', e);
     result.error = true;
+    cb(e);
   }
 
   return result;
 }
 
-module.exports = evaluatecode;
+module.exports = evaluateCode;
