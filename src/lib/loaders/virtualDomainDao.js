@@ -18,7 +18,7 @@ VirtualDomainDao.load = function (id) {
   }
 };
 
-VirtualDomainDao.loadAll = function () {
+/*VirtualDomainDao.loadAll = function () {
   var module = this;
   var caller = function (pageNumber, pageSize) {
     return module.corbelDriver.resources.collection(module.resources.virtualDomainCollection).get({
@@ -30,6 +30,14 @@ VirtualDomainDao.loadAll = function () {
   };
 
   return this.utils.getAllRecursively(caller);
+};*/
+
+VirtualDomainDao.loadAll = function(){
+  return Promise.resolve([{
+    id : 'booqs:nubico:demo!phrasesProject',
+    phrases : ['booqs:nubico:demo!v0!user!email','booqs:nubico:demo!v0!user!email'],
+    snippets : ['booqs:nubico:demo!config']
+  }]);
 };
 
 module.exports = {

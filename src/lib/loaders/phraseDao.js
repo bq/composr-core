@@ -19,7 +19,7 @@ PhraseDao.load = function (id) {
 };
 
 PhraseDao.loadSome = function(ids){
-  if (!id || !Array.isArray(ids)) {
+  if (!ids || !Array.isArray(ids)) {
     return Promise.reject('missing:ids');
   }
 

@@ -17,7 +17,19 @@ var virtualDomainSchema = {
     'mock_middleware': {'type': 'boolean'},
     'validate_middleware': {'type': 'boolean'},
     'vd_dependencies': {'type': 'object'},
-    '_apiRML': {'type': 'object'}
+    '_apiRML': {'type': 'object'},
+    'phrases' : { 
+      'type' : 'array',
+      'items' : {
+        'type' : 'string'
+      }
+    },
+    'snippets' : { 
+      'type' : 'array',
+      'items' : {
+        'type' : 'string'
+      }
+    }
   }
 };
 

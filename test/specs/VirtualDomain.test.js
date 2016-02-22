@@ -1,4 +1,6 @@
-var VirtualDomainManager = require('../../src/lib/VirtualDomain'),
+var VirtualDomainManager = require('../../src/lib/managers/VirtualDomain'),
+  SnippetManager = require('../../src/lib/managers/Snippets'),
+  PhraseManager = require('../../src/lib/managers/Phrases'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -17,58 +19,51 @@ describe('== Virtual Domains ==', function() {
   beforeEach(function() {
     stubEvents = sinon.stub();
 
-    Snippets = new VirtualDomainManager({
+    Snippets = new SnippetManager({
       events: {
         emit: stubEvents
       }
     });
 
+    Phrases = new PhraseManager({
+      events: {
+        emit: stubEvents
+      }
+    });
+
+    VirtualDomains = new VirtualDomainManager({
+      events: {
+        emit : stubEvents,
+        Phrases : Phrases,
+        Snippets : Snippets
+      }
+    });
+
   });
 
-  describe('Snippets API', function() {
+  describe('VirtualDomains API', function() {
     it('exposes the expected methods', function() {
-      expect(Snippets).to.have.property('__snippets');
-      expect(Snippets).to.respondTo('resetItems');
-      expect(Snippets).to.respondTo('validate');
-      expect(Snippets).to.respondTo('getSnippets');
-      expect(Snippets).to.respondTo('getByName');
-      expect(Snippets).to.respondTo('compile');
-      expect(Snippets).to.respondTo('_compile');
-      expect(Snippets).to.respondTo('register');
-      expect(Snippets).to.respondTo('_register');
-      expect(Snippets).to.respondTo('unregister');
-      expect(Snippets).to.respondTo('_unregister');
+      expect(VirtualDomains).to.have.property('__virtualDomains');
+      expect(VirtualDomains).to.respondTo('resetItems');
+      expect(VirtualDomains).to.respondTo('validate');
+      expect(VirtualDomains).to.respondTo('getVirtualDomains');
+      expect(VirtualDomains).to.respondTo('getVirtualDomainsAsList');
+      expect(VirtualDomains).to.respondTo('compile');
+      expect(VirtualDomains).to.respondTo('_compile');
+      expect(VirtualDomains).to.respondTo('register');
+      expect(VirtualDomains).to.respondTo('_register');
+      expect(VirtualDomains).to.respondTo('unregister');
+      expect(VirtualDomains).to.respondTo('_unregister');
     });
   });
 
-  describe('Reset snippets', function() {
-    beforeEach(function() {
-      Snippets.__snippets = {
-        'myDomain': {
-          'snippetName': function() {}
-        }
-      };
-    });
+ 
+  describe('VirtualDomains validation', function() {
 
-    after(function() {
-      Snippets.__snippets = {};
-    });
+    it('Validates a good virtualDomain', function(done) {
+      var goodVirtualDomainModel = virtualDomainFixtures.correct[0];
 
-    it('Should be an empty object after calling it', function() {
-      Snippets.resetItems();
-
-      expect(Snippets.__snippets).to.be.a('object');
-      expect(Object.keys(Snippets.__snippets).length).to.equals(0);
-    });
-
-  });
-
-  describe('Snippets validation', function() {
-
-    it('Validates a good snippet', function(done) {
-      var goodSnippetModel = snippetsFixtures.correct[0];
-
-      Snippets.validate(goodSnippetModel)
+      VirtualDomains.validate(goodVirtualDomainModel)
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
@@ -78,8 +73,8 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('Denies all the invalid models', function(done) {
-      var promises = snippetsFixtures.malformed.map(function(snippet) {
-        return Snippets.validate(snippet);
+      var promises = virtualDomainFixtures.malformed.map(function(virtualDomain) {
+        return VirtualDomains.validate(virtualDomain);
       });
 
       q.allSettled(promises)
@@ -95,7 +90,7 @@ describe('== Virtual Domains ==', function() {
 
   });
 
-  describe('Compile snippets', function() {
+ /* describe('Compile virtualdomains', function() {
     var stubEvents;
 
     beforeEach(function() {
@@ -108,7 +103,7 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('should compile a well formed snippet', function() {
-      var snippet = snippetsFixtures.correct[0];
+      var snippet = virtualDomainFixtures.correct[0];
       var result = Snippets.compile(snippet);
 
       expect(result).to.be.a('object');
@@ -125,7 +120,7 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('should emit an event with information about the compilation', function() {
-      var snippet = snippetsFixtures.correct[0];
+      var snippet = virtualDomainFixtures.correct[0];
       var result = Snippets.compile(snippet);
 
       //one from the evaluate code and one from the compilation
@@ -134,12 +129,12 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('should allow passing a single snippet', function() {
-      var compiled = Snippets.compile(snippetsFixtures.correct[0]);
+      var compiled = Snippets.compile(virtualDomainFixtures.correct[0]);
       expect(Array.isArray(compiled)).to.equals(false);
     });
 
     it('should allow passing multiple Snippets', function() {
-      var compiledSnippets = Snippets.compile(snippetsFixtures.correct);
+      var compiledSnippets = Snippets.compile(virtualDomainFixtures.correct);
       expect(Array.isArray(compiledSnippets)).to.equals(true);
     });
 
@@ -304,7 +299,7 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('should allow to register an array of snippet models', function(done) {
-      var snippetsToRegister = snippetsFixtures.correct;
+      var snippetsToRegister = virtualDomainFixtures.correct;
 
       Snippets.register('domain', snippetsToRegister)
         .should.be.fulfilled
@@ -351,7 +346,7 @@ describe('== Virtual Domains ==', function() {
     });
 
     it('should return the registered state when it does NOT register', function(done) {
-      var snippet = snippetsFixtures.malformed[0];
+      var snippet = virtualDomainFixtures.malformed[0];
 
       Snippets.register('domain', snippet)
         .should.be.fulfilled
@@ -433,7 +428,7 @@ describe('== Virtual Domains ==', function() {
 
       it('should call the compilation and validation methods when registering a snippet', function(done) {
 
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
+        Snippets.register('test-domain', virtualDomainFixtures.correct[0])
           .should.be.fulfilled
           .then(function() {
             expect(spyCompile.callCount).to.equals(1);
@@ -445,18 +440,18 @@ describe('== Virtual Domains ==', function() {
 
       it('should call the _register method with the domain', function(done) {
 
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
+        Snippets.register('test-domain', virtualDomainFixtures.correct[0])
           .should.be.fulfilled
           .then(function() {
             expect(spyRegister.callCount).to.equals(1);
-            expect(spyRegister.calledWith('test-domain', snippetsFixtures.correct[0])).to.equals(true);
+            expect(spyRegister.calledWith('test-domain', virtualDomainFixtures.correct[0])).to.equals(true);
           })
           .should.be.fulfilled.notify(done);
       });
 
       it('should call the _addToList method with the domain', function(done) {
 
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
+        Snippets.register('test-domain', virtualDomainFixtures.correct[0])
           .should.be.fulfilled
           .then(function() {
             expect(spyAddToList.callCount).to.equals(1);
@@ -503,6 +498,6 @@ describe('== Virtual Domains ==', function() {
 
   xdescribe('Snippets execution', function() {
 
-  });
+  });*/
 
 });

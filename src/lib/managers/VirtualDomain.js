@@ -1,12 +1,13 @@
 'use strict';
 
 var _ = require('lodash');
-var CodeCompiler = require('./compilers/code.compiler.js');
-var virtualDomainValidator = require('./validators/virtualDomain.validator');
+var CodeCompiler = require('../compilers/code.compiler.js');
+var virtualDomainValidator = require('../validators/virtualDomain.validator');
 
 var VirtualDomainManager = function (options) {
   this.events = options.events;
   this.Phrases = options.Phrases;
+  this.Snippets = options.Snippets;
 };
 
 VirtualDomainManager.prototype = new CodeCompiler({

@@ -21,13 +21,13 @@ function init(options, fetch) {
       .then(function() {
         return module.clientLogin();
       })
-      .then(function(token) {
+      .then(function() {
         return module.virtualDomainDao.loadAll();
       })
       .then(function(rawVDomains) {
-        return Promise.all(rawVDomains.map(module.getVirtualDomainModel(rawVDomains)));
+        return Promise.all(rawVDomains.map(module.getVirtualDomainModel));
       })
-      .then(function(vdomainModels))
+      .then(function(vdomainModels){
         return module.VirtualDomain.registerWithoutDomain(vdomainModels);
       })
       .then(function() {

@@ -8,15 +8,16 @@ var utilsPromises = require('../utils/promises');
 
 describe('Config initialization', function() {
 
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, 
-    stubFetchData, spyRequirerConfigure, spyPhrasesConfigure;
+  var stubLogClient, stubGetVirtualDomainModel, stubRegisterDomains, stubInitCorbelDriver, 
+    stubLoadVirtualDomains, spyRequirerConfigure, spyPhrasesConfigure;
 
   describe('Correct initialization', function() {
     before(function() {
       stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
       stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-      stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-      stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
+      stubLoadVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedPromise);
+      stubGetVirtualDomainModel = sinon.stub(composr, 'getVirtualDomainModel', utilsPromises.resolvedPromise);
+      stubRegisterDomains = sinon.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
       spyRequirerConfigure = sinon.spy(composr.requirer, 'configure');
       spyPhrasesConfigure = sinon.spy(composr.Phrases, 'configure');
     });
@@ -24,8 +25,9 @@ describe('Config initialization', function() {
     after(function() {
       stubInitCorbelDriver.restore();
       stubLogClient.restore();
-      stubFetchData.restore();
-      stubRegisterData.restore();
+      stubLoadVirtualDomains.restore();
+      stubGetVirtualDomainModel.restore();
+      stubRegisterDomains.restore();
       spyRequirerConfigure.restore();
       spyPhrasesConfigure.restore();
     });
@@ -92,16 +94,18 @@ describe('Config initialization', function() {
     before(function() {
       stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.rejectedPromise);
       stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-      stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-      stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
+      stubLoadVirtualDomains = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
+      stubGetVirtualDomainModel = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
+      stubRegisterDomains = sinon.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
       spyEvents = sinon.spy(composr.events, 'emit');
     });
 
     after(function() {
       stubInitCorbelDriver.restore();
       stubLogClient.restore();
-      stubFetchData.restore();
-      stubRegisterData.restore();
+      stubLoadVirtualDomains.restore();
+      stubGetVirtualDomainModel.restore();
+      stubRegisterDomains.restore();
       spyEvents.restore();
     });
 

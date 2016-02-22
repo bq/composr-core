@@ -1,9 +1,9 @@
 'use strict';
 
 var events = require('./lib/events');
-var PhraseManager = require('./lib/Phrases');
-var SnippetsManager = require('./lib/Snippets');
-var VirtualDomainManager = require('./lib/VirtualDomain');
+var PhraseManager = require('./lib/managers/Phrases');
+var SnippetsManager = require('./lib/managers/Snippets');
+var VirtualDomainManager = require('./lib/managers/VirtualDomain');
 var Requirer = require('./lib/requirer');
 
 function CompoSR() {

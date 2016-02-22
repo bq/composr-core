@@ -1,8 +1,8 @@
 'use strict';
-var CodeCompiler = require('./compilers/code.compiler.js');
-var SnippetModel = require('./models/SnippetModel.js');
-var snippetValidator = require('./validators/snippet.validator.js');
-var utils = require('./utils.js');
+var CodeCompiler = require('../compilers/code.compiler.js');
+var SnippetModel = require('../models/SnippetModel.js');
+var snippetValidator = require('../validators/snippet.validator.js');
+var utils = require('../utils.js');
 
 var SnippetsManager = function(options) {
   this.events = options.events;
@@ -29,7 +29,8 @@ SnippetsManager.prototype._compile = function(snippet) {
 
     this.events.emit('debug', 'snippet:compiled', compiled.id, compiled.name);
 
-    return compiled;
+    return new SnippetModel(snippet, domain, compiled);
+
 
   } catch (e) {
     console.log(e);

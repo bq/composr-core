@@ -1,15 +1,15 @@
 'use strict';
-var phraseValidator = require('./validators/phrase.validator');
-var PhraseModel = require('./models/PhraseModel');
-var CodeCompiler = require('./compilers/code.compiler');
-var regexpGenerator = require('./regexpGenerator');
-var paramsExtractor = require('./paramsExtractor');
+var phraseValidator = require('../validators/phrase.validator');
+var PhraseModel = require('../models/PhraseModel');
+var CodeCompiler = require('../compilers/code.compiler');
+var regexpGenerator = require('../regexpGenerator');
+var paramsExtractor = require('../paramsExtractor');
 var queryString = require('query-string');
-var ComposrError = require('./ComposrError');
-var MetricsFirer = require('./MetricsFirer');
-var parseToComposrError = require('./parseToComposrError');
-var mockedServer = require('./mock');
-var utils = require('./utils');
+var ComposrError = require('../ComposrError');
+var MetricsFirer = require('../MetricsFirer');
+var parseToComposrError = require('../parseToComposrError');
+var mockedServer = require('../mock');
+var utils = require('../utils');
 
 var _ = require('lodash');
 var XRegExp = require('xregexp').XRegExp;
@@ -247,11 +247,9 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   try {
 
     if (params.browser) {
-      var phraseCode = phrase.codes[verb].fn;
-      this.__executeFunctionMode(phraseCode, sandbox, params.timeout, params.file);
+      phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file);
     } else {
-      var phraseScript = phrase.codes[verb].script;
-      this.__executeScriptMode(phraseScript, sandbox, params.timeout, params.file);
+      phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file);
     }
 
   } catch (e) {
@@ -278,48 +276,6 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
 };
 
-//Runs VM script mode
-PhraseManager.prototype.__executeScriptMode = function(script, parameters, timeout, file) {
-  var options = {
-    timeout: timeout || 10000,
-    displayErrors: true
-  };
-
-  if (file) {
-    options.filename = file;
-  }
-
-  script.runInNewContext(parameters, options);
-};
-
-//Runs function mode (DEPRECATED)
-PhraseManager.prototype.__executeFunctionMode = function(code, parameters, timeout, file) {
-  //@TODO: configure timeout
-  //@TODO: enable VM if memory bug gets solved
-  if (file) {
-    var fn = require(file);
-    fn(
-      parameters.req,
-      parameters.res,
-      parameters.next,
-      parameters.corbelDriver,
-      parameters.domain,
-      parameters.require,
-      parameters.config,
-      parameters.metrics
-    );
-  } else {
-    code.apply(null, [parameters.req,
-      parameters.res,
-      parameters.next,
-      parameters.corbelDriver,
-      parameters.domain,
-      parameters.require,
-      parameters.config,
-      parameters.metrics
-    ]);
-  }
-};
 
 //Returns a list of elements matching the same regexp
 PhraseManager.prototype._filterByRegexp = function(domain, regexp) {
@@ -360,7 +316,7 @@ PhraseManager.prototype._getPhraseIndexById = function(domain, id) {
   var index = -1;
 
   for (var i = 0; i < candidates.length; i++) {
-    if (candidates[i].id === id) {
+    if (candidates[i].getId() === id) {
       index = i;
       break;
     }

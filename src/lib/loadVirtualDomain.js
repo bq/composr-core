@@ -1,6 +1,6 @@
 'use strict';
 
-var loadDomain = function loadDomain() {
+var loadDomain = function loadDomain(id) {
   var module = this;
 
   return this.virtualDomainDao.load(id)

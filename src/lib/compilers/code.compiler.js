@@ -1,7 +1,6 @@
 'use strict';
 
 var q = require('q');
-var _ = require('lodash');
 var vm = require('vm');
 var uglifyJs = require('uglify-js');
 var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise');

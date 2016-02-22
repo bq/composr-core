@@ -5,8 +5,6 @@ var check = require('syntax-error'),
   utils = require('../utils'),
   vUtils = utils.values;
 
-
-
 function validate(snippet) {
   var dfd = q.defer();
 
