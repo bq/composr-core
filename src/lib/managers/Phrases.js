@@ -21,6 +21,7 @@ var PhraseManager = function(options) {
 PhraseManager.prototype = new BaseManager({
   itemName: 'phrase',
   store: phrasesStore,
+  model : PhraseModel,
   validator: phraseValidator
 });
 

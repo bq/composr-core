@@ -22,13 +22,11 @@ function init(options, fetch) {
         return module.clientLogin();
       })
       .then(function() {
-        return module.virtualDomainDao.loadAll();
-      })
-      .then(function(rawVDomains) {
-        return Promise.all(rawVDomains.map(module.getVirtualDomainModel));
-      })
-      .then(function(vdomainModels){
-        return module.VirtualDomain.registerWithoutDomain(vdomainModels);
+        return Promise.all([
+          module.Phrases.load(),
+          module.Snippets.load(),
+          module.VirtualDomain.load()
+        ])
       })
       .then(function() {
         module.events.emit('debug', 'success:initializing');

@@ -14,16 +14,14 @@ CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
 CompoSR.prototype.clientLogin = require('./lib/clientLogin');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
-CompoSR.prototype.phraseDao = require('./lib/loaders/phraseDao');
-CompoSR.prototype.snippetDao = require('./lib/loaders/snippetDao');
-CompoSR.prototype.virtualDomainDao = require('./lib/loaders/virtualDomainDao');
-CompoSR.prototype.fetchData = require('./lib/fetchData');
-CompoSR.prototype.registerData = require('./lib/registerData');
-CompoSR.prototype.loadVirtualDomain = require('./lib/loadVirtualDomain');
-CompoSR.prototype.getVirtualDomainModel = require('./lib/getVirtualDomainModel');
+
+CompoSR.prototype.phraseDao = require('./lib/daos/phraseDao');
+CompoSR.prototype.snippetDao = require('./lib/daos/snippetDao');
+CompoSR.prototype.virtualDomainDao = require('./lib/daos/virtualDomainDao');
+
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
-CompoSR.prototype.status = require('./lib/status');
+
 CompoSR.prototype.ComposrError = require('./lib/ComposrError');
 CompoSR.prototype.parseToComposrError = require('./lib/parseToComposrError');
 CompoSR.prototype.utils = require('./lib/utils');

@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var BaseManager = require('./base.manager.js');
 var virtualDomainValidator = require('../validators/virtualDomain.validator');
+var VirtualDomainModel = require('../models/VirtualDomainModel');
 var virtualDomainDao = require('../loaders/virtualDomainDao');
 var virtualDomainStore = require('../stores/virtualDomain.store');
 
@@ -15,6 +16,7 @@ var VirtualDomainManager = function (options) {
 VirtualDomainManager.prototype = new BaseManager({
   itemName: 'virtualDomain',
   store : virtualDomainStore,
+  model : VirtualDomainModel,
   validator: virtualDomainValidator
 });
 
@@ -29,7 +31,7 @@ VirtualDomainManager.prototype.getVirtualDomains = function (domain) {
 
 VirtualDomainManager.prototype.getById = function(id) {
   //@TODO
-  var domain = this._extracDomainFromId(id);
+  var domain = this._extractDomainFromId(id);
   var vdomain = this.store.get(domain, id);
 
   if(!vdomain){
@@ -89,25 +91,42 @@ VirtualDomainManager.prototype.loadAndRegisterAll = function() {
 VirtualDomainManager.prototype.save = function(vdJson) {
   //For each phrase, phrase dao save
   //for each snippet snippet dao save
-  var validationResult = this.validate(vdJson);
+  var module = this;
 
-  if(validationResult.valid === true){
-    this._savePhrases(vdJson.phrases);
-    this._saveSnippets(vdJson.snippets);
-    this._saveVdomain(_.omit(vdJson, ['phrases', 'snippets']);
-  }
+  return new Promise(function(resolve, reject){
+    var validationResult = this.validate(vdJson);
+
+    if(validationResult.valid === true){
+     
+      Promise.all([
+        module._savePhrases(vdJson.phrases),
+        module._saveSnippets(vdJson.snippets),
+        module._saveVdomain(_.omit(vdJson, ['phrases', 'snippets'])
+      ])
+      .then(resolve)
+      .catch(reject);
+    }else{
+      reject(validationResult);
+    }
+  });
 };
 
 VirtualDomainManager.prototype._savePhrases = function(phrases){
+  //TODO: for each phrase check if in the phrase manager its MD5 differs, if it differs, trigger save
   console.log('Saving phrases', phrases);
+  return Promise.resolve();
 };
 
 VirtualDomainManager.prototype._saveSnippets = function(snippets){
+  //TODO: for each snippet check if in the snippet manager its MD5 differs, if it differs, trigger save
   console.log('Saving snippets', snippets);
+  return Promise.resolve();
 };
 
 VirtualDomainManager.prototype._saveVdomain = function(vdomain){
+  //TODO: for the vdomain check if in the store its MD5 differs, if it differs, trigger save
   console.log('Saving vdomain', vdomain);
+  return Promise.resolve();
 };
 
 

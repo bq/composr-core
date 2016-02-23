@@ -27,6 +27,7 @@ function BaseManager(options) {
   this.itemName = options.itemName;
   this.store = otions.store;
   this.validator = options.validator;
+  this.model = options.model;
 }
 
 //Reset the stack
@@ -179,6 +180,10 @@ BaseManager.prototype._extractDomainFromId = function(id) {
   return id.split('!')[0];
 };
 
+BaseManager.prototype._extractVirtualDomainFromId = function(id) {
+  return id.split('!')[1];
+};
+
 BaseManager.prototype._addToStore = function(domain, modelInstance) {
   if (!domain || !modelInstance) {
     return false;
@@ -227,6 +232,35 @@ BaseManager.prototype._unregister = function(domain, id) {
     this.events.emit('warn', this.itemName + ':unregister:not:found', domain);
     return false;
   }
+};
+
+
+/***************************************************
+ CRUD interface
+****************************************************/
+BaseManager.prototype.load = function(id){
+  var module = this;
+
+  if(id){
+    var domain = this._extractDomainFromId(id);
+    return this.store.load(id)
+    .then(function(item){
+      var model = new this.model(item);
+      return model;
+      //TODO: call this.register()
+      ////TODO emit event with the number of items loaded
+    });
+  }else{
+    return this.store.loadAll()
+      .then(function(items){
+        return items.map(function(item){
+          return new module.model(item);
+        });
+        //TODO call this.registerWithoutDomain
+        //TODO emit event with the number of items loaded
+      });
+  }
+  
 };
 
 /********************************
