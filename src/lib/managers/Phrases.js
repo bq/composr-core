@@ -5,6 +5,7 @@ var BaseManager = require('./base.manager');
 var queryString = require('query-string');
 var ComposrError = require('../ComposrError');
 var MetricsFirer = require('../MetricsFirer');
+var phrasesStore = require('../stores/phrases.store');
 var parseToComposrError = require('../parseToComposrError');
 var mockedServer = require('../mock');
 var utils = require('../utils');
@@ -19,7 +20,7 @@ var PhraseManager = function(options) {
 
 PhraseManager.prototype = new BaseManager({
   itemName: 'phrase',
-  item: '__phrases',
+  store: phrasesStore,
   validator: phraseValidator
 });
 
@@ -42,39 +43,6 @@ PhraseManager.prototype.__preAdd = function(domain, phraseModel) {
 
   if (phrasesWithTheSamePath.length > 0) {
     this.events.emit('warn', 'phrase:path:duplicated', phraseModel.getId());
-  }
-};
-
-//Modifies the internal __phrases list
-PhraseManager.prototype._addToList = function(domain, phraseCompiled) {
-  if (!domain || !phraseCompiled) {
-    return false;
-  }
-
-  if (typeof(phraseCompiled) !== 'object' || !phraseCompiled.getId()) {
-    return false;
-  }
-
-  if (!this.__phrases[domain]) {
-    this.__phrases[domain] = [];
-  }
-
-  var index = this._getPhraseIndexById(domain, phraseCompiled.getId());
-
-  if (index === -1) {
-    this.__phrases[domain].push(phraseCompiled);
-  } else {
-    this.__phrases[domain][index] = phraseCompiled;
-  }
-
-  return true;
-};
-
-//Removes phrases from memory
-PhraseManager.prototype._unregister = function(domain, id) {
-  var index = this._getPhraseIndexById(domain, id);
-  if (index !== -1) {
-    this.__phrases[domain].splice(index, 1);
   }
 };
 
@@ -231,59 +199,16 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
 //Returns a list of elements matching the same regexp
 PhraseManager.prototype._filterByRegexp = function(domain, regexp) {
-  var candidates = this._getPhrasesAsList(domain);
+  var candidates = this.store.getAsList(domain);
 
   return _.filter(candidates, function(candidate) {
     return candidate.getRegexp() === regexp;
   });
 };
 
-//Flattens all the phrases in a single list array 
-PhraseManager.prototype._getPhrasesAsList = function(domain) {
-  var list = [];
-  var module = this;
-
-  if (utils.values.isFalsy(domain)) {
-    list = _.flatten(Object.keys(this.__phrases).map(function(key) {
-      return module.__phrases[key];
-    }));
-  } else if (this.__phrases[domain]) {
-    list = this.__phrases[domain];
-  }
-
-  return list;
-};
-
-//Returns one phrase matching the id
-PhraseManager.prototype.getById = function(domain, id) {
-  var candidates = this._getPhrasesAsList(domain);
-  var index = this._getPhraseIndexById(domain, id);
-
-  return index !== -1 ? candidates[index] : null;
-};
-
-//Returns the index of a phrase that matches by id
-PhraseManager.prototype._getPhraseIndexById = function(domain, id) {
-  var candidates = this._getPhrasesAsList(domain);
-  var index = -1;
-
-  for (var i = 0; i < candidates.length; i++) {
-    if (candidates[i].getId() === id) {
-      index = i;
-      break;
-    }
-  }
-
-  return index;
-};
-
 //Get all the phrases, or all the phrases for one domain
 PhraseManager.prototype.getPhrases = function(domain) {
-  if (!domain) {
-    return this._getPhrasesAsList();
-  }
-
-  return this.__phrases[domain] ? this.__phrases[domain] : null;
+  return this.store.getAsList(domain);
 };
 
 /** 
@@ -314,7 +239,7 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
     this.events.emit('warn', 'phrase:getByMatchingPath:noDomain:matchingAgainstAll:expensiveMethod');
   }
 
-  var candidates = this._getPhrasesAsList(domain);
+  var candidates = this.store.getAsList(domain);
 
   this.events.emit('debug', 'evaluating:' + candidates.length + ':candidates');
 
@@ -339,7 +264,7 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
 
 //Counts all the loaded phrases
 PhraseManager.prototype.count = function() {
-  return this._getPhrasesAsList().length;
+  return this.store.getAsList().length;
 };
 
 //Generates a PhraseID from a url an a domain

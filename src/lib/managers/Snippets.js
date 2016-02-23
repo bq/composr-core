@@ -1,6 +1,7 @@
 'use strict';
 var BaseManager = require('./base.manager.js');
 var SnippetModel = require('../models/SnippetModel.js');
+var snippetsStore = require('../stores/snippets.store');
 var snippetValidator = require('../validators/snippet.validator.js');
 
 var SnippetsManager = function(options) {
@@ -9,7 +10,7 @@ var SnippetsManager = function(options) {
 
 SnippetsManager.prototype = new BaseManager({
   itemName: 'snippet',
-  item: '__snippets',
+  store: snippetsStore,
   validator: snippetValidator
 });
 
@@ -31,46 +32,13 @@ SnippetsManager.prototype._compile = function(domain, snippet) {
   }
 };
 
-SnippetsManager.prototype._addToList = function(domain, snippetModel) {
-  if (!domain || !snippetModel) {
-    return false;
-  }
-
-  if (typeof(snippetModel) !== 'object' || snippetModel.hasOwnProperty('id') === false || !snippetModel.getId()) {
-    return false;
-  }
-
-  if (!this.__snippets[domain]) {
-    this.__snippets[domain] = {};
-  }
-
-  this.__snippets[domain][snippetModel.getId()] = snippetModel;
-  return true;
-};
-
-SnippetsManager.prototype._unregister = function(domain, id) {
-  if (!domain || !id) {
-    this.events.emit('warn', 'snippet:unregister:missing:parameters', domain, id);
-    return false;
-  }
-
-  if (this.__snippets[domain] && this.__snippets[domain][id]) {
-    delete this.__snippets[domain][id];
-    this.events.emit('debug', 'snippet:unregistered', id);
-    return true;
-  } else {
-    this.events.emit('warn', 'snippet:unregister:not:found', domain, id);
-    return false;
-  }
-};
-
 //Get all the snippets for a single domain
 SnippetsManager.prototype.getSnippets = function(domain) {
   if (!domain) {
     return null;
   }
 
-  return this.__snippets[domain] ? this.__snippets[domain] : null;
+  return this.store.getAsObject(domain);
 };
 
 //Get a single snippet

@@ -2,6 +2,7 @@
 
 var corbel = require('corbel-js');
 var q = require('q');
+var corbelDriverStore = require('./stores/corbelDriver.store');
 
 function initCorbelDriver() {
   /*jshint validthis:true */
@@ -32,10 +33,11 @@ function initCorbelDriver() {
       urlBase : this.config.urlBase
     };
     
-    this.corbelDriver = corbel.getDriver(options);
+    corbelDriverStore.setDriver(corbel.getDriver(options));
+
     dfd.resolve();
   } catch (e) {
-    this.corbelDriver = null;
+    corbelDriverStore.setDriver(null);
     dfd.reject(e);
   }
 

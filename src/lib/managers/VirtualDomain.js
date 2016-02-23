@@ -3,7 +3,8 @@
 var _ = require('lodash');
 var BaseManager = require('./base.manager.js');
 var virtualDomainValidator = require('../validators/virtualDomain.validator');
-var virtualDomainDao = require('../loaders/virtualDomainDao')
+var virtualDomainDao = require('../loaders/virtualDomainDao');
+var virtualDomainStore = require('../stores/virtualDomain.store');
 
 var VirtualDomainManager = function (options) {
   this.events = options.events;
@@ -13,7 +14,7 @@ var VirtualDomainManager = function (options) {
 
 VirtualDomainManager.prototype = new BaseManager({
   itemName: 'virtualDomain',
-  item: '__virtualDomains',
+  store : virtualDomainStore,
   validator: virtualDomainValidator
 });
 
@@ -22,79 +23,34 @@ VirtualDomainManager.prototype._compile = function (domain, vdomain) {
   return vdomain;
 };
 
-VirtualDomainManager.prototype._addToList = function (domain, vdModel) {
-  if (!domain || !vdModel) {
-    return false;
-  }
-
-  if (!this.__virtualDomains[domain]) {
-    this.__virtualDomains[domain] = {};
-  }
-
-  this.__virtualDomains[domain][vModel.getApiId()] = vdModel;
-
-  this.Phrases.register(domain, vdModel.getRawPhrases());
-  this.Snippets.register(domain, vdModel.getRawSnippets());
-  
-  return true;
-};
-
-VirtualDomainManager.prototype._unregister = function (domain) {
-  if (!domain) {
-    this.events.emit('warn', 'virtualDomain:unregister:missing:parameters', domain);
-    return false;
-  }
-
-  if (this.__virtualDomains[domain]) {
-    //@TODO: go to phrases and unregister all
-    delete this.__virtualDomains[domain];
-    this.events.emit('debug', 'virtualDomain:unregistered', domain);
-    return true;
-  } else {
-    this.events.emit('warn', 'virtualDomain:unregister:not:found', domain);
-    return false;
-  }
-};
-
 VirtualDomainManager.prototype.getVirtualDomains = function (domain) {
-  if (!domain) {
-    return this._getVirtualDomainsAsList();
-  }
-
-  return this.__virtualDomains[domain] ? this.__virtualDomains[domain] : null;
-};
-
-VirtualDomainManager.prototype._getVirtualDomainsAsList = function () {
-  var module = this;
-  return _.flatten(Object.keys(this.__phrases).map(function (key) {
-    return module.__phrases[key];
-  }));
+  return this.store.getAsList(domain);
 };
 
 VirtualDomainManager.prototype.getById = function(id) {
-    var domain = this._extracDomainFromId
+  //@TODO
+  var domain = this._extracDomainFromId(id);
+  var vdomain = this.store.get(domain, id);
 
-    if(this.__virtualDomains[domain][id] && _.size(this.__virtualDomains[domain][id]) > 0){
-        return this.__virtualDomains[domain][id]
-    } else {
-        return this.loadAndRegisterById(id)
-    }
+  if(!vdomain){
+    return this.loadAndRegisterById(id);
+  }
 };
 
 VirtualDomainManager.prototype.getByDomain = function(domain) {
-    if(this.__virtualDomains[domain] && _.size(this.__virtualDomains[domain]) > 0){
-        return this.__virtualDomains[domain]
-    } else {
-        return this.loadAndRegisterByDomain(domain)
-    }
+  //@TODO
+  var vdomains = this.store.getAsList(domain);
+  if(vdomains.length === 0){
+    this.loadAndRegisterByDomain(domain);
+  }
 };
 
 VirtualDomainManager.prototype.getAll = function() {
-    if(this.__virtualDomains && _.size(this.__virtualDomains) > 0){
-        return this.__virtualDomains
-    } else {
-        return this.loadAndRegisterAll()
-    }
+  //TODO: 
+  var vdomains = this.store.getAsList();
+  if(vdomains.length === 0){
+    this.loadAndRegisterAll();
+  }
 };
 
 VirtualDomainManager.prototype.loadAndRegisterById = function(id) {
@@ -127,11 +83,32 @@ VirtualDomainManager.prototype.loadAndRegisterByDomain = function(domain) {
 VirtualDomainManager.prototype.loadAndRegisterAll = function() {
 };
 
-VirtualDomainManager.prototype.save = function(vd) {
+/*
+  Receives a JSON of a virtual domain and saves the domain the phrases and snippets
+ */
+VirtualDomainManager.prototype.save = function(vdJson) {
+  //For each phrase, phrase dao save
+  //for each snippet snippet dao save
+  var validationResult = this.validate(vdJson);
+
+  if(validationResult.valid === true){
+    this._savePhrases(vdJson.phrases);
+    this._saveSnippets(vdJson.snippets);
+    this._saveVdomain(_.omit(vdJson, ['phrases', 'snippets']);
+  }
 };
 
-VirtualDomainManager.prototype.validate = function(vd) {
-    return this.validate(vd)
+VirtualDomainManager.prototype._savePhrases = function(phrases){
+  console.log('Saving phrases', phrases);
 };
+
+VirtualDomainManager.prototype._saveSnippets = function(snippets){
+  console.log('Saving snippets', snippets);
+};
+
+VirtualDomainManager.prototype._saveVdomain = function(vdomain){
+  console.log('Saving vdomain', vdomain);
+};
+
 
 module.exports = VirtualDomainManager;

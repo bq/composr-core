@@ -1,5 +1,7 @@
 'use strict';
-
+var driverStore = require('../stores/corbelDriver.store');
+var COLLECTION = 'composr:Phrase';
+var utils = require('../utils');
 var PhraseDao = function() {};
 
 PhraseDao.load = function (id) {
@@ -7,8 +9,8 @@ PhraseDao.load = function (id) {
     return Promise.reject('missing:id');
   }
 
-  if (this.corbelDriver) {
-    return this.corbelDriver.resources
+  if (driverStore.getDriver()) {
+    return driverStore.getDriver().resources
       .resource(this.resources.phrasesCollection, id).get()
       .then(function (response) {
         return response.data;
@@ -23,11 +25,10 @@ PhraseDao.loadSome = function(ids){
     return Promise.reject('missing:ids');
   }
 
-  if (this.corbelDriver) {
+  if (driverStore.getDriver()) {
 
-    var module = this;
     var caller = function (pageNumber, pageSize) {
-      return module.corbelDriver.resources.collection(module.resources.phrasesCollection)
+      return driverStore.getDriver().resources.collection(COLLECTION)
       .get({
         pagination: {
           page: pageNumber,
@@ -41,16 +42,15 @@ PhraseDao.loadSome = function(ids){
       });
     };
     
-    return this.utils.getAllRecursively(caller);
+    return utils.getAllRecursively(caller);
   } else {
     return Promise.reject('missing:driver');
   }
 };
 
 PhraseDao.loadAll = function () {
-  var module = this;
   var caller = function (pageNumber, pageSize) {
-    return module.corbelDriver.resources.collection(module.resources.phrasesCollection).get({
+    return driverStore.getDriver().resources.collection(COLLECTION).get({
       pagination: {
         page: pageNumber,
         pageSize: pageSize
@@ -58,7 +58,12 @@ PhraseDao.loadAll = function () {
     });
   };
 
-  return this.utils.getAllRecursively(caller);
+  return utils.getAllRecursively(caller);
 };
+
+PhraseDao.save = function(){
+  //Look for the phrases, if they exist in local and have the same md5 , do not save
+  console.log(this.Phrases);
+}
 
 module.exports = PhraseDao;

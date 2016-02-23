@@ -15,24 +15,23 @@ var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise');
     - _compile
   - validate
   - _extractDomainFromId
-  - _addToList
+  - _addToStore
 
 
   The mandatory methods for the child classes to implement are:
   _compile
-  _addToList
+  _addToStore
   _unregister
  */
 function BaseManager(options) {
   this.itemName = options.itemName;
-  this.item = options.item;
+  this.store = otions.store;
   this.validator = options.validator;
-  this[options.item] = {};
 }
 
 //Reset the stack
 BaseManager.prototype.resetItems = function() {
-  this[this.item] = {};
+  this.store.reset();
 };
 
 //Entry point for registering or unregistering items
@@ -69,12 +68,13 @@ BaseManager.prototype._register = function(domain, item) {
       if (modelInstance) {
         module.__preAdd(domain, modelInstance);
 
-        var added = module._addToList(domain, modelInstance);
+        var added = module._addToStore(domain, modelInstance);
         module.events.emit('debug', module.itemName + ':registered', added, modelInstance.getId());
 
         if (added) {
           //Corbel-composr listens to this event for registering routes. And uses item.id;
           module.events.emit(module.itemName + ':registered', modelInstance);
+          module.__postAdd(domain, modelInstance);
         }
 
         return modelInstance;
@@ -179,6 +179,23 @@ BaseManager.prototype._extractDomainFromId = function(id) {
   return id.split('!')[0];
 };
 
+BaseManager.prototype._addToStore = function(domain, modelInstance) {
+  if (!domain || !modelInstance) {
+    return false;
+  }
+
+  if (!modelInstance.getId()) {
+    return false;
+  }
+
+  this.store.add(domain, modelInstance);
+  return true;
+};
+
+BaseManager.prototype.getById = function(domain, id){
+  return this.store.get(domain, id);
+};
+
 /********************************
   Mandatory implementations
 ********************************/
@@ -189,16 +206,27 @@ BaseManager.prototype._compile = function(domain, item) {
   return item;
 };
 
-BaseManager.prototype._addToList = function() {
-  //Implement freely
-  this.events.emit('warn', '_addToList not implemented');
-  return true;
-};
 
 //Removes item from memory
-BaseManager.prototype._unregister = function() {
-  //Implement freely
-  this.events.emit('warn', '_unregister not implemented');
+BaseManager.prototype._unregister = function(domain, id) {
+  if (!domain) {
+    this.events.emit('warn', this.itemName + ':unregister:missing:parameters', 'domain');
+    return false;
+  }
+
+  if (!id) {
+    this.events.emit('warn', this.itemName + ':unregister:missing:parameters', 'id');
+    return false;
+  }
+
+  if (this.store.exists(domain, id)) {
+    this.store.remove(domain, id);
+    this.events.emit('debug', this.itemName + ':unregistered', domain);
+    return true;
+  } else {
+    this.events.emit('warn', this.itemName + ':unregister:not:found', domain);
+    return false;
+  }
 };
 
 /********************************
@@ -213,6 +241,10 @@ BaseManager.prototype.__preCompile = function() {
 //Pre add call
 BaseManager.prototype.__preAdd = function() {
   this.events.emit('warn', '__preAdd not implemented');
+};
+
+BaseManager.prototype.__postAdd = function() {
+  this.events.emit('warn', '__postAdd not implemented');
 };
 
 module.exports = BaseManager;
