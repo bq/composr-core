@@ -26,6 +26,10 @@ SnippetModel.prototype.getRawModel = function(){
   return this.json;
 };
 
+PhraseModel.prototype.getMD5 = function() {
+  return this.json.md5;
+};
+
 SnippetModel.prototype.compile = function(events){
   var model = this;
   var code = utils.decodeFromBase64(this.json.codehash);

@@ -23,14 +23,20 @@ describe('Code Compiler', function() {
     expect(BaseManager.prototype).to.respondTo('_unregister');
     expect(BaseManager.prototype).to.respondTo('compile');
     expect(BaseManager.prototype).to.respondTo('_compile');
-    expect(BaseManager.prototype).to.respondTo('_addToList');
     expect(BaseManager.prototype).to.respondTo('__preCompile');
     expect(BaseManager.prototype).to.respondTo('__preAdd');
+    expect(BaseManager.prototype).to.respondTo('_addToStore');
+    expect(BaseManager.prototype).to.respondTo('__postAdd');
     expect(BaseManager.prototype).to.respondTo('validate');
     expect(BaseManager.prototype).to.respondTo('resetItems');
     expect(BaseManager.prototype).to.respondTo('_evaluateCode');
     expect(BaseManager.prototype).to.respondTo('_extractDomainFromId');
-    expect(BaseManager.prototype).to.respondTo('__codeOptimization');
+    expect(BaseManager.prototype).to.respondTo('_extractVirtualDomainFromId');
+    expect(BaseManager.prototype).to.respondTo('getById');
+    expect(BaseManager.prototype).to.respondTo('getByVirtualDomain');
+    expect(BaseManager.prototype).to.respondTo('getByDomain');
+    expect(BaseManager.prototype).to.respondTo('load');
+    expect(BaseManager.prototype).to.respondTo('save');
   });
 
   describe('Code evaluation', function() {
@@ -142,7 +148,7 @@ describe('Code Compiler', function() {
         spyCompile = sinon.spy(compiler, 'compile');
         spyValidate = sinon.spy(compiler, 'validate');
         spy_compile = sinon.spy(compiler, '_compile');
-        spyAddToList = sinon.spy(compiler, '_addToList');
+        spyAddToList = sinon.spy(compiler, '_addToStore');
       });
 
       afterEach(function() {
@@ -176,7 +182,7 @@ describe('Code Compiler', function() {
           .should.be.fulfilled.notify(done);
       });
 
-      it('should call the _addToList method with the domain', function(done) {
+      it('should call the _addToStore method with the domain', function(done) {
 
         compiler.register('test-domain', 'Something to register')
           .should.be.fulfilled

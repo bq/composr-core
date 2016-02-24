@@ -42,6 +42,10 @@ PhraseModel.prototype.getUrl = function() {
   return this.json.url;
 };
 
+PhraseModel.prototype.getMD5 = function() {
+  return this.json.md5;
+};
+
 PhraseModel.prototype.getRegexp = function(){
   return this.getRegexpReference().regexp;
 };

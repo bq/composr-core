@@ -197,7 +197,8 @@ BaseManager.prototype._addToStore = function(domain, modelInstance) {
   return true;
 };
 
-BaseManager.prototype.getById = function(domain, id){
+BaseManager.prototype.getById = function(id){
+  var domain = this._extractDomainFromId(id);
   return this.store.get(domain, id);
 };
 
@@ -243,7 +244,7 @@ BaseManager.prototype.load = function(id){
 
   if(id){
     var domain = this._extractDomainFromId(id);
-    return this.store.load(id)
+    return this.dao.load(id)
     .then(function(item){
       var model = new this.model(item);
       return model;
@@ -251,7 +252,7 @@ BaseManager.prototype.load = function(id){
       ////TODO emit event with the number of items loaded
     });
   }else{
-    return this.store.loadAll()
+    return this.dao.loadAll()
       .then(function(items){
         return items.map(function(item){
           return new module.model(item);
@@ -261,6 +262,48 @@ BaseManager.prototype.load = function(id){
       });
   }
   
+};
+
+/**
+ * Conditional save.
+ * - Checks if the json has to be saved
+ * - Checks if the json is valid
+ * - If it has to ve saved, calls __save
+ * - If not, resolves
+ * - If it is invalid, rejects
+ */
+BaseManager.prototype.save = function(json){
+
+  var shouldBeSaved = this.__shouldSave(json);
+
+  var module = this;
+
+  return new Promise(function(resolve, reject){
+    var validationResult = this.validate(vdJson);
+
+    if(validationResult.valid === true){
+
+      if (shouldBeSaved) {
+        module.__save(json)
+        .then(resolve)
+        .catch(reject);
+      }else{
+        resolve(json);
+      }
+
+    }else{
+      reject(validationResult);
+    }
+  });
+};
+
+BaseManager.prototype.__shouldSave = function(json){
+  return this.getById(json.id) && this.getById(json.id).getMD5() !== json.md5;
+};
+
+BaseManager.prototype.__save = function(json){
+  //TODO: Trigger the save event
+  return this.dao.save(json);
 };
 
 /********************************
