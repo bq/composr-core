@@ -18,7 +18,10 @@ var modelFixture = function(){
 };
 
 var storeAPI = { 
-  add: () => true
+  add: () => true,
+  reset: () => null,
+  remove : () => null,
+  exists : () => true
 };
 
 describe.only('Base manager', function() {
@@ -271,37 +274,35 @@ describe.only('Base manager', function() {
     });
   });
 
-
-
   describe('Item reseting', function() {
-    var manager;
+    var manager, mockStore;
 
     beforeEach(function() {
+      mockStore = sinon.mock(storeAPI);
 
       manager = new BaseManager({
-        item: '__mything'
+        itemName: 'myitem', 
+        store : storeAPI,
+        model : modelFixture
       });
-
-      manager.__mything = 'SanFrancisco';
 
     });
 
     afterEach(function() {
-      manager.__mything = null;
+      mockStore.restore();
     });
 
     it('Resets the item to an empty object', function() {
+      mockStore.expects('reset').once();
       manager.resetItems();
-      expect(Object.keys(manager.__mything).length).to.equals(0);
+      mockStore.verify();
     });
   });
 
 
   describe('Domain extraction', function() {
 
-    var manager = new BaseManager({
-      item: '__mything'
-    });
+    var manager = new BaseManager({});
 
     var testItems = [{
       id: 'booqs:demo!loginuser',
@@ -326,11 +327,13 @@ describe.only('Base manager', function() {
   });
 
   describe('Items unregistration', function() {
-    var spyUnregister, manager, stubEvents;
+    var spyUnregister, manager, stubEvents, mockStore;
 
     beforeEach(function() {
+      mockStore = sinon.mock(storeAPI);
+
       manager = new BaseManager({
-        item: '__mything',
+        store: storeAPI,
         itemName: 'goodies'
       });
 
@@ -341,33 +344,45 @@ describe.only('Base manager', function() {
       manager.events = {
         emit: stubEvents
       };
+    });
 
+    afterEach(function(){
+      mockStore.restore();
     });
 
     it('Should be able to receive a single item', function() {
+      mockStore.expects('remove').once();
       manager.unregister('mydomain', 'testId');
 
       expect(spyUnregister.callCount).to.equals(1);
+      mockStore.verify();
     });
 
-    it('Should be emit info about the event', function() {
+    it('Should be emit info about the event when the item was registered', function() {
+      mockStore.expects('remove').once();
       manager.unregister('mydomain', 'testId');
 
       expect(stubEvents.callCount).to.equals(2);
       expect(stubEvents.calledWith('debug', 'goodies:unregister:testId')).to.equals(true);
+      mockStore.verify();
     });
 
-    it('should warn about an unimplemented method', function(){
+    it('should warn about a missing element if the item was not registered', function(){
+      mockStore.expects('remove').never();
+      mockStore.expects('exists').once().returns(false);
       manager.unregister('mydomain', 'testId');
 
       expect(stubEvents.callCount).to.equals(2);
-      expect(stubEvents.calledWith('warn', '_unregister not implemented')).to.equals(true);
+      expect(stubEvents.calledWith('warn', 'goodies:unregister:not:found')).to.equals(true);
+      mockStore.verify();
     });
 
     it('Should be able to receive an array', function() {
+      mockStore.expects('remove').exactly(5);
       manager.unregister('mydomain', ['testId', 'testId', 'testId', 'testId', 'testId']);
 
       expect(spyUnregister.callCount).to.equals(5);
+      mockStore.verify();
     });
   });
 

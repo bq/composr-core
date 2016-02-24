@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+
 var virtualDomains = {};
 
 function add(domain, vdModel){
@@ -33,10 +34,15 @@ function getAsList(){
   }));
 }
 
+function reset(){
+  virtualDomains = {};
+}
+
 module.exports = {
   add : add,
   get : get,
   getAsList : getAsList,
   remove: remove,
+  reset : reset,
   exists : exists
 };

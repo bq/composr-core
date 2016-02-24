@@ -65,10 +65,15 @@ function get(domain, id){
   return index !== -1 ? candidates[index] : null;
 }
 
+function reset(){
+  phrases = {};
+}
+
 module.exports = {
   add : add,
   get : get,
   getAsList : getAsList,
   remove: remove,
+  reset : reset,
   exists : exists
 };

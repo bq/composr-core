@@ -45,11 +45,16 @@ function getAsObject(domain){
   }
 }
 
+function reset(){
+  snippets = {};
+}
+
 module.exports = {
   add : add,
   get : get,
   getAsList : getAsList,
   getAsObject : getAsObject,
   remove: remove,
+  reset : reset,
   exists : exists
 };
