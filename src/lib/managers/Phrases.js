@@ -31,14 +31,6 @@ PhraseManager.prototype.configure = function(config){
   };
 };
 
-PhraseManager.prototype.__preCompile = function(domain, phrase) {
-  var phraseId = this._generateId(phrase.url, domain);
-
-  if (!phrase.id) {
-    phrase.id = phraseId;
-  }
-};
-
 PhraseManager.prototype.__preAdd = function(domain, phraseModel) {
   var phrasesWithTheSamePath = this._filterByRegexp(domain, phraseModel.getRegexp());
 
@@ -267,11 +259,5 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
 PhraseManager.prototype.count = function() {
   return this.store.getAsList().length;
 };
-
-//Generates a PhraseID from a url an a domain
-PhraseManager.prototype._generateId = function(url, domain) {
-  return domain + '!' + url.replace(/\//g, '!');
-};
-
 
 module.exports = PhraseManager;

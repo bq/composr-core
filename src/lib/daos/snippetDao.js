@@ -61,4 +61,13 @@ SnippetDao.loadAll = function () {
   return utils.getAllRecursively(caller);
 };
 
+SnippetDao.save = function(item){
+  if(!driverStore.getDriver()){
+    return Promise.reject('missing:driver');
+  }
+
+  return driverStore.getDriver().resources.resource(COLLECTION, item.id)
+    .update(item);
+};
+
 module.exports = SnippetDao;

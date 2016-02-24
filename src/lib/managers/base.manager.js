@@ -61,8 +61,6 @@ BaseManager.prototype._register = function(domain, item) {
   return this.validate(item)
     .then(function() {
 
-      module.__preCompile(domain, item);
-
       //Returns the MODEL
       var modelInstance = module.compile(domain, item);
 
@@ -175,11 +173,12 @@ BaseManager.prototype.unregister = function(domain, itemOrItemIds) {
 
 };
 
-//Extracts the domain from a database item
+//Extracts the domain from a json item
 BaseManager.prototype._extractDomainFromId = function(id) {
   return id.split('!')[0];
 };
 
+//Extracts the virtual domain from a jsonItem
 BaseManager.prototype._extractVirtualDomainFromId = function(id) {
   return id.split('!')[1];
 };
@@ -207,9 +206,8 @@ BaseManager.prototype.getById = function(id){
 ********************************/
 
 BaseManager.prototype._compile = function(domain, item) {
-  //Implement freely
-  this.events.emit('warn', '_compile not implemented');
-  return item;
+  var model = new this.model(item, domain);
+  return model;
 };
 
 
@@ -239,6 +237,12 @@ BaseManager.prototype._unregister = function(domain, id) {
 /***************************************************
  CRUD interface
 ****************************************************/
+
+/**
+ * Loads and register a item if an id is provided, all items if the id is undefined
+ * @param  string id Item id
+ * @return promise    load and register promise
+ */
 BaseManager.prototype.load = function(id){
   var module = this;
 
@@ -246,22 +250,14 @@ BaseManager.prototype.load = function(id){
     var domain = this._extractDomainFromId(id);
     return this.dao.load(id)
     .then(function(item){
-      var model = new this.model(item);
-      return model;
-      //TODO: call this.register()
-      ////TODO emit event with the number of items loaded
+      return module.register(domain, item);
     });
   }else{
     return this.dao.loadAll()
       .then(function(items){
-        return items.map(function(item){
-          return new module.model(item);
-        });
-        //TODO call this.registerWithoutDomain
-        //TODO emit event with the number of items loaded
+        return module.registerWithoutDomain(items);
       });
   }
-  
 };
 
 /**
@@ -285,8 +281,14 @@ BaseManager.prototype.save = function(json){
 
       if (shouldBeSaved) {
         module.__save(json)
-        .then(resolve)
-        .catch(reject);
+        .then(function(item){
+          module.events.emit('saved:'+ module.itemName, item);
+          resolve(item);
+        })
+        .catch(function(err){
+          module.events.emit('error', module.itemName, 'not:saved', json.id);
+          reject(err);
+        });
       }else{
         resolve(json);
       }
@@ -302,18 +304,12 @@ BaseManager.prototype.__shouldSave = function(json){
 };
 
 BaseManager.prototype.__save = function(json){
-  //TODO: Trigger the save event
   return this.dao.save(json);
 };
 
 /********************************
   Optional methods
 ********************************/
-
-//Pre compile call
-BaseManager.prototype.__preCompile = function() {
-  this.events.emit('warn', '__preCompile not implemented');
-};
 
 //Pre add call
 BaseManager.prototype.__preAdd = function() {

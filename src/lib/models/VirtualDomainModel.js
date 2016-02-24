@@ -17,11 +17,9 @@ var _ = require('lodash');
  *   "_apiRML": {}
  * }
  */
-var VirtualDomainModel = function (json, phrases, snippets, domain) {
+var VirtualDomainModel = function (json, domain) {
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
-  // id = domain!apiId
-  this.phrases = phrases;
-  this.snippets = snippets;
+
   this.id = json.id ? json.id : this._generateId(domain);
 };
 
@@ -39,15 +37,6 @@ VirtualDomainModel.prototype.getDomain = function () {
 
 VirtualDomainModel.prototype.getApiId = function () {
   return this.id.split('!')[1];
-};
-
-
-VirtualDomainModel.prototype.getRawPhrases = function () {
-  return this.phrases || [];
-};
-
-VirtualDomainModel.prototype.getRawSnippets = function () {
-  return this.snipets || [];
 };
 
 VirtualDomainModel.prototype._generateId = function (domain) {

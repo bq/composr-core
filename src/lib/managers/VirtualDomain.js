@@ -20,11 +20,6 @@ VirtualDomainManager.prototype = new BaseManager({
   validator: virtualDomainValidator
 });
 
-//Compilation
-VirtualDomainManager.prototype._compile = function (domain, vdomain) {
-  return vdomain;
-};
-
 VirtualDomainManager.prototype.getVirtualDomains = function (domain) {
   return this.store.getAsList(domain);
 };

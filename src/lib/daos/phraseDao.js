@@ -61,9 +61,13 @@ PhraseDao.loadAll = function () {
   return utils.getAllRecursively(caller);
 };
 
-PhraseDao.save = function(){
-  //Look for the phrases, if they exist in local and have the same md5 , do not save
-  console.log(this.Phrases);
-}
+PhraseDao.save = function(item){
+  if(!driverStore.getDriver()){
+    return Promise.reject('missing:driver');
+  }
+
+  return driverStore.getDriver().resources.resource(COLLECTION, item.id)
+    .update(item);
+};
 
 module.exports = PhraseDao;
