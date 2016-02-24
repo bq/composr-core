@@ -26,7 +26,7 @@ SnippetModel.prototype.getRawModel = function(){
   return this.json;
 };
 
-PhraseModel.prototype.getMD5 = function() {
+SnippetModel.prototype.getMD5 = function() {
   return this.json.md5;
 };
 

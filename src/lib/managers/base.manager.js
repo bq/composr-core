@@ -25,9 +25,10 @@ var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise');
  */
 function BaseManager(options) {
   this.itemName = options.itemName;
-  this.store = otions.store;
+  this.store = options.store;
   this.validator = options.validator;
   this.model = options.model;
+  this.dao = options.dao;
 }
 
 //Reset the stack
@@ -85,7 +86,6 @@ BaseManager.prototype._register = function(domain, item) {
 
     })
     .catch(function(err) {
-      console.dir(err);
       module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err);
       throw err;
     });
@@ -201,6 +201,14 @@ BaseManager.prototype.getById = function(id){
   return this.store.get(domain, id);
 };
 
+BaseManager.prototype.getByVirtualDomain = function(){
+  //TODO: implement
+  //call this.store.getByVirtualDomain
+};
+
+BaseManager.prototype.getByDomain = function(domain){
+  return this.store.getAsList(domain);
+};
 /********************************
   Mandatory implementations
 ********************************/
@@ -275,7 +283,8 @@ BaseManager.prototype.save = function(json){
   var module = this;
 
   return new Promise(function(resolve, reject){
-    var validationResult = this.validate(vdJson);
+    //Validate in pre save
+    var validationResult = this.validate(json);
 
     if(validationResult.valid === true){
 

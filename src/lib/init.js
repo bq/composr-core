@@ -26,7 +26,7 @@ function init(options, fetch) {
           module.Phrases.load(),
           module.Snippets.load(),
           module.VirtualDomain.load()
-        ])
+        ]);
       })
       .then(function() {
         module.events.emit('debug', 'success:initializing');

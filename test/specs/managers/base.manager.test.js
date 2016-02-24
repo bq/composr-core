@@ -13,7 +13,15 @@ chai.use(chaiAsPromised);
 var correctPhrases = require('../../fixtures/phrases').correct;
 var utilsPromises = require('../../utils/promises');
 
-describe('Code Compiler', function() {
+var modelFixture = function(){
+  this.getId = () => 'myid';
+};
+
+var storeAPI = { 
+  add: () => true
+};
+
+describe.only('Base manager', function() {
 
   it('exposes the needed prototype', function() {
     expect(BaseManager.prototype).to.respondTo('register');
@@ -23,13 +31,11 @@ describe('Code Compiler', function() {
     expect(BaseManager.prototype).to.respondTo('_unregister');
     expect(BaseManager.prototype).to.respondTo('compile');
     expect(BaseManager.prototype).to.respondTo('_compile');
-    expect(BaseManager.prototype).to.respondTo('__preCompile');
     expect(BaseManager.prototype).to.respondTo('__preAdd');
     expect(BaseManager.prototype).to.respondTo('_addToStore');
     expect(BaseManager.prototype).to.respondTo('__postAdd');
     expect(BaseManager.prototype).to.respondTo('validate');
     expect(BaseManager.prototype).to.respondTo('resetItems');
-    expect(BaseManager.prototype).to.respondTo('_evaluateCode');
     expect(BaseManager.prototype).to.respondTo('_extractDomainFromId');
     expect(BaseManager.prototype).to.respondTo('_extractVirtualDomainFromId');
     expect(BaseManager.prototype).to.respondTo('getById');
@@ -39,72 +45,38 @@ describe('Code Compiler', function() {
     expect(BaseManager.prototype).to.respondTo('save');
   });
 
-  describe('Code evaluation', function() {
-    var compiler, stubEvents, spyCodeOptimization;
-
-    beforeEach(function() {
-      compiler = new BaseManager({
-        itemName: 'test-object',
-        item: 'myItems'
-      });
-
-      stubEvents = sinon.stub();
-
-      spyCodeOptimization = sinon.spy(compiler, '__codeOptimization');
-
-      //Mock the composr external methods
-      compiler.events = {
-        emit: stubEvents
-      };
-    });
-
-    it('should evaluate a function', function() {
-      var result = compiler._evaluateCode('console.log(a);');
-      expect(result.fn).to.be.a('function');
-      expect(result.script).to.be.a('object');
-      expect(result.error).to.equals(false);
-      expect(spyCodeOptimization.callCount).to.equals(1);
-    });
-
-    it('launches an event with the evaluation', function() {
-      var result = compiler._evaluateCode('console.log(a);');
-      expect(stubEvents.callCount).to.equals(1);
-      expect(stubEvents.calledWith('debug', 'test-object:evaluatecode:good')).to.equals(true);
-    });
-
-    it('fails with a wrong code', function() {
-      var result = compiler._evaluateCode('};');
-      expect(result.fn).to.equals(null);
-      expect(result.error).to.not.equals(false);
-
-      expect(stubEvents.callCount).to.equals(1);
-      expect(stubEvents.calledWith('warn', 'test-object:evaluatecode:wrong_code')).to.equals(true);
-    });
-
-  });
 
   describe('Item registration', function() {
-    var compiler, stubEvents;
+    var manager, mockStore, mockModel, stubEvents;
 
     beforeEach(function() {
-      compiler = new BaseManager({
+      mockStore = sinon.mock(storeAPI);
+
+      manager = new BaseManager({
         itemName: 'phrases',
-        item: '__myList',
+        store: storeAPI,
+        model: modelFixture,
         validator: function(item) {
-          return q.resolve(item);
+          return Promise.resolve(item);
         }
       });
 
       stubEvents = sinon.stub();
 
-      compiler.events = {
+      manager.events = {
         emit: stubEvents
       };
 
     });
 
+    afterEach(function(){
+      mockStore.restore();
+    });
+
     it('should allow to register an array of items', function(done) {
-      compiler.register('domain', [{
+      mockStore.expects('add').twice();
+
+      manager.register('domain', [{
         id: '1'
       }, {
         id: '2'
@@ -113,12 +85,13 @@ describe('Code Compiler', function() {
         .then(function(result) {
           expect(result).to.be.an('array');
           expect(result.length).to.equals(2);
+          mockStore.verify();
         })
         .should.be.fulfilled.notify(done);
     });
 
     it('should allow to register a single item', function(done) {
-      compiler.register('domain', {
+      manager.register('domain', {
         id: '1'
       })
         .should.be.fulfilled
@@ -129,7 +102,7 @@ describe('Code Compiler', function() {
     });
 
     it('should emit a debug event when the item has been registered', function(done) {
-      compiler.register('domain', {
+      manager.register('domain', {
         id: '1'
       })
         .should.be.fulfilled
@@ -141,31 +114,31 @@ describe('Code Compiler', function() {
     });
 
     describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
+      var spyCompile, spyValidate, spyCompile, spyRegister, spyAddToList;
 
       beforeEach(function() {
-        spyRegister = sinon.spy(compiler, '_register');
-        spyCompile = sinon.spy(compiler, 'compile');
-        spyValidate = sinon.spy(compiler, 'validate');
-        spy_compile = sinon.spy(compiler, '_compile');
-        spyAddToList = sinon.spy(compiler, '_addToStore');
+        spyRegister = sinon.spy(manager, '_register');
+        spyCompile = sinon.spy(manager, 'compile');
+        spyValidate = sinon.spy(manager, 'validate');
+        spyCompile = sinon.spy(manager, '_compile');
+        spyAddToList = sinon.spy(manager, '_addToStore');
       });
 
       afterEach(function() {
         spyRegister.restore();
         spyCompile.restore();
         spyValidate.restore();
-        spy_compile.restore();
+        spyCompile.restore();
         spyAddToList.restore();
       });
 
       it('should call the compilation and validation methods when registering', function(done) {
 
-        compiler.register('test-domain', 'Something to register')
+        manager.register('test-domain', 'Something to register')
           .should.be.fulfilled
           .then(function() {
             expect(spyCompile.callCount).to.equals(1);
-            expect(spy_compile.callCount).to.equals(1);
+            expect(spyCompile.callCount).to.equals(1);
             expect(spyValidate.callCount).to.equals(1);
           })
           .should.be.fulfilled.notify(done);
@@ -173,7 +146,7 @@ describe('Code Compiler', function() {
 
       it('should call the _register method with the domain', function(done) {
 
-        compiler.register('test-domain', 'Something to register')
+        manager.register('test-domain', 'Something to register')
           .should.be.fulfilled
           .then(function() {
             expect(spyRegister.callCount).to.equals(1);
@@ -184,7 +157,7 @@ describe('Code Compiler', function() {
 
       it('should call the _addToStore method with the domain', function(done) {
 
-        compiler.register('test-domain', 'Something to register')
+        manager.register('test-domain', 'Something to register')
           .should.be.fulfilled
           .then(function() {
             expect(spyAddToList.callCount).to.equals(1);
@@ -195,49 +168,61 @@ describe('Code Compiler', function() {
 
     });
 
-    describe('Phases failing', function() {
-      var stubEvents, aCompiler;
+    describe('when validation fails', function() {
+      var stubEvents, aManager, mockStore;
 
       beforeEach(function() {
-        aCompiler = new BaseManager({
-          item: '__myList',
+        mockStore = sinon.mock(storeAPI);
+
+        aManager = new BaseManager({
+          model: modelFixture,
+          store: storeAPI,
           itemName: 'testObject',
           validator: function(item) {
             if (item.id === 'invalid') {
-              return q.reject();
+              return Promise.reject();
             } else {
-              return q.resolve(item);
+              return Promise.resolve(item);
             }
           }
         });
+
         stubEvents = sinon.stub();
 
-        aCompiler.events = {
+        aManager.events = {
           emit: stubEvents
         };
+      });
+
+      afterEach(function(){
+        mockStore.restore();
       });
 
       describe('Validation fail', function() {
 
         it('should emit an error when the registering fails because the validation fails', function(done) {
-          aCompiler.register('domain', {
+          aManager.register('domain', {
             id: 'invalid'
           })
             .should.be.fulfilled
             .then(function() {
               expect(stubEvents.callCount).to.be.above(0);
               expect(stubEvents.calledWith('warn', 'testObject:not:registered')).to.equals(true);
+              mockStore.expects('add').never();
+              mockStore.verify();
             })
             .should.be.fulfilled.notify(done);
         });
 
         it('should return not registered when the registering fails because the validation fails', function(done) {
-          aCompiler.register('domain', {
+          aManager.register('domain', {
             id: 'invalid'
           })
             .should.be.fulfilled
             .then(function(result) {
               expect(result.registered).to.equals(false);
+              mockStore.expects('add').never();
+              mockStore.verify();
             })
             .should.be.fulfilled.notify(done);
         });
@@ -248,7 +233,7 @@ describe('Code Compiler', function() {
         var stubCompile;
 
         beforeEach(function() {
-          stubCompile = sinon.stub(aCompiler, 'compile', function() {
+          stubCompile = sinon.stub(aManager, 'compile', function() {
             return false;
           });
         });
@@ -258,23 +243,27 @@ describe('Code Compiler', function() {
         });
 
         it('should emit an error when the registering fails because the compilation fails', function(done) {
-          aCompiler.register('domain', {
+          aManager.register('domain', {
             id: 'valid'
           })
             .then(function() {
               expect(stubEvents.callCount).to.be.above(0);
               expect(stubEvents.calledWith('warn', 'testObject:not:registered')).to.equals(true);
+              mockStore.expects('add').never();
+              mockStore.verify();
               done();
             });
         });
 
         it('should return the unregistered state when the compilation fails', function(done) {
-          aCompiler.register('domain', {
+          aManager.register('domain', {
             id: 'valid'
           })
             .should.be.fulfilled
             .then(function(result) {
               expect(result.registered).to.equals(false);
+              mockStore.expects('add').never();
+              mockStore.verify();
             })
             .should.notify(done);
         });
@@ -285,32 +274,32 @@ describe('Code Compiler', function() {
 
 
   describe('Item reseting', function() {
-    var compiler;
+    var manager;
 
     beforeEach(function() {
 
-      compiler = new BaseManager({
+      manager = new BaseManager({
         item: '__mything'
       });
 
-      compiler.__mything = 'SanFrancisco';
+      manager.__mything = 'SanFrancisco';
 
     });
 
     afterEach(function() {
-      compiler.__mything = null;
+      manager.__mything = null;
     });
 
     it('Resets the item to an empty object', function() {
-      compiler.resetItems();
-      expect(Object.keys(compiler.__mything).length).to.equals(0);
+      manager.resetItems();
+      expect(Object.keys(manager.__mything).length).to.equals(0);
     });
   });
 
 
   describe('Domain extraction', function() {
 
-    var compiler = new BaseManager({
+    var manager = new BaseManager({
       item: '__mything'
     });
 
@@ -330,68 +319,68 @@ describe('Code Compiler', function() {
 
     it('Extracts all the domains correctly', function() {
       testItems.forEach(function(item) {
-        expect(compiler._extractDomainFromId(item.id)).to.equals(item.value);
+        expect(manager._extractDomainFromId(item.id)).to.equals(item.value);
       });
     });
 
   });
 
   describe('Items unregistration', function() {
-    var spyUnregister, compiler, stubEvents;
+    var spyUnregister, manager, stubEvents;
 
     beforeEach(function() {
-      compiler = new BaseManager({
+      manager = new BaseManager({
         item: '__mything',
         itemName: 'goodies'
       });
 
-      spyUnregister = sinon.spy(compiler, '_unregister');
+      spyUnregister = sinon.spy(manager, '_unregister');
 
       stubEvents = sinon.stub();
       //Mock the composr external methods
-      compiler.events = {
+      manager.events = {
         emit: stubEvents
       };
 
     });
 
     it('Should be able to receive a single item', function() {
-      compiler.unregister('mydomain', 'testId');
+      manager.unregister('mydomain', 'testId');
 
       expect(spyUnregister.callCount).to.equals(1);
     });
 
     it('Should be emit info about the event', function() {
-      compiler.unregister('mydomain', 'testId');
+      manager.unregister('mydomain', 'testId');
 
       expect(stubEvents.callCount).to.equals(2);
       expect(stubEvents.calledWith('debug', 'goodies:unregister:testId')).to.equals(true);
     });
 
     it('should warn about an unimplemented method', function(){
-      compiler.unregister('mydomain', 'testId');
+      manager.unregister('mydomain', 'testId');
 
       expect(stubEvents.callCount).to.equals(2);
       expect(stubEvents.calledWith('warn', '_unregister not implemented')).to.equals(true);
     });
 
     it('Should be able to receive an array', function() {
-      compiler.unregister('mydomain', ['testId', 'testId', 'testId', 'testId', 'testId']);
+      manager.unregister('mydomain', ['testId', 'testId', 'testId', 'testId', 'testId']);
 
       expect(spyUnregister.callCount).to.equals(5);
     });
   });
 
   describe('Register without domain', function() {
-    var stubRegister, compiler;
+    var stubRegister, manager;
 
     before(function() {
-      compiler = new BaseManager({
+      manager = new BaseManager({
         item: '__mything',
         itemName: 'goodies'
       });
 
-      stubRegister = sinon.stub(compiler, 'register', utilsPromises.resolvedPromise);
+      stubRegister = sinon.stub(manager, 'register', utilsPromises.resolvedPromise);
     });
 
     it('Calls the register method with the domain', function(done) {
@@ -405,7 +394,7 @@ describe('Code Compiler', function() {
         'id': 'domainTwo!phrase'
       }];
 
-      compiler.registerWithoutDomain(examplePhrases)
+      manager.registerWithoutDomain(examplePhrases)
         .then(function() {
           expect(stubRegister.callCount).to.equals(2);
           expect(stubRegister.calledWith('domainTest')).to.equals(true);

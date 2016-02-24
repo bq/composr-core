@@ -2,6 +2,7 @@
 var BaseManager = require('./base.manager.js');
 var SnippetModel = require('../models/SnippetModel.js');
 var snippetsStore = require('../stores/snippets.store');
+var snippetDao = require('../daos/snippetDao');
 
 var snippetValidator = require('../validators/snippet.validator.js');
 
@@ -13,6 +14,7 @@ SnippetsManager.prototype = new BaseManager({
   itemName: 'snippet',
   store: snippetsStore,
   model : SnippetModel,
+  dao : snippetDao,
   validator: snippetValidator
 });
 

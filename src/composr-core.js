@@ -57,7 +57,6 @@ var VirtualDomain = new VirtualDomainManager({
 
 CompoSR.prototype.VirtualDomain = VirtualDomain;
 
-CompoSR.prototype.Publisher = require('./lib/Publisher');
 //CompoSR.prototype._logger = require('./lib/logger');
 //TODO: load integrations, integrations with load a logger that will suscribe to the debug, warn , error and info events and log them
 //All the integrations will be handled by the events module.

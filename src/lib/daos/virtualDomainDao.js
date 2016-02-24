@@ -21,7 +21,7 @@ VirtualDomainDao.load = function (id) {
   }
 };
 
-/*VirtualDomainDao.loadAll = function () {
+VirtualDomainDao.loadAll = function () {
   var caller = function (pageNumber, pageSize) {
     return driverStore.getDriver().resources.collection(COLLECTION).get({
       pagination: {
@@ -32,14 +32,6 @@ VirtualDomainDao.load = function (id) {
   };
 
   return utils.getAllRecursively(caller);
-};*/
-
-VirtualDomainDao.loadAll = function(){
-  return Promise.resolve([{
-    id : 'booqs:nubico:demo!phrasesProject',
-    phrases : ['booqs:nubico:demo!v0!user!email','booqs:nubico:demo!v0!user!email'],
-    snippets : ['booqs:nubico:demo!config']
-  }]);
 };
 
 VirtualDomainDao.save = function(item){

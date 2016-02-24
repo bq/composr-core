@@ -1,21 +1,21 @@
 'use strict';
 
 var _ = require('lodash');
+
 var phrases = {};
 
-function add(domain, phraseModel){
-  
-  if (!phrases[domain]) {
-    phrases[domain] = [];
+function getAsList(domain){
+  var list = [];
+
+  if (!domain) {
+    list = _.flatten(Object.keys(phrases).map(function(key) {
+      return phrases[key];
+    }));
+  } else if (phrases[domain]) {
+    list = phrases[domain];
   }
 
-  var index = getPhraseIndexById(domain, phraseModel.getId());
-
-  if (index === -1) {
-    phrases[domain].push(phraseModel);
-  } else {
-    phrases[domain][index] = phraseModel;
-  }
+  return list;
 }
 
 function getPhraseIndexById(domain, id){
@@ -32,18 +32,19 @@ function getPhraseIndexById(domain, id){
   return index;
 }
 
-function getAsList(domain){
-  var list = [];
-
-  if (!domain) {
-    list = _.flatten(Object.keys(phrases).map(function(key) {
-      return phrases[key];
-    }));
-  } else if (phrases[domain]) {
-    list = phrases[domain];
+function add(domain, phraseModel){
+  
+  if (!phrases[domain]) {
+    phrases[domain] = [];
   }
 
-  return list;
+  var index = getPhraseIndexById(domain, phraseModel.getId());
+
+  if (index === -1) {
+    phrases[domain].push(phraseModel);
+  } else {
+    phrases[domain][index] = phraseModel;
+  }
 }
 
 function remove(domain, id){
@@ -68,6 +69,6 @@ module.exports = {
   add : add,
   get : get,
   getAsList : getAsList,
-  remove: remove
+  remove: remove,
   exists : exists
 };

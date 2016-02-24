@@ -3,12 +3,12 @@
 var _ = require('lodash');
 var snippets = {};
 
-function add(domain, vModel){
+function add(domain, snippetModel){
   if (!snippets[domain]) {
     snippets[domain] = {};
   }
 
-  snippets[domain][vModel.getId()] = vdModel;
+  snippets[domain][snippetModel.getId()] = snippetModel;
 }
 
 function remove(domain, id){
@@ -50,6 +50,6 @@ module.exports = {
   get : get,
   getAsList : getAsList,
   getAsObject : getAsObject,
-  remove: remove
+  remove: remove,
   exists : exists
 };

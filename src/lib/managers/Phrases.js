@@ -1,6 +1,7 @@
 'use strict';
 var phraseValidator = require('../validators/phrase.validator');
 var PhraseModel = require('../models/PhraseModel');
+var phraseDao = require('../daos/phraseDao');
 var BaseManager = require('./base.manager');
 var queryString = require('query-string');
 var ComposrError = require('../ComposrError');
@@ -22,6 +23,7 @@ PhraseManager.prototype = new BaseManager({
   itemName: 'phrase',
   store: phrasesStore,
   model : PhraseModel,
+  dao : phraseDao,
   validator: phraseValidator
 });
 

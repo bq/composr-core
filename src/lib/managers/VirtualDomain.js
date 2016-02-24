@@ -4,7 +4,7 @@ var _ = require('lodash');
 var BaseManager = require('./base.manager.js');
 var virtualDomainValidator = require('../validators/virtualDomain.validator');
 var VirtualDomainModel = require('../models/VirtualDomainModel');
-var virtualDomainDao = require('../loaders/virtualDomainDao');
+var virtualDomainDao = require('../daos/virtualDomainDao');
 var virtualDomainStore = require('../stores/virtualDomain.store');
 
 var VirtualDomainManager = function (options) {
@@ -17,6 +17,7 @@ VirtualDomainManager.prototype = new BaseManager({
   itemName: 'virtualDomain',
   store : virtualDomainStore,
   model : VirtualDomainModel,
+  dao : virtualDomainDao,
   validator: virtualDomainValidator
 });
 
@@ -59,7 +60,7 @@ VirtualDomainManager.prototype.__save = function(vdJson) {
   return Promise.all([
     this._savePhrases(vdJson.phrases),
     this._saveSnippets(vdJson.snippets),
-    this.dao.save(_.omit(vdJson, ['phrases', 'snippets'])
+    this.dao.save(_.omit(vdJson, ['phrases', 'snippets']))
   ]);
 };
 

@@ -3,12 +3,12 @@
 var _ = require('lodash');
 var virtualDomains = {};
 
-function add(domain, vModel){
+function add(domain, vdModel){
   if (!virtualDomains[domain]) {
     virtualDomains[domain] = {};
   }
 
-  virtualDomains[domain][vModel.getId()] = vdModel;
+  virtualDomains[domain][vdModel.getId()] = vdModel;
 }
 
 function remove(domain, id){
@@ -37,6 +37,6 @@ module.exports = {
   add : add,
   get : get,
   getAsList : getAsList,
-  remove: remove
+  remove: remove,
   exists : exists
 };

@@ -1,4 +1,4 @@
-var snippetDao = require('../../../src/lib/loaders/snippetDao'),
+var snippetDao = require('../../../src/lib/daos/snippetDao'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),

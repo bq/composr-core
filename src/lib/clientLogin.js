@@ -1,7 +1,7 @@
 'use strict';
 
 var q = require('q');
-var driverStore = require('./stores/corbelDriver.store')
+var driverStore = require('./stores/corbelDriver.store');
 
 function clientLogin() {
   /*jshint validthis:true */

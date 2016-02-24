@@ -1,4 +1,4 @@
-var phraseDao = require('../../../src/lib/loaders/phraseDao'),
+var phraseDao = require('../../../src/lib/daos/phraseDao'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),

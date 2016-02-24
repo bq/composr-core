@@ -56,7 +56,7 @@
     "load-grunt-tasks": "~3.1.0",
     "madge": "^0.5.0",
     "mocha": "~2.2.1",
-    "sinon": "^1.14.1",
+    "sinon": "^1.17.3",
     "supertest": "^1.0.0",
     "time-grunt": "^1.2.1"
   },
