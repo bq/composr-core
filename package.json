@@ -1,7 +1,7 @@
 {
   "name": "composr-core",
   "version": "1.2.3",
-  "description": "CompoSR core functions",
+  "description": "CompoSR core",
   "main": "src/composr-core.js",
   "directories": {
     "test": "test"
@@ -68,7 +68,9 @@
     "Rafael Pedrola <@rafinskipg>",
     "Josep Arpí <@jarpi>",
     "Samuel Martin <@samuelmartingc>",
-    "Jorge Serrano <@jscmr>"
+    "Jorge Serrano <@jscmr>",
+    "Miguel Jimenez <@milingo>",
+    "Ricardo Martinez <@rackdon>"
   ],
   "license": "ISC"
 }

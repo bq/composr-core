@@ -38,6 +38,10 @@ PhraseModel.prototype.getId = function() {
   return this.id;
 };
 
+PhraseModel.prototype.getVirtualDomainId = function() {
+  return this.id;
+};
+
 PhraseModel.prototype.getUrl = function() {
   return this.json.url;
 };

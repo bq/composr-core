@@ -13,18 +13,45 @@ chai.use(chaiAsPromised);
 var correctPhrases = require('../../fixtures/phrases').correct;
 var utilsPromises = require('../../utils/promises');
 
-var modelFixture = function(){
+var modelFixture = function(json){
+  this.json = json;
   this.getId = () => 'myid';
+  this.getMD5 = () => json.md5;
 };
 
 var storeAPI = { 
   add: () => true,
+  get: (domain, id) => null,
   reset: () => null,
   remove : () => null,
   exists : () => true
 };
 
 describe.only('Base manager', function() {
+  var mockStore, manager, stubEvents;
+
+  beforeEach(function(){
+    mockStore = sinon.mock(storeAPI);
+
+    manager = new BaseManager({
+      itemName: 'phrases',
+      store: storeAPI,
+      model: modelFixture,
+      validator: function(item) {
+        return Promise.resolve(item);
+      }
+    });
+
+    stubEvents = sinon.stub();
+
+    manager.events = {
+      emit: stubEvents
+    };
+  });
+
+  afterEach(function(){
+    mockStore.restore();
+  });
 
   it('exposes the needed prototype', function() {
     expect(BaseManager.prototype).to.respondTo('register');
@@ -50,31 +77,6 @@ describe.only('Base manager', function() {
 
 
   describe('Item registration', function() {
-    var manager, mockStore, mockModel, stubEvents;
-
-    beforeEach(function() {
-      mockStore = sinon.mock(storeAPI);
-
-      manager = new BaseManager({
-        itemName: 'phrases',
-        store: storeAPI,
-        model: modelFixture,
-        validator: function(item) {
-          return Promise.resolve(item);
-        }
-      });
-
-      stubEvents = sinon.stub();
-
-      manager.events = {
-        emit: stubEvents
-      };
-
-    });
-
-    afterEach(function(){
-      mockStore.restore();
-    });
 
     it('should allow to register an array of items', function(done) {
       mockStore.expects('add').twice();
@@ -172,10 +174,9 @@ describe.only('Base manager', function() {
     });
 
     describe('when validation fails', function() {
-      var stubEvents, aManager, mockStore;
+      var stubEvents, aManager;
 
       beforeEach(function() {
-        mockStore = sinon.mock(storeAPI);
 
         aManager = new BaseManager({
           model: modelFixture,
@@ -195,10 +196,6 @@ describe.only('Base manager', function() {
         aManager.events = {
           emit: stubEvents
         };
-      });
-
-      afterEach(function(){
-        mockStore.restore();
       });
 
       describe('Validation fail', function() {
@@ -275,21 +272,14 @@ describe.only('Base manager', function() {
   });
 
   describe('Item reseting', function() {
-    var manager, mockStore;
+    var manager;
 
     beforeEach(function() {
-      mockStore = sinon.mock(storeAPI);
-
       manager = new BaseManager({
         itemName: 'myitem', 
         store : storeAPI,
         model : modelFixture
       });
-
-    });
-
-    afterEach(function() {
-      mockStore.restore();
     });
 
     it('Resets the item to an empty object', function() {
@@ -327,10 +317,9 @@ describe.only('Base manager', function() {
   });
 
   describe('Items unregistration', function() {
-    var spyUnregister, manager, stubEvents, mockStore;
+    var spyUnregister, manager, stubEvents;
 
     beforeEach(function() {
-      mockStore = sinon.mock(storeAPI);
 
       manager = new BaseManager({
         store: storeAPI,
@@ -344,10 +333,6 @@ describe.only('Base manager', function() {
       manager.events = {
         emit: stubEvents
       };
-    });
-
-    afterEach(function(){
-      mockStore.restore();
     });
 
     it('Should be able to receive a single item', function() {
@@ -418,6 +403,33 @@ describe.only('Base manager', function() {
         .should.notify(done);
     });
 
+  });
+
+  describe('Save', function(){
+
+    describe('_should save check', function(){
+      var stubGet;
+
+      before(function(){
+        stubGet = sinon.stub(storeAPI, 'get', function(){
+          var model =  new modelFixture({ md5 : 'abc', id : 'domain!myid'});
+          return model;
+        })
+      });
+
+      it('returns false if the md5 is the same', function(){
+        var result = manager.__shouldSave({ md5 : 'abc', id : 'domain!myid'});
+        expect(result).to.equals(false);
+        expect(stubGet.calledWith('domain', 'domain!myid')).to.equals(true);
+      });
+
+      it('returns true if the md5 differs', function(){
+        var result = manager.__shouldSave({ md5 : 'dfg', id : 'domain!myid'});
+        expect(result).to.equals(true);
+        expect(stubGet.calledWith('domain', 'domain!myid')).to.equals(true);
+      });
+
+    });
   });
 
 });
