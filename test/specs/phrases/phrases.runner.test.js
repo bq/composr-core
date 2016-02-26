@@ -751,7 +751,6 @@ describe('Phrases runner', function() {
       result
         .should.be.rejected
         .then(function(response) {
-          console.log(response);
           expect(spyRun.callCount).to.equals(1);
           expect(response.status).to.equals(503);
         })
