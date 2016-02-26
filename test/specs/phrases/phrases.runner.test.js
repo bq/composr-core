@@ -78,6 +78,14 @@ describe('Phrases runner', function() {
 
       }
     }
+  },{
+    'url': 'timeoutbrowser/:value',
+    'get': {
+      'code': 'setTimeout(function(){ res.send(200); }, parseInt(req.params.value) * 3);',
+      'doc': {
+
+      }
+    }
   }, {
     'url': 'queryparameters',
     'get': {
@@ -726,9 +734,26 @@ describe('Phrases runner', function() {
 
       result
         .should.be.rejected
-        .then(function() {
+        .then(function(response) {
           expect(spyRun.callCount).to.equals(1);
+          expect(response.status).to.equals(503);
           expect(stubEvents.calledWith('warn', 'phrase:timedout')).to.equals(true);
+        })
+        .should.notify(done);
+    });
+
+    it('cuts the phrase execution at 500 ms with browser mode', function(done) {
+      var result = Phrases.runByPath(domain, 'timeoutbrowser/500', 'get', {
+        timeout: 500,
+        browser: true
+      });
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          console.log(response);
+          expect(spyRun.callCount).to.equals(1);
+          expect(response.status).to.equals(503);
         })
         .should.notify(done);
     });
