@@ -4,6 +4,7 @@ var q = require('q');
 var _ = require('lodash');
 var vm = require('vm');
 var uglifyJs = require('uglify-js');
+var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise');
 
 function CodeCompiler(options) {
   this.itemName = options.itemName;
@@ -19,47 +20,19 @@ CodeCompiler.prototype.resetItems = function() {
 
 //Entry point for registering or unregistering items
 CodeCompiler.prototype.register = function(domain, itemOrItems) {
-  if (!itemOrItems || !domain) {
-    return Promise.reject();
-  }
+  var itemsPromisesGenerator = currifiedToArrayPromise(itemOrItems);
 
-  var dfd = q.defer();
-
-  var module = this;
-
-  var isArray = Array.isArray(itemOrItems);
-
-  if (isArray === false) {
-    itemOrItems = [itemOrItems];
-  }
-
-  itemOrItems = _.cloneDeep(itemOrItems);
-
-  var promises = itemOrItems.map(function(item) {
+  return itemsPromisesGenerator(function(item) {
     return module._register(domain, item);
+  }, 
+  function(result, index) {
+    return {
+      registered: result.state === 'fulfilled',
+      id: itemOrItems[index].id,
+      compiled: result.state === 'fulfilled' ? result.value : null,
+      error: result.reason ? result.reason : null
+    };
   });
-
-  q.allSettled(promises)
-    .then(function(results) {
-
-      //result has => value === resolved/ state === 'fulfilled' / reason === error
-      results = results.map(function(result, index) {
-        return {
-          registered: result.state === 'fulfilled',
-          id: itemOrItems[index].id,
-          compiled: result.state === 'fulfilled' ? result.value : null,
-          error: result.reason ? result.reason : null
-        };
-      });
-
-      if (isArray) {
-        dfd.resolve(results);
-      } else {
-        dfd.resolve(results[0]);
-      }
-    });
-
-  return dfd.promise;
 
 };
 
@@ -73,19 +46,21 @@ CodeCompiler.prototype._register = function(domain, item) {
 
       module.__preCompile(domain, item);
 
-      var compiled = module.compile(item);
+      //Returns the MODEL
+      var modelInstance = module.compile(domain, item);
 
-      if (compiled) {
-        module.__preAdd(domain, compiled);
+      if (modelInstance) {
+        module.__preAdd(domain, modelInstance);
 
-        var added = module._addToList(domain, compiled);
-        module.events.emit('debug', module.itemName + ':registered', added, item.id);
+        var added = module._addToList(domain, modelInstance);
+        module.events.emit('debug', module.itemName + ':registered', added, modelInstance.getId());
 
         if (added) {
-          module.events.emit(module.itemName + ':registered', item);
+          //Corbel-composr listens to this event for registering routes. And uses item.id;
+          module.events.emit(module.itemName + ':registered', modelInstance);
         }
 
-        return compiled;
+        return modelInstance;
       } else {
         module.events.emit('warn', module.itemName + ':not:registered', item.id);
         throw new Error('not:registered');
@@ -141,7 +116,7 @@ CodeCompiler.prototype.validate = function(item) {
 };
 
 //Iterates over the items to compile
-CodeCompiler.prototype.compile = function(itemOrItems) {
+CodeCompiler.prototype.compile = function(domain, itemOrItems) {
   var module = this;
 
   var isArray = Array.isArray(itemOrItems);
@@ -151,7 +126,7 @@ CodeCompiler.prototype.compile = function(itemOrItems) {
   }
 
   var compiledResults = itemOrItems.map(function(item) {
-    return module._compile(item);
+    return module._compile(domain, item);
   });
 
   return isArray ? compiledResults : compiledResults[0];
@@ -232,7 +207,7 @@ CodeCompiler.prototype._extractDomainFromId = function(id) {
   Mandatory implementations
 ********************************/
 
-CodeCompiler.prototype._compile = function(item) {
+CodeCompiler.prototype._compile = function(domain, item) {
   //Implement freely
   this.events.emit('warn', '_compile not implemented');
   return item;

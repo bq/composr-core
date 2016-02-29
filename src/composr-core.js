@@ -3,6 +3,7 @@
 var events = require('./lib/events');
 var PhraseManager = require('./lib/Phrases');
 var SnippetsManager = require('./lib/Snippets');
+var VirtualDomainManager = require('./lib/VirtualDomain');
 var Requirer = require('./lib/requirer');
 
 function CompoSR() {
@@ -13,16 +14,13 @@ CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
 CompoSR.prototype.clientLogin = require('./lib/clientLogin');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
-CompoSR.prototype.loadPhrases = require('./lib/loaders/loadPhrases');
-CompoSR.prototype.loadPhrase = require('./lib/loaders/loadPhrase');
-CompoSR.prototype.loadSnippets = require('./lib/loaders/loadSnippets');
-CompoSR.prototype.loadSnippet = require('./lib/loaders/loadSnippet');
-CompoSR.prototype.addPhrasesToDataStructure = require('./lib/addPhrasesToDataStructure');
-CompoSR.prototype.addSnippetsToDataStructure = require('./lib/addSnippetsToDataStructure');
-CompoSR.prototype.removePhrasesFromDataStructure = require('./lib/removePhrasesFromDataStructure');
-CompoSR.prototype.removeSnippetsFromDataStructure = require('./lib/removeSnippetsFromDataStructure');
+CompoSR.prototype.phraseDao = require('./lib/loaders/phraseDao');
+CompoSR.prototype.snippetDao = require('./lib/loaders/snippetDao');
+CompoSR.prototype.virtualDomainDao = require('./lib/loaders/virtualDomainDao');
 CompoSR.prototype.fetchData = require('./lib/fetchData');
 CompoSR.prototype.registerData = require('./lib/registerData');
+CompoSR.prototype.loadVirtualDomain = require('./lib/loadVirtualDomain');
+CompoSR.prototype.getVirtualDomainModel = require('./lib/getVirtualDomainModel');
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
 CompoSR.prototype.status = require('./lib/status');
@@ -31,10 +29,10 @@ CompoSR.prototype.parseToComposrError = require('./lib/parseToComposrError');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
+
 var Snippets = new SnippetsManager({
   events: events
 });
-
 
 var requirer = new Requirer({
   events: events,
@@ -45,10 +43,20 @@ CompoSR.prototype.requirer = requirer;
 
 CompoSR.prototype.Snippets = Snippets;
 
-CompoSR.prototype.Phrases = new PhraseManager({
+var Phrases = new PhraseManager({
   events: events,
   requirer : requirer
 });
+
+CompoSR.prototype.Phrases = Phrases;
+
+
+var VirtualDomain = new VirtualDomainManager({
+  events: events,
+  Phrases : Phrases
+});
+
+CompoSR.prototype.VirtualDomain = VirtualDomain;
 
 CompoSR.prototype.Publisher = require('./lib/Publisher');
 //CompoSR.prototype._logger = require('./lib/logger');

@@ -7,13 +7,8 @@ function reset() {
   //Corbel collections  
   this.resources = {
     phrasesCollection: 'composr:Phrase',
-    snippetsCollection: 'composr:Snippet'
-  };
-
-  //Loaded resources
-  this.data = {
-    phrases: [],
-    snippets: []
+    snippetsCollection: 'composr:Snippet',
+    virtualDomainCollection: 'composr:VirtualDomain'
   };
 
   this.corbelDriver = null;

@@ -1,4 +1,4 @@
-var loadPhrase = require('../../../src/lib/loaders/loadPhrase'),
+var phraseDao = require('../../../src/lib/loaders/phraseDao'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -24,7 +24,7 @@ describe('loadPhrase', function() {
       get: stubGetResource
     });
 
-    loader = loadPhrase.bind({
+    loader = phraseDao.load.bind({
       corbelDriver: {
         resources: {
           resource: stubResource
@@ -55,7 +55,7 @@ describe('loadPhrase', function() {
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = loadPhrase.bind({
+    var loaderWithoutDriver = phraseDao.load.bind({
       utils: composrUtils,
       resources: {
         phrasesCollection: 'testCol'

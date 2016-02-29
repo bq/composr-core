@@ -1,5 +1,6 @@
 'use strict';
 var CodeCompiler = require('./compilers/code.compiler.js');
+var SnippetModel = require('./models/SnippetModel.js');
 var snippetValidator = require('./validators/snippet.validator.js');
 var utils = require('./utils.js');
 

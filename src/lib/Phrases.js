@@ -1,5 +1,6 @@
 'use strict';
 var phraseValidator = require('./validators/phrase.validator');
+var PhraseModel = require('./models/PhraseModel');
 var CodeCompiler = require('./compilers/code.compiler');
 var regexpGenerator = require('./regexpGenerator');
 var paramsExtractor = require('./paramsExtractor');
@@ -56,7 +57,7 @@ PhraseManager.prototype._addToList = function(domain, phraseCompiled) {
     return false;
   }
 
-  if (typeof(phraseCompiled) !== 'object' || phraseCompiled.hasOwnProperty('id') === false || !phraseCompiled.id) {
+  if (typeof(phraseCompiled) !== 'object' || !phraseCompiled.getId()) {
     return false;
   }
 
@@ -64,7 +65,7 @@ PhraseManager.prototype._addToList = function(domain, phraseCompiled) {
     this.__phrases[domain] = [];
   }
 
-  var index = this._getPhraseIndexById(domain, phraseCompiled.id);
+  var index = this._getPhraseIndexById(domain, phraseCompiled.getId());
 
   if (index === -1) {
     this.__phrases[domain].push(phraseCompiled);
@@ -84,7 +85,7 @@ PhraseManager.prototype._unregister = function(domain, id) {
 };
 
 
-PhraseManager.prototype._compile = function(phrase) {
+PhraseManager.prototype._compile = function(domain, phrase) {
   try {
     var module = this;
 
@@ -120,8 +121,8 @@ PhraseManager.prototype._compile = function(phrase) {
     });
 
     module.events.emit('debug', 'phrase:compiled', compiled.id, Object.keys(compiled.codes));
-
-    return compiled;
+    //TODO compile in the phrase model
+    return new PhraseModel(phrase, domain, compiled);
 
   } catch (e) {
     //Somehow it has tried to compile an invalid phrase. Notify it and return false.

@@ -6,12 +6,16 @@ var fetchData = function fetchData() {
   var module = this;
   var dfd = q.defer();
 
-  var promises = [this.loadPhrases(), this.loadSnippets()];
+  var promises = [this.virtualDomainDao.loadAll()];
 
-  q.spread(promises, function(phrases, snippets) {
+  q.spread(promises, function(phrases, snippets, virtualDomains) {
     module.data.phrases = phrases;
     module.data.snippets = snippets;
-    module.events.emit('debug', 'data:loaded', 'phrases', phrases.length, 'snippets', snippets.length);
+    module.data.virtualDomains = virtualDomains;
+    module.events.emit('debug', 'data:loaded',
+      'phrases', phrases.length,
+      'snippets', snippets.length,
+      'virtualDomains', virtualDomains.length);
     dfd.resolve();
   })
   .catch(function(err) {

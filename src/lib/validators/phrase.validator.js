@@ -1,7 +1,6 @@
 'use strict';
 
 var check = require('syntax-error'),
-  ramlCompiler = require('../compilers/raml.compiler'),
   q = require('q'),
   utils = require('../utils'),
   vm = require('vm'),
@@ -21,7 +20,7 @@ function validate(phrase) {
 
   var methodPresent = false;
 
-  ['get', 'post', 'put', 'delete', 'options'].forEach(function(method) {
+  ['get', 'post', 'put', 'delete', 'options'].forEach(function (method) {
     if (phrase[method]) {
 
       var code;
@@ -67,20 +66,12 @@ function validate(phrase) {
   if (!methodPresent) {
     errors.push('undefined:phrase:http_method');
   }
-  
-  ramlCompiler.compile([phrase])
-    .then(function(){
-      if(errors.length > 0){
-        dfd.reject(errors);
-      }else{
-        dfd.resolve(phrase);
-      }
-    })
-    .catch(function(){
-      errors.push('error:not-raml-compilant');
-      dfd.reject(errors);
-    });
 
+  if (errors.length > 0) {
+    dfd.reject(errors);
+  } else {
+    dfd.resolve(phrase);
+  }
 
   return dfd.promise;
 }
