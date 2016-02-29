@@ -14,10 +14,9 @@ var virtualDomainSchema = {
     'source_location': {'type': 'string'},
     'git': {'type': 'string'},
     'license': {'type': 'string'},
-    'mock_middleware': {'type': 'boolean'},
-    'validate_middleware': {'type': 'boolean'},
+    'middlewares': {'type': 'array'},
     'vd_dependencies': {'type': 'object'},
-    '_apiRML': {'type': 'object'}
+    '_apiRML': {'type': 'string'}
   }
 };
 
