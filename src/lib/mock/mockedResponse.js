@@ -9,6 +9,7 @@ function MockedResponse(serverType, res) {
   this.serverType = serverType === 'express' ? 'express' : 'restify';
 
   this.cookies = {};
+  this.headers = {};
   this.statusCode = DEFAULT_STATUS_CODE;
   this.promise = new Promise(function(resolve, reject) {
     module.resolve = function(response) {
@@ -37,10 +38,12 @@ MockedResponse.prototype.respond = function(response) {
 };
 
 MockedResponse.prototype.expressResponse = function(response) {
+  this.res.headers = response.headers;
   this.res.status(response.status)[this._action](response.body);
 };
 
 MockedResponse.prototype.restifyResponse = function(response) {
+  this.res.headers = response.headers;
   this.res.send(response.status, response.body);
 };
 
@@ -70,20 +73,55 @@ MockedResponse.prototype.cookie = function(name, value, options) {
   return this;
 };
 
+MockedResponse.prototype.setHeader = function(name, value) {
+  if (this.serverType === 'express'){
+    if (this.res && typeof(this.res.set) === 'function') {
+      this.res.set(name, value);
+    }
+  }else{
+    if (this.res && typeof(this.res.header) === 'function') {
+      this.res.header(name, value);
+    }
+  }
+
+  this.headers[name] = value;
+
+  return this;
+};
+
+MockedResponse.prototype.setHeaders = function(headers) {
+  if (this.serverType === 'express'){
+    if (this.res && typeof(this.res.set) === 'function') {
+      this.res.set(headers);
+    }
+  }else{
+    if (this.res && typeof(this.res.header) === 'function') {
+        var that = this;
+        _.forIn(headers, function(value, key){
+          that.res.header(key, value);
+        });
+    }
+  }
+
+  this.headers = headers;
+
+  return this;
+};
+
 MockedResponse.prototype.send = function(data) {
   this._action = 'send';
+  var params = {
+    status: this.statusCode,
+    body: data,
+    headers: this.headers
+  };
+  params.headers['Content-Length'] = params.headers['Content-Length'] || data.toString().length;
 
   if (this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0) {
-    this.reject({
-      status: this.statusCode,
-      body: data,
-    });
+    this.reject(params);
   } else {
-    this.resolve({
-      status: this.statusCode,
-      body: data,
-      cookies: this.cookies
-    });
+    params.cookies = this.cookies;
+    this.resolve(params);
   }
 
   return this.promise;
@@ -91,11 +129,15 @@ MockedResponse.prototype.send = function(data) {
 
 MockedResponse.prototype.json = function(data) {
   this._action = 'json';
-  this.resolve({
+  var params = {
     status: this.statusCode,
     body: data,
+    headers: this.headers,
     cookies: this.cookies
-  });
+  };
+  params.headers['Content-Length'] = params.headers['Content-Length'] || data.toString().length;
+
+  this.resolve(params);
   return this.promise;
 };
 
