@@ -247,6 +247,12 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
     if (params.browser) {
       var phraseCode = phrase.codes[verb].fn;
+      setTimeout(function(){
+        if(resWrapper.hasEnded() === false){
+          resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.url, 'The phrase endpoint is timing out', 503));
+        }
+      }, params.timeout);
+
       this.__executeFunctionMode(phraseCode, sandbox, params.timeout, params.file);
     } else {
       var phraseScript = phrase.codes[verb].script;

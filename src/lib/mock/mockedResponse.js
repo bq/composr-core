@@ -6,6 +6,7 @@ var DEFAULT_STATUS_CODE = 200;
 function MockedResponse(serverType, res) {
   var module = this;
   this.res = res;
+  this.sent = false;
   this.serverType = serverType === 'express' ? 'express' : 'restify';
 
   this.cookies = {};
@@ -28,7 +29,12 @@ function MockedResponse(serverType, res) {
   this._action = null;
 }
 
+MockedResponse.prototype.hasEnded = function(){
+  return this.sent;
+};
+
 MockedResponse.prototype.respond = function(response) {
+  this.sent = true;
   if (this.serverType === 'express') {
     this.expressResponse(response);
   } else {
