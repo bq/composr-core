@@ -116,7 +116,7 @@ MockedResponse.prototype.setHeaders = function(headers) {
 
 MockedResponse.prototype.send = function(data) {
   this._action = 'send';
-  data = data || '';
+  data = typeof(data) !== 'undefined' && data !== null ? data : '';
   var params = {
     status: this.statusCode,
     body: data,
@@ -138,7 +138,7 @@ MockedResponse.prototype.send = function(data) {
 
 MockedResponse.prototype.json = function(data) {
   this._action = 'json';
-  data = data || '';
+  data = typeof(data) !== 'undefined' && data !== null ? data : '';
   var params = {
     status: this.statusCode,
     body: data,
