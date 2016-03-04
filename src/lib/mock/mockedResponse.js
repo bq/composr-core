@@ -110,12 +110,15 @@ MockedResponse.prototype.setHeaders = function(headers) {
 
 MockedResponse.prototype.send = function(data) {
   this._action = 'send';
+  data = data || '';
   var params = {
     status: this.statusCode,
     body: data,
     headers: this.headers
   };
-  params.headers['Content-Length'] = params.headers['Content-Length'] || data.toString().length;
+  if(!params.headers['Content-Length']) {
+      this.setHeader('Content-Length', data.toString().length);
+  }
 
   if (this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0) {
     this.reject(params);
@@ -135,7 +138,9 @@ MockedResponse.prototype.json = function(data) {
     headers: this.headers,
     cookies: this.cookies
   };
-  params.headers['Content-Length'] = params.headers['Content-Length'] || data.toString().length;
+  if(!params.headers['Content-Length']) {
+      this.setHeader('Content-Length', data.toString().length);
+  }
 
   this.resolve(params);
   return this.promise;
