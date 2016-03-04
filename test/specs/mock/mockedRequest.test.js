@@ -82,6 +82,26 @@ describe('MockedRequest', function() {
     expect(req.headers).to.include.keys('UserId', 'Name', 'Content-Type');
   });
 
+  it('should capitalize the get header param', function() {
+    var req = mockedRequest('restify', null, {
+      headers: {
+        TestHeader: 'fake'
+      }
+    });
+
+    expect(req.get('testHeader')).to.equals('fake');
+  });
+
+  it('should capitalize the get compund header param', function() {
+    var req = mockedRequest('restify', null, {
+      headers: {
+        'Content-Type': 'test'
+      }
+    });
+
+    expect(req.get('content-type')).to.equals('test');
+  });
+
   it('should receive the body', function() {
     var req = mockedRequest(null, null, {
       body: {

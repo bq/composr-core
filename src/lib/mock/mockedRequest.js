@@ -19,6 +19,7 @@ function MockedRequest(serverType, req, options) {
   }
 
   this.get = function(headerName) {
+    headerName = this.capitalizeParam(headerName);
     return module.headers[headerName];
   };
 }
@@ -28,13 +29,17 @@ MockedRequest.prototype.capitalizeHeaders = function() {
   var module = this;
 
   Object.keys(this.headers).forEach(function(key) {
-    var newKey = key.split('-').map(function(item) {
-      return item.charAt(0).toUpperCase() + item.slice(1);
-    }).join('-');
+    var newKey = module.capitalizeParam(key);
     newHeaders[newKey] = module.headers[key];
   });
 
   this.headers = newHeaders;
+};
+
+MockedRequest.prototype.capitalizeParam = function(param) {
+    return param.split('-').map(function(item) {
+      return item.charAt(0).toUpperCase() + item.slice(1);
+    }).join('-');
 };
 
 module.exports = function(serverType, req, options) {
