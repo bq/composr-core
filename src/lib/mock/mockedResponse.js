@@ -132,6 +132,7 @@ MockedResponse.prototype.send = function(data) {
 
 MockedResponse.prototype.json = function(data) {
   this._action = 'json';
+  data = data || '';
   var params = {
     status: this.statusCode,
     body: data,
