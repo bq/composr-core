@@ -46,8 +46,31 @@ describe('Mocked Response', function() {
       .should.be.fulfilled
       .then(function(response) {
         expect(response.body.user).to.equals('test');
-        expect(response.headers['Content-Length']).to.equals(data.toString().length);
         expect(res._action).to.equals('json');
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on json call with data and contain Content-Length header with data length', function(done) {
+    var res = mockedResponse();
+    var data = {
+      user: 'test'
+    };
+    res.json(data)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(data.toString().length);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on json call without data and contain Content-Length header with 0 value', function(done) {
+    var res = mockedResponse();
+
+    res.json()
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(0);
       })
       .should.notify(done);
   });
@@ -63,14 +86,39 @@ describe('Mocked Response', function() {
       .then(function(response) {
         expect(response).to.include.keys(
           'status',
-          'body',
-          'headers'
+          'body'
         );
 
         expect(response.body.user).to.equals('test');
-        expect(response.headers['Content-Length']).to.equals(data.toString().length);
         expect(response.status).to.equals(200);
         expect(res._action).to.equals('send');
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call with data and contain Content-Length header with data length', function(done) {
+    var res = mockedResponse();
+    var data = {
+      user: 'test'
+    };
+
+    res.send(data)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(data.toString().length);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call without data and contain Content-Length header with 0 value', function(done) {
+    var res = mockedResponse();
+
+    res.send()
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(0);
       })
       .should.notify(done);
   });
@@ -86,12 +134,10 @@ describe('Mocked Response', function() {
       .then(function(response) {
         expect(response).to.include.keys(
           'status',
-          'body',
-          'headers'
+          'body'
         );
 
         expect(response.body.user).to.equals('test');
-        expect(response.headers['Content-Length']).to.equals(data.toString().length);
         expect(response.status).to.equals(204);
         expect(res._action).to.equals('send');
       })
@@ -109,12 +155,10 @@ describe('Mocked Response', function() {
       .then(function(response) {
         expect(response).to.include.keys(
           'status',
-          'body',
-          'headers'
+          'body'
         );
 
         expect(response.body.user).to.equals('test');
-        expect(response.headers['Content-Length']).to.equals(data.toString().length);
         expect(response.status).to.equals(405);
         expect(res._action).to.equals('send');
       })
