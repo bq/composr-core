@@ -64,6 +64,50 @@ describe('Mocked Response', function() {
       .should.notify(done);
   });
 
+  it('should resolve on json call with 0 and contain Content-Length header with 1', function(done) {
+    var res = mockedResponse();
+
+    res.json(0)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(1);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on json call with null and contain Content-Length header 0', function(done) {
+    var res = mockedResponse();
+
+    res.json(null)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(0);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on json call with empty string and contain Content-Length header with 0', function(done) {
+    var res = mockedResponse();
+
+    res.json('')
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(0);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on json call with false and contain Content-Length header with 5', function(done) {
+    var res = mockedResponse();
+
+    res.json(false)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response.headers['Content-Length']).to.equals(5);
+      })
+      .should.notify(done);
+  });
+
   it('should resolve on json call without data and contain Content-Length header with 0 value', function(done) {
     var res = mockedResponse();
 
@@ -115,6 +159,54 @@ describe('Mocked Response', function() {
     var res = mockedResponse();
 
     res.send()
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(0);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call with 0 and contain Content-Length header with 1', function(done) {
+    var res = mockedResponse();
+
+    res.send(0)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(1);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call with null and contain Content-Length header with 0', function(done) {
+    var res = mockedResponse();
+
+    res.send(null)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(0);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call with false and contain Content-Length header with 5', function(done) {
+    var res = mockedResponse();
+
+    res.send(false)
+      .should.be.fulfilled
+      .then(function(response) {
+        expect(response).to.include.keys('headers');
+        expect(response.headers['Content-Length']).to.equals(5);
+      })
+      .should.notify(done);
+  });
+
+  it('should resolve on send call with empty string and contain Content-Length header with 0', function(done) {
+    var res = mockedResponse();
+
+    res.send('')
       .should.be.fulfilled
       .then(function(response) {
         expect(response).to.include.keys('headers');
