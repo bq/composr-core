@@ -518,7 +518,7 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
       })
-      .should.notify(done);
+     .should.notify(done);
   });
 
   it('Should be able to receive a ExpressJS res object, and wrap it on a RESOLVED promise', function(done) {
