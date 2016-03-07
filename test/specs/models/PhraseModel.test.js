@@ -3,6 +3,8 @@ var PhraseModel = require('../../../src/lib/models/PhraseModel'),
   sinon = require('sinon'),
   expect = chai.expect;
 
+var phrasesFixtures = require('../../fixtures/phrases');
+
 describe('Phrase Model', function() {
   it('Has all the methods needed', function(){
     expect(PhraseModel.prototype).to.respondTo('_generateId');
@@ -21,4 +23,98 @@ describe('Phrase Model', function() {
     expect(PhraseModel.prototype).to.respondTo('__executeFunctionMode');
   });
   //TODO: test all the methods
+  //
+  describe('Initialization', function(){
+    
+    it('Generates the correct ids for each phrase url', function() {
+      var urlfixtures = [{
+        url: 'test',
+        domain: 'mydomain',
+        expected: 'mydomain!test'
+      }, {
+        url: 'test/:user',
+        domain: 'mydomain',
+        expected: 'mydomain!test!:user'
+      }, {
+        url: 'test/:path/:path/:path/:path?/user',
+        domain: 'anotherdomain',
+        expected: 'anotherdomain!test!:path!:path!:path!:path?!user'
+      }];
+
+      urlfixtures.forEach(function(value) {
+        var myNewModel = new PhraseModel(value, value.domain);
+        expect(myNewModel.getId()).to.equals(value.expected);
+      });
+    });
+
+    it('Generates the regexpreference for each phrase', function(){
+      var phrase = {
+        url : 'user/me/:param'
+      };
+
+      var model = new PhraseModel(phrase, 'test:domain');
+
+      expect(model.getRegexpReference).not.to.equals(null);
+      expect(model.regexpReference).to.be.an('object');
+      expect(model.regexpReference).to.include.keys(
+        'params',
+        'regexp'
+      );
+    });
+
+    it('should extract the pathparams for the url', function() {
+      var phrase = {
+        url: 'test/:param/:optional?',
+        get: {
+          code: 'console.log(3);'
+        }
+      };
+
+      var model = new PhraseModel(phrase, 'test:domain');
+
+      expect(model.getRegexpReference()).to.be.defined;
+      expect(model.getRegexpReference().params.length).to.equals(2);
+      expect(model.getRegexpReference().params[0]).to.equals('param');
+      expect(model.getRegexpReference().params[1]).to.equals('optional?');
+    });
+
+  });
+
+  describe('Compilation', function(){
+
+    it('should compile a well formed phrase', function() {
+      var phrase = new PhraseModel(phrasesFixtures.correct[0], 'test:domain');
+      
+      phrase.compile({
+        emit: sinon.stub()
+      });
+
+      expect(phrase.compiled).to.include.keys(
+        'codes'
+      );
+
+      expect(phrase.compiled.codes).to.be.an('object');
+      
+      expect(Object.keys(phrase.compiled.codes).length).to.be.above(0);
+
+    });
+
+    it('should compile a phrase with code instead of codehash', function() {
+      var phrase = {
+        url: 'thephrase/without/:id',
+        get: {
+          code: 'console.log(a);',
+          doc: {}
+        }
+      };
+
+      var model = new PhraseModel(phrase, 'test:domain');
+
+      model.compile({
+        emit: sinon.stub()
+      });
+
+      expect(model.compiled.codes.get.fn).to.be.a('function');
+    });
+  });
 });

@@ -1,4 +1,5 @@
 var PhraseManager = require('../../../src/lib/managers/Phrase'),
+  PhraseModel = require('../../../src/lib/models/PhraseModel'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -13,6 +14,7 @@ var utilsPromises = require('../../utils/promises');
 
 describe('== Phrases ==', function() {
   var stubEvents, Phrases;
+  var sandbox = sinon.sandbox.create();
 
   beforeEach(function() {
     stubEvents = sinon.stub();
@@ -24,27 +26,20 @@ describe('== Phrases ==', function() {
     });
   });
 
+  afterEach(function(){
+    sandbox.restore();
+  });
 
   describe('Phrases API', function() {
     it('exposes the expected methods', function() {
       expect(Phrases).to.respondTo('configure');
       expect(Phrases).to.respondTo('validate');
-      expect(Phrases).to.respondTo('_generateId');
       expect(Phrases).to.respondTo('runById');
       expect(Phrases).to.respondTo('runByPath');
-      expect(Phrases).to.respondTo('_run');
       expect(Phrases).to.respondTo('_filterByRegexp');
-      expect(Phrases).to.respondTo('_getPhrasesAsList');
-      expect(Phrases).to.respondTo('_getPhraseIndexById');
-      expect(Phrases).to.respondTo('resetItems');
       expect(Phrases).to.respondTo('getPhrases');
-      expect(Phrases).to.respondTo('getById');
       expect(Phrases).to.respondTo('getByMatchingPath');
-      expect(Phrases).to.respondTo('register');
-      expect(Phrases).to.respondTo('_register');
-      expect(Phrases).to.respondTo('_unregister');
-      expect(Phrases).to.respondTo('compile');
-      expect(Phrases).to.respondTo('_compile');
+      expect(Phrases).to.respondTo('count');
     });
   });
 
@@ -97,51 +92,13 @@ describe('== Phrases ==', function() {
 
   });
 
-  describe('Phrase id generation', function() {
-    var urlfixtures = [{
-      url: 'test',
-      domain: 'mydomain',
-      expected: 'mydomain!test'
-    }, {
-      url: 'test/:user',
-      domain: 'mydomain',
-      expected: 'mydomain!test!:user'
-    }, {
-      url: 'test/:path/:path/:path/:path?/user',
-      domain: 'anotherdomain',
-      expected: 'anotherdomain!test!:path!:path!:path!:path?!user'
-    }];
-
-    it('Generates the correct ids for each phrase url', function() {
-      urlfixtures.forEach(function(value) {
-        var idGenerated = Phrases._generateId(value.url, value.domain);
-        expect(idGenerated).to.equals(value.expected);
-      });
-    });
-
-  });
-
   describe('Compile phrases', function() {
 
     it('should compile a well formed phrase', function() {
       var phrase = phrasesFixtures.correct[0];
-      var result = Phrases.compile(phrase);
+      var result = Phrases.compile('test:domain', phrase);
 
-      expect(result).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
-
-      expect(result.regexpReference).to.be.an('object');
-      expect(result.codes).to.be.an('object');
-      expect(result.regexpReference).to.include.keys(
-        'params',
-        'regexp'
-      );
-      expect(Object.keys(result.codes).length).to.be.above(0);
-
+      expect(result).to.be.an.instanceof(PhraseModel);
     });
 
     it('should generate a regular expression for the url', function() {
@@ -152,243 +109,47 @@ describe('== Phrases ==', function() {
         }
       };
 
-      var compiled = Phrases.compile(phrase);
+      var compiled = Phrases.compile('test:domain', phrase);
 
-      expect(compiled.regexpReference).to.be.defined;
-      expect(compiled.regexpReference.regexp).to.be.defined;
+      expect(compiled.getRegexpReference()).to.be.defined;
+      expect(compiled.getRegexp()).to.be.defined;
     });
 
-    it('should extract the pathparams for the url', function() {
-      var phrase = {
-        url: 'test/:param/:optional?',
-        get: {
-          code: 'console.log(3);'
-        }
-      };
-
-      var compiled = Phrases.compile(phrase);
-
-      expect(compiled.regexpReference).to.be.defined;
-      expect(compiled.regexpReference.params.length).to.equals(2);
-      expect(compiled.regexpReference.params[0]).to.equals('param');
-      expect(compiled.regexpReference.params[1]).to.equals('optional?');
-    });
-
-    xit('should evaluate the function *only once* and mantain it in memory', function() {
-
-    });
-
-    it('should compile a phrase with code instead of codehash', function() {
-      var phrase = {
-        url: 'thephrase/without/:id',
-        get: {
-          code: 'console.log(a);',
-          doc: {}
-        }
-      };
-
-      var compiled = Phrases.compile(phrase);
-      expect(compiled.codes.get.fn).to.be.a('function');
-    });
 
     it('should emit an event with information about the compilation', function() {
       var phrase = phrasesFixtures.correct[0];
-      var result = Phrases.compile(phrase);
+      var result = Phrases.compile('test:domain', phrase);
 
       expect(stubEvents.callCount).to.be.above(0);
       expect(stubEvents.calledWith('debug', 'phrase:compiled')).to.equals(true);
     });
 
     it('should allow passing a single phrase', function() {
-      var compiled = Phrases.compile(phrasesFixtures.correct[0]);
+      var compiled = Phrases.compile('test:domain', phrasesFixtures.correct[0]);
       expect(Array.isArray(compiled)).to.equals(false);
     });
 
     it('should allow passing multiple phrases', function() {
-      var compiledPhrases = Phrases.compile(phrasesFixtures.correct);
+      var compiledPhrases = Phrases.compile('test:domain', phrasesFixtures.correct);
       expect(Array.isArray(compiledPhrases)).to.equals(true);
     });
 
   });
 
   describe('Reset phrases', function() {
-    beforeEach(function() {
-      Phrases.__phrases = {
-        'testdomain': [{
-          id: '1'
-        }, {
-          id: '2'
-        }, {
-          id: '3'
-        }]
-      };
+
+    it('Calls store reset when calling phrases reset', function(){
+      var spyStore = sandbox.spy(Phrases.store, 'reset');
+      Phrases.reset();
+      expect(spyStore.callCount).to.equals(1);
     });
-
-    afterEach(function() {
-      Phrases.__phrases = {};
-    });
-
-    it('Has all the phrases initially', function() {
-      expect(Object.keys(Phrases.__phrases).length).to.equals(1);
-    });
-
-    it('Resets the phrases', function() {
-      Phrases.resetItems();
-      expect(Object.keys(Phrases.__phrases).length).to.equals(0);
-    });
-
-    //TODO: emit an event when reseting the phrases, for debug purposes.
-
   });
 
-  describe('Get phrases', function() {
-    beforeEach(function() {
-      Phrases.__phrases = {
-        'testdomain': [{
-          id: 'loginclient!:id!:name'
-        }, {
-          id: 'user'
-        }],
-        'other:domain': [{
-          id: 'test-endpoint-a'
-        }, {
-          id: 'register/user/:email'
-        }, {
-          id: 'register/user/:email/2'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Phrases.resetItems();
-    });
-
-    it('returns all the phrases for all the domains if no domain is provided', function() {
-      var candidates = Phrases.getPhrases();
-      expect(candidates.length).to.equals(5);
-    });
-
-    it('returns all the phrases for a single domain', function() {
-      var candidates = Phrases.getPhrases('other:domain');
-      expect(candidates.length).to.equals(3);
-    });
-
-  });
-
-  describe('Get phrase index by id', function() {
-
-    beforeEach(function() {
-      Phrases.__phrases = {
-        'testdomain': [{
-          id: 'test-endpoint-a',
-          url: 'url-a'
-        }, {
-          id: 'loginclient!:id!:name',
-          url: 'url-a'
-        }, {
-          id: 'user',
-          url: 'url-a'
-        }],
-        'other:domain': [{
-          id: 'register/user/:email',
-          url: 'url-b'
-        }, {
-          id: 'test-endpoint-a',
-          url: 'url-b'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Phrases.resetItems();
-    });
-
-    it('should return -1 if the phrase is not found', function() {
-      var result = Phrases._getPhraseIndexById('testdomain', 'asdfg');
-      expect(result).to.equals(-1);
-    });
-
-    it('should return the index of the phrase in the domain list', function() {
-      var result = Phrases._getPhraseIndexById('testdomain', 'test-endpoint-a');
-      expect(result).to.equals(0);
-    });
-
-    it('should return the index of the phrase on another domain', function() {
-      var result = Phrases._getPhraseIndexById('other:domain', 'test-endpoint-a');
-      expect(result).to.equals(1);
-    });
-
-  });
-
-  describe('Get phrases by id', function() {
-
-    beforeEach(function() {
-      Phrases.__phrases = {
-        'testdomain': [{
-          id: 'test-endpoint-a',
-          url: 'url-a'
-        }, {
-          id: 'loginclient!:id!:name',
-          url: 'url-a'
-        }, {
-          id: 'user',
-          url: 'url-a'
-        }],
-        'other:domain': [{
-          id: 'test-endpoint-a',
-          url: 'url-b'
-        }, {
-          id: 'register/user/:email',
-          url: 'url-b'
-        }]
-      };
-    });
-
-    afterEach(function() {
-      Phrases.resetItems();
-    });
-
-
-    it('should return null if no domain and no id is passed', function() {
-      var phrase = Phrases.getById();
-      expect(phrase).to.equals(null);
-    });
-
-    it('should return null if no id is passed', function() {
-      var phrase = Phrases.getById('other:domain');
-      expect(phrase).to.equals(null);
-    });
-
-    it('should return the first matching phrase if no domain is passed', function() {
-      var phrase = Phrases.getById('', 'test-endpoint-a');
-      expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('test-endpoint-a');
-      expect(phrase.url).to.equals('url-a');
-    });
-
-    it('should return the correct matching phrase if a domain is passed', function() {
-      var phrase = Phrases.getById('other:domain', 'test-endpoint-a');
-      expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('test-endpoint-a');
-      expect(phrase.url).to.equals('url-b');
-    });
-
-    it('should not return phrases if the domain is wrong', function() {
-      var phrase = Phrases.getById('my-domain-not-existing', 'test-endpoint-a');
-      expect(phrase).to.be.a('null');
-    });
-
-    it('should not return any phrase if id is wrong', function() {
-      var phraseObtained = Phrases.getById('other:domain', 'test-test-test');
-      expect(phraseObtained).to.be.a('null');
-    });
-
-  });
 
   describe('Count phrases', function() {
 
     beforeEach(function() {
-      Phrases.__phrases = {
+      Phrases.store.set({
         'testdomain': [{
           id: 'test-endpoint-a',
           url: 'url-a'
@@ -406,11 +167,11 @@ describe('== Phrases ==', function() {
           id: 'register/user/:email',
           url: 'url-b'
         }]
-      };
+      });
     });
 
     afterEach(function() {
-      Phrases.resetItems();
+      Phrases.store.reset();
     });
 
     it('Should count all the phrases', function() {
@@ -418,51 +179,6 @@ describe('== Phrases ==', function() {
     });
 
   });
-
-  describe('Add to list', function() {
-
-    beforeEach(function() {
-      Phrases.resetItems();
-    });
-
-    it('Adds a phrase with a domain', function() {
-      var added = Phrases._addToList('addtolist:domain', {
-        id: 'serious-phrase',
-        value: 'serious'
-      });
-
-      expect(Phrases.getPhrases('addtolist:domain').length).to.equals(1);
-      expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.be.an('object');
-      expect(Phrases.getById('addtolist:domain', 'serious-phrase')).to.include.keys(
-        'id',
-        'value'
-      );
-      expect(added).to.equals(true);
-    });
-
-    it('Does not add an empty phrase', function() {
-      var added = Phrases._addToList('addtolist:domain', null);
-
-      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add non objects', function() {
-      var added = Phrases._addToList('addtolist:domain', 'Hey');
-
-      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add a phrase without id', function() {
-      var added = Phrases._addToList('addtolist:domain', {});
-
-      expect(Phrases.getPhrases('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-  });
-
 
   describe('Find duplicated regexp over the phrases', function() {
 
@@ -564,7 +280,7 @@ describe('== Phrases ==', function() {
     var spyGenerateId;
 
     beforeEach(function() {
-      spyGenerateId = sinon.spy(Phrases, '_generateId');
+      spyGenerateId = sandbox.spy(Phrases, '_generateId');
       //Reset phrases for each test
       Phrases.resetItems();
     });
@@ -774,23 +490,13 @@ describe('== Phrases ==', function() {
         spyPreCompile, spyPreAdd;
 
       beforeEach(function() {
-        spyRegister = sinon.spy(Phrases, '_register');
-        spyCompile = sinon.spy(Phrases, 'compile');
-        spyValidate = sinon.spy(Phrases, 'validate');
-        spy_compile = sinon.spy(Phrases, '_compile');
-        spyAddToList = sinon.spy(Phrases, '_addToList');
-        spyPreCompile = sinon.spy(Phrases, '__preCompile');
-        spyPreAdd = sinon.spy(Phrases, '__preAdd');
-      });
-
-      afterEach(function() {
-        spyRegister.restore();
-        spyCompile.restore();
-        spyValidate.restore();
-        spy_compile.restore();
-        spyAddToList.restore();
-        spyPreCompile.restore();
-        spyPreAdd.restore();
+        spyRegister = sandbox.spy(Phrases, '_register');
+        spyCompile = sandbox.spy(Phrases, 'compile');
+        spyValidate = sandbox.spy(Phrases, 'validate');
+        spy_compile = sandbox.spy(Phrases, '_compile');
+        spyAddToList = sandbox.spy(Phrases, '_addToList');
+        spyPreCompile = sandbox.spy(Phrases, '__preCompile');
+        spyPreAdd = sandbox.spy(Phrases, '__preAdd');
       });
 
       it('should call the compilation and validation methods when registering a phrase', function(done) {
@@ -855,16 +561,10 @@ describe('== Phrases ==', function() {
     });
 
     describe('Compilation fail', function() {
-      var stubCompile;
-
       beforeEach(function() {
-        stubCompile = sinon.stub(Phrases, 'compile', function() {
+        sandbox.stub(Phrases, 'compile', function() {
           return false;
         });
-      });
-
-      afterEach(function() {
-        stubCompile.restore();
       });
 
       it('should emit an error when the registering fails because the compilation fails', function(done) {

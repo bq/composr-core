@@ -27,8 +27,9 @@ var storeAPI = {
   exists : () => true
 };
 
-describe('Base manager', function() {
+describe.only('Base manager', function() {
   var mockStore, manager, stubEvents;
+  var sandbox = sinon.sandbox.create();
 
   beforeEach(function(){
     mockStore = sinon.mock(storeAPI);
@@ -51,6 +52,7 @@ describe('Base manager', function() {
 
   afterEach(function(){
     mockStore.restore();
+    sandbox.restore();
   });
 
   it('exposes the needed prototype', function() {
@@ -122,11 +124,11 @@ describe('Base manager', function() {
       var spyCompile, spyValidate, spyCompile, spyRegister, spyAddToList;
 
       beforeEach(function() {
-        spyRegister = sinon.spy(manager, '_register');
-        spyCompile = sinon.spy(manager, 'compile');
-        spyValidate = sinon.spy(manager, 'validate');
-        spyCompile = sinon.spy(manager, '_compile');
-        spyAddToList = sinon.spy(manager, '_addToStore');
+        spyRegister = sandbox.spy(manager, '_register');
+        spyCompile = sandbox.spy(manager, 'compile');
+        spyValidate = sandbox.spy(manager, 'validate');
+        spyCompile = sandbox.spy(manager, '_compile');
+        spyAddToList = sandbox.spy(manager, '_addToStore');
       });
 
       afterEach(function() {
@@ -233,7 +235,7 @@ describe('Base manager', function() {
         var stubCompile;
 
         beforeEach(function() {
-          stubCompile = sinon.stub(aManager, 'compile', function() {
+          stubCompile = sandbox.stub(aManager, 'compile', function() {
             return false;
           });
         });
@@ -289,7 +291,6 @@ describe('Base manager', function() {
     });
   });
 
-
   describe('Domain extraction', function() {
 
     var manager = new BaseManager({});
@@ -313,7 +314,6 @@ describe('Base manager', function() {
         expect(manager._extractDomainFromId(item.id)).to.equals(item.value);
       });
     });
-
   });
 
   describe('Items unregistration', function() {
@@ -326,7 +326,7 @@ describe('Base manager', function() {
         itemName: 'goodies'
       });
 
-      spyUnregister = sinon.spy(manager, '_unregister');
+      spyUnregister = sandbox.spy(manager, '_unregister');
 
       stubEvents = sinon.stub();
       //Mock the composr external methods
@@ -380,7 +380,7 @@ describe('Base manager', function() {
         itemName: 'goodies'
       });
 
-      stubRegister = sinon.stub(manager, 'register', utilsPromises.resolvedPromise);
+      stubRegister = sandbox.stub(manager, 'register', utilsPromises.resolvedPromise);
     });
 
     it('Calls the register method with the domain', function(done) {
@@ -402,7 +402,6 @@ describe('Base manager', function() {
         })
         .should.notify(done);
     });
-
   });
 
   describe('Save', function(){
@@ -410,9 +409,9 @@ describe('Base manager', function() {
     describe('_should save check', function(){
       var stubGet;
 
-      before(function(){
-        stubGet = sinon.stub(storeAPI, 'get', function(){
-          var model =  new modelFixture({ md5 : 'abc', id : 'domain!myid'});
+      beforeEach(function(){
+        stubGet = sandbox.stub(storeAPI, 'get', function(){
+          var model = new modelFixture({ md5 : 'abc', id : 'domain!myid'});
           return model;
         })
       });
@@ -430,6 +429,24 @@ describe('Base manager', function() {
       });
 
     });
+  });
+
+  describe('Get by id', function(){
+    it('Calls store get with correct parameters', function(){
+      var id = 'my:domain!item!url';
+      var spyExtractDomainFromId = sandbox.spy(manager, '_extractDomainFromId');
+      mockStore.expects('get').once().withArgs('my:domain', id);
+      
+      manager.getById(id);
+      expect(spyExtractDomainFromId.callCount).to.equals(1);
+      mockStore.verify();
+    });
+
+    //TODO : add more test cases with invalid domains ids
+  });
+
+  describe.skip('_extractDomainFromId', function(){
+
   });
 
 });

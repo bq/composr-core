@@ -21,7 +21,7 @@ SnippetsManager.prototype = new BaseManager({
 //Compilation
 SnippetsManager.prototype._compile = function(domain, snippet) {
   try {
-    var snippetModel = new SnippetModel(snippet, domain);
+    var snippetModel = new this.model(snippet, domain);
 
     snippetModel.compile(this.events);
 

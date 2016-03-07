@@ -44,7 +44,7 @@ PhraseManager.prototype.__preAdd = function(domain, phraseModel) {
 PhraseManager.prototype._compile = function(domain, phrase) {
   try {
 
-    var phraseModel = new PhraseModel(phrase, domain);
+    var phraseModel = new this.model(phrase, domain);
     
     phraseModel.compile(this.events);
 
