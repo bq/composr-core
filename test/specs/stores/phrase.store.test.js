@@ -6,7 +6,7 @@ var phraseStore = require('../../../src/lib/stores/phrases.store'),
 
 var phrasesFixtures = require('../../fixtures/phrases');
 
-describe('Phrase Store', function() {
+describe.only('Phrase Store', function() {
 
   it('Exposes the needed API', function(){
     expect(phraseStore).to.respondTo('add');
@@ -147,24 +147,24 @@ describe('Phrase Store', function() {
     it('should return the first matching phrase if no domain is passed', function() {
       var phrase = phraseStore.get('', 'my:domain:1!example!test');
       expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('my:domain:1!example!test');
-      expect(phrase.url).to.equals('example/test');
+      expect(phrase.getId()).to.equals('my:domain:1!example!test');
+      expect(phrase.getUrl()).to.equals('example/test');
     });
 
     it('should return the correct matching phrase if a domain is passed', function() {
-      var phrase = phraseStore.get('my:domain:2', 'test');
+      var phrase = phraseStore.get('my:domain:2', 'my:domain:2!example!test');
       expect(phrase).to.be.an('object');
-      expect(phrase.id).to.equals('test-endpoint-a');
-      expect(phrase.url).to.equals('url-b');
+      expect(phrase.getId()).to.equals('my:domain:2!example!test');
+      expect(phrase.getUrl()).to.equals('example/test');
     });
 
     it('should not return phrases if the domain is wrong', function() {
-      var phrase = phraseStore.get('my-domain-not-existing', 'test-endpoint-a');
+      var phrase = phraseStore.get('my-domain-not-existing', 'my:domain:1!example!test');
       expect(phrase).to.be.a('null');
     });
 
     it('should not return any phrase if id is wrong', function() {
-      var phraseObtained = phraseStore.get('other:domain', 'test-test-test');
+      var phraseObtained = phraseStore.get('my:domain:2', 'test-test-test');
       expect(phraseObtained).to.be.a('null');
     });
 
