@@ -1,8 +1,8 @@
 'use strict';
 
 var events = require('./lib/events');
-var PhraseManager = require('./lib/managers/Phrases');
-var SnippetsManager = require('./lib/managers/Snippets');
+var PhraseManager = require('./lib/managers/Phrase');
+var SnippetsManager = require('./lib/managers/Snippet');
 var VirtualDomainManager = require('./lib/managers/VirtualDomain');
 var Requirer = require('./lib/requirer');
 
@@ -39,20 +39,20 @@ var requirer = new Requirer({
 
 CompoSR.prototype.requirer = requirer;
 
-CompoSR.prototype.Snippets = Snippets;
+CompoSR.prototype.Snippet = Snippets;
 
 var Phrases = new PhraseManager({
   events: events,
   requirer : requirer
 });
 
-CompoSR.prototype.Phrases = Phrases;
+CompoSR.prototype.Phrase = Phrases;
 
 
 var VirtualDomain = new VirtualDomainManager({
   events: events,
-  Phrases : Phrases,
-  Snippets : Snippets
+  Phrase : Phrases,
+  Snippet : Snippets
 });
 
 CompoSR.prototype.VirtualDomain = VirtualDomain;

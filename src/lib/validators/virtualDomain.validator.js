@@ -20,13 +20,13 @@ var virtualDomainSchema = {
     'phrases' : { 
       'type' : 'array',
       'items' : {
-        'type' : 'string'
+        'type' : 'object'
       }
     },
     'snippets' : { 
       'type' : 'array',
       'items' : {
-        'type' : 'string'
+        'type' : 'object'
       }
     }
   }

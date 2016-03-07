@@ -1,4 +1,4 @@
-var SnippetManager = require('../../../src/lib/managers/Snippets'),
+var SnippetManager = require('../../../src/lib/managers/Snippet'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),

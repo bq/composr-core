@@ -27,7 +27,7 @@ var storeAPI = {
   exists : () => true
 };
 
-describe.only('Base manager', function() {
+describe('Base manager', function() {
   var mockStore, manager, stubEvents;
 
   beforeEach(function(){

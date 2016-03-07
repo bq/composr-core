@@ -9,8 +9,8 @@ var virtualDomainStore = require('../stores/virtualDomain.store');
 
 var VirtualDomainManager = function (options) {
   this.events = options.events;
-  this.Phrases = options.Phrases;
-  this.Snippets = options.Snippets;
+  this.Phrase = options.Phrase;
+  this.Snippet = options.Snippet;
 };
 
 VirtualDomainManager.prototype = new BaseManager({
@@ -68,7 +68,7 @@ VirtualDomainManager.prototype._savePhrases = function(phrases){
   var module = this;
 
   var promises = phrases.map(function(phrase){
-    return module.Phrases.save(phrase);
+    return module.Phrase.save(phrase);
   });
 
   return Promise.all(promises);
@@ -78,7 +78,7 @@ VirtualDomainManager.prototype._saveSnippets = function(snippets){
   var module = this;
 
   var promises = snippets.map(function(snippet){
-    return module.Snippets.save(snippet);
+    return module.Snippet.save(snippet);
   });
 
   return Promise.all(promises);

@@ -12,27 +12,22 @@ var virtualDomainFixtures = require('../../fixtures/virtualdomains');
 describe.only('Full system usage', function() {
   this.timeout(10000);
 
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubLoadVirtualDomains,
-    spyGetVirtualModel, stubRegisterDomains, stubLoadSomePhrases, stubLoadSomeSnippets;
+  var sandbox = sinon.sandbox.create();
+
+  var stubLogClient, stubRegisterData, stubInitCorbelDriver;
+  var stubLoadPhrases, stubLoadSnippets, stubLoadVirtualDomains;
 
   before(function() {
-    stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-    stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-    stubLoadVirtualDomains = sinon.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
-    spyGetVirtualModel = sinon.spy(composr, 'getVirtualDomainModel');
-    stubRegisterDomains = sinon.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
-    stubLoadSomePhrases = sinon.stub(composr.phraseDao, 'loadSome', utilsPromises.resolvedPromise);
-    stubLoadSomeSnippets = sinon.stub(composr.snippetDao, 'loadSome', utilsPromises.resolvedPromise);
+    stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
+    stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
+    //Stub loaders
+    stubLoadPhrases = sandbox.stub(composr.Phrase, 'load', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadSnippets = sandbox.stub(composr.Snippet, 'load', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadVirtualDomains = sandbox.stub(composr.VirtualDomain, 'load', utilsPromises.resolvedCurriedPromise([]));
   });
 
   after(function() {
-    stubInitCorbelDriver.restore();
-    stubLogClient.restore();
-    stubLoadVirtualDomains.restore();
-    spyGetVirtualModel.restore();
-    stubRegisterDomains.restore();
-    stubLoadSomePhrases.restore();
-    stubLoadSomeSnippets.restore();
+    sandbox.restore();
   });
 
   it('Can register phrases', function(done) {
@@ -40,14 +35,14 @@ describe.only('Full system usage', function() {
 
     composr.init(options, true)
       .then(function() {
-        return composr.Phrases.register('myDomain', phrasesFixtures.correct);
+        return composr.Phrase.register('myDomain', phrasesFixtures.correct);
       })
       .then(function(results) {
         results.forEach(function(result) {
           expect(result.registered).to.equals(true);
         });
 
-        var candidates = composr.Phrases.getPhrases('myDomain');
+        var candidates = composr.Phrase.getPhrases('myDomain');
 
         expect(candidates.length).to.be.above(0);
 
@@ -59,7 +54,7 @@ describe.only('Full system usage', function() {
 
     composr.init({}, true)
       .then(function() {
-        return composr.Snippets.register('myDomain', snippetsFixtures.correct);
+        return composr.Snippet.register('myDomain', snippetsFixtures.correct);
       })
       .should.be.fulfilled
       .then(function(results) {
@@ -68,7 +63,7 @@ describe.only('Full system usage', function() {
           expect(result.registered).to.equals(true);
         });
 
-        var candidates = composr.Snippets.getSnippets('myDomain');
+        var candidates = composr.Snippet.getSnippets('myDomain');
 
         expect(candidates).to.be.a('object');
 
@@ -80,19 +75,18 @@ describe.only('Full system usage', function() {
   it('Can register virtualDomains', function(done){
     composr.init({}, true)
       .then(function() {
-        return composr.getVirtualDomainModel(virtualDomainFixtures.correct[0]);
+        return composr.VirtualDomain.register('myDomain', virtualDomainFixtures.correct);
       })
-      .then(function(vmodel){
-        return composr.VirtualDomain.register('myDomain', vmodel);
-      })
-      .then(function(result) {
-        expect(result.registered).to.equals(true);
+      .then(function(results) {
+        results.forEach(function(result) {
+          expect(result.registered).to.equals(true);
+        });
 
         var candidates = composr.VirtualDomain.getVirtualDomains('myDomain');
 
-        expect(candidates).to.be.a('object');
+        expect(candidates).to.be.a('array');
 
-        expect(Object.keys(candidates).length).to.be.above(0);
+        expect(candidates.length).to.be.above(0);
       })
       .should.notify(done);
   });
@@ -103,9 +97,9 @@ describe.only('Full system usage', function() {
     var stub2 = sinon.stub();
 
     composr.events.on('debug', 'myProject', stub);
-    composr.Phrases.events.on('debug', 'myProject2', stub2);
+    composr.Phrase.events.on('debug', 'myProject2', stub2);
 
-    composr.Phrases.register('myDomain', phrasesFixtures.correct)
+    composr.Phrase.register('myDomain', phrasesFixtures.correct)
       .should.be.fulfilled
       .then(function(results) {
         expect(stub.callCount).to.be.above(0);

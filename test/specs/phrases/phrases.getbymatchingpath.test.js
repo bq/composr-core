@@ -1,4 +1,4 @@
-var PhraseManager = require('../../../src/lib/managers/Phrases'),
+var PhraseManager = require('../../../src/lib/managers/Phrase'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),

@@ -10,8 +10,10 @@ PhraseDao.load = function (id) {
   }
 
   if (driverStore.getDriver()) {
-    return driverStore.getDriver().resources
-      .resource(this.resources.phrasesCollection, id).get()
+    return driverStore.getDriver()
+      .resources
+      .resource(this.resources.phrasesCollection, id)
+      .get()
       .then(function (response) {
         return response.data;
       });
@@ -28,7 +30,9 @@ PhraseDao.loadSome = function(ids){
   if (driverStore.getDriver()) {
 
     var caller = function (pageNumber, pageSize) {
-      return driverStore.getDriver().resources.collection(COLLECTION)
+      return driverStore.getDriver()
+      .resources
+      .collection(COLLECTION)
       .get({
         pagination: {
           page: pageNumber,
@@ -50,12 +54,15 @@ PhraseDao.loadSome = function(ids){
 
 PhraseDao.loadAll = function () {
   var caller = function (pageNumber, pageSize) {
-    return driverStore.getDriver().resources.collection(COLLECTION).get({
-      pagination: {
-        page: pageNumber,
-        pageSize: pageSize
-      }
-    });
+    return driverStore.getDriver()
+      .resources
+      .collection(COLLECTION)
+      .get({
+        pagination: {
+          page: pageNumber,
+          pageSize: pageSize
+        }
+      });
   };
 
   return utils.getAllRecursively(caller);
@@ -66,7 +73,9 @@ PhraseDao.save = function(item){
     return Promise.reject('missing:driver');
   }
 
-  return driverStore.getDriver().resources.resource(COLLECTION, item.id)
+  return driverStore.getDriver()
+    .resources
+    .resource(COLLECTION, item.id)
     .update(item);
 };
 

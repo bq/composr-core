@@ -11,7 +11,7 @@ function init(options, fetch) {
 
   this.config = this.bindConfiguration(options);
 
-  this.Phrases.configure(this.config);
+  this.Phrase.configure(this.config);
 
   this.requirer.configure(this.config);
 
@@ -23,8 +23,8 @@ function init(options, fetch) {
       })
       .then(function() {
         return Promise.all([
-          module.Phrases.load(),
-          module.Snippets.load(),
+          module.Phrase.load(),
+          module.Snippet.load(),
           module.VirtualDomain.load()
         ]);
       })
