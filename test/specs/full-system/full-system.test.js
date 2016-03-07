@@ -9,7 +9,7 @@ var snippetsFixtures = require('../../fixtures/snippets');
 var virtualDomainFixtures = require('../../fixtures/virtualdomains');
 
 
-describe.only('Full system usage', function() {
+describe('Full system usage', function() {
   this.timeout(10000);
 
   var sandbox = sinon.sandbox.create();
