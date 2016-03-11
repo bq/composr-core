@@ -12,6 +12,7 @@ describe('Phrase Model', function() {
     expect(PhraseModel.prototype).to.respondTo('getMD5');
     expect(PhraseModel.prototype).to.respondTo('getVirtualDomainId');
     expect(PhraseModel.prototype).to.respondTo('getUrl');
+    expect(PhraseModel.prototype).to.respondTo('getVersion');
     expect(PhraseModel.prototype).to.respondTo('getRegexp');
     expect(PhraseModel.prototype).to.respondTo('getRegexpReference');
     expect(PhraseModel.prototype).to.respondTo('getRawModel');
@@ -27,21 +28,24 @@ describe('Phrase Model', function() {
   describe('Initialization', function(){
     
     it('Generates the correct ids for each phrase url', function() {
-      var urlfixtures = [{
+      var examplePhrases = [{
         url: 'test',
         domain: 'mydomain',
-        expected: 'mydomain!test'
+        version : '2.2.2',
+        expected: 'mydomain!test-2.2.2'
       }, {
         url: 'test/:user',
         domain: 'mydomain',
-        expected: 'mydomain!test!:user'
+        version : '0.2.2',
+        expected: 'mydomain!test!:user-0.2.2'
       }, {
         url: 'test/:path/:path/:path/:path?/user',
         domain: 'anotherdomain',
-        expected: 'anotherdomain!test!:path!:path!:path!:path?!user'
+        version : '2.3.2',
+        expected: 'anotherdomain!test!:path!:path!:path!:path?!user-2.3.2'
       }];
 
-      urlfixtures.forEach(function(value) {
+      examplePhrases.forEach(function(value) {
         var myNewModel = new PhraseModel(value, value.domain);
         expect(myNewModel.getId()).to.equals(value.expected);
       });
@@ -116,5 +120,48 @@ describe('Phrase Model', function() {
 
       expect(model.compiled.codes.get.fn).to.be.a('function');
     });
+
+    it('launches an event with the evaluation', function() {
+      var phrase = {
+        url: 'thephrase/without/:id',
+        version : '2.3.4',
+        get: {
+          code: 'console.log(a);',
+          doc: {}
+        }
+      };
+
+      var model = new PhraseModel(phrase, 'test:domain');
+      var stubEvents = sinon.stub();
+
+      model.compile({
+        emit: stubEvents
+      });
+
+      expect(stubEvents.callCount).to.equals(2);
+      expect(stubEvents.calledWith('debug', 'test:domain!thephrase!without!:id-2.3.4:evaluatecode:good')).to.equals(true);
+    });
+
+    it('launches a warn event with a wrong code', function() {
+      var phrase = {
+        url: 'thephrase/without/:id',
+        version : '2.3.4',
+        get: {
+          code: '}',
+          doc: {}
+        }
+      };
+
+      var model = new PhraseModel(phrase, 'test:domain');
+      var stubEvents = sinon.stub();
+
+      model.compile({
+        emit: stubEvents
+      });
+
+      expect(stubEvents.callCount).to.equals(2);
+      expect(stubEvents.calledWith('warn', 'test:domain!thephrase!without!:id-2.3.4:evaluatecode:wrong_code')).to.equals(true);
+    });
+
   });
 });

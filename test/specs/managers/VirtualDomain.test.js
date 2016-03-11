@@ -5,6 +5,7 @@ var VirtualDomainManager = require('../../../src/lib/managers/VirtualDomain'),
   chai = require('chai'),
   sinon = require('sinon'),
   chaiAsPromised = require('chai-as-promised'),
+  q = require('q'),
   expect = chai.expect; 
 
 chai.should();
@@ -41,13 +42,13 @@ describe('== Virtual Domains ==', function() {
 
   });
 
+  //TODO : COMPLETE AND RETHINK
+
   describe('VirtualDomains API', function() {
     it('exposes the expected methods', function() {
-      expect(VirtualDomains).to.have.property('__virtualDomains');
       expect(VirtualDomains).to.respondTo('resetItems');
       expect(VirtualDomains).to.respondTo('validate');
-      expect(VirtualDomains).to.respondTo('getVirtualDomains');
-      expect(VirtualDomains).to.respondTo('getVirtualDomainsAsList');
+      expect(VirtualDomains).to.respondTo('getByDomain');
       expect(VirtualDomains).to.respondTo('compile');
       expect(VirtualDomains).to.respondTo('_compile');
       expect(VirtualDomains).to.respondTo('register');

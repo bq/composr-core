@@ -47,7 +47,7 @@ BaseManager.prototype.register = function(domain, itemOrItems) {
   function(result, item) {
     return {
       registered: result.state === 'fulfilled',
-      id: item.id,
+      id: (result.state === 'fulfilled' ? result.value.getId() :  null) || item.id,
       model: result.state === 'fulfilled' ? result.value : null,
       error: result.reason ? result.reason : null
     };

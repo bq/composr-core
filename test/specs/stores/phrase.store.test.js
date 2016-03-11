@@ -6,7 +6,7 @@ var phraseStore = require('../../../src/lib/stores/phrases.store'),
 
 var phrasesFixtures = require('../../fixtures/phrases');
 
-describe.only('Phrase Store', function() {
+describe('Phrase Store', function() {
 
   it('Exposes the needed API', function(){
     expect(phraseStore).to.respondTo('add');
@@ -42,12 +42,17 @@ describe.only('Phrase Store', function() {
     });
 
     it('returns all the phrases for all the domains if no domain is provided', function() {
-      var candidates = phraseStore.getAsList();
+      var candidates = phraseStore.getAsList(null);
       expect(candidates.length).to.equals(5);
     });
 
     it('returns all the phrases for a single domain', function() {
       var candidates = phraseStore.getAsList('other:domain');
+      expect(candidates.length).to.equals(3);
+    });
+
+     it('Returns an empty list for a missing domain', function() {
+      var candidates = phraseStore.getAsList('no:domain');
       expect(candidates.length).to.equals(3);
     });
   });
@@ -109,18 +114,23 @@ describe.only('Phrase Store', function() {
     beforeEach(function() {
       var items = [{
         url : 'example/test',
+        version : '1',
         domain : 'my:domain:1'
       },{
         url : 'example/test/2',
+        version : '1',
         domain : 'my:domain:1'
       },{
         url : 'example/test',
+        version : '1',
         domain : 'my:domain:2'
       },{
         url : 'example/test/test',
+        version : '1',
         domain : 'my:domain:2'
       },{
         url : 'example/test',
+        version : '1',
         domain : 'my:domain:3'
       }];
 
@@ -145,26 +155,26 @@ describe.only('Phrase Store', function() {
     });
 
     it('should return the first matching phrase if no domain is passed', function() {
-      var phrase = phraseStore.get('', 'my:domain:1!example!test');
+      var phrase = phraseStore.get('', 'my:domain:1!example!test-1');
       expect(phrase).to.be.an('object');
-      expect(phrase.getId()).to.equals('my:domain:1!example!test');
+      expect(phrase.getId()).to.equals('my:domain:1!example!test-1');
       expect(phrase.getUrl()).to.equals('example/test');
     });
 
     it('should return the correct matching phrase if a domain is passed', function() {
-      var phrase = phraseStore.get('my:domain:2', 'my:domain:2!example!test');
+      var phrase = phraseStore.get('my:domain:2', 'my:domain:2!example!test-1');
       expect(phrase).to.be.an('object');
-      expect(phrase.getId()).to.equals('my:domain:2!example!test');
+      expect(phrase.getId()).to.equals('my:domain:2!example!test-1');
       expect(phrase.getUrl()).to.equals('example/test');
     });
 
     it('should not return phrases if the domain is wrong', function() {
-      var phrase = phraseStore.get('my-domain-not-existing', 'my:domain:1!example!test');
+      var phrase = phraseStore.get('my-domain-not-existing', 'my:domain:1!example!test-1');
       expect(phrase).to.be.a('null');
     });
 
     it('should not return any phrase if id is wrong', function() {
-      var phraseObtained = phraseStore.get('my:domain:2', 'test-test-test');
+      var phraseObtained = phraseStore.get('my:domain:2', 'test-test-test-1');
       expect(phraseObtained).to.be.a('null');
     });
 

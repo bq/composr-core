@@ -22,6 +22,7 @@ var modelFixture = function(json){
 var storeAPI = { 
   add: () => true,
   get: (domain, id) => null,
+  getAsList : (domain) => null,
   reset: () => null,
   remove : () => null,
   exists : () => true
@@ -106,6 +107,20 @@ describe('Base manager', function() {
           expect(result).to.be.an('object');
         })
         .should.notify(done);
+    });
+
+    it('Should reject if the domain is missing', function(done) {
+      manager.register(null, [{
+        id: '1'
+      }, {
+        id: '2'
+      }])
+      .should.be.rejected.notify(done);
+    });
+
+    it('Should reject if the items are missing', function(done) {
+      manager.register('test', null)
+        .should.be.rejected.notify(done);
     });
 
     it('should emit a debug event when the item has been registered', function(done) {
@@ -443,6 +458,17 @@ describe('Base manager', function() {
     });
 
     //TODO : add more test cases with invalid domains ids
+  });  
+
+  describe('Get by domain', function(){
+    it('Calls store get with correct parameters', function(){
+      var domain = 'my:domain';
+      
+      mockStore.expects('getAsList').once().withArgs('my:domain');
+      
+      manager.getByDomain(domain);
+      mockStore.verify();
+    });
   });
 
   describe.skip('_extractDomainFromId', function(){

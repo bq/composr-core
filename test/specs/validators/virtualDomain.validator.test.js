@@ -11,7 +11,7 @@ describe('Validate Virtual Domain', function () {
 
     // 3 errors: name too short, no version, validate_middleware not a boolean
     var domain = {
-      'id': 'd!p',
+      'api_id': 'd!p',
       'name': 'composr',
       'git': '',
       'mock_middleware': false,
@@ -35,7 +35,7 @@ describe('Validate Virtual Domain', function () {
   it('when it is ok', function (done) {
 
     var domain = {
-      'id': 'domain!project',
+      'api_id': 'domain!project',
       'name': 'composr-cli',
       'author': 'jorge-serrano',
       'version': '1.0.0',

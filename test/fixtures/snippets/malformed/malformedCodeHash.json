@@ -1,4 +1,5 @@
 {
-  "id": "testDomain:UserModel",
+  "name": "UserModel",
+  "version": "2.2.3",
   "codehash": "2121Byb3RvdHlwZS5nZXROYW1lID0gZnVuY3Rpb24oKXsKIHJldHVybiB0aGlzLm5hbWU7IAp9CgpleHBvcnRzKFVzZXJNb2RlbCk7"
 }

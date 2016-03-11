@@ -1,4 +1,5 @@
 var SnippetManager = require('../../../src/lib/managers/Snippet'),
+  SnippetModel = require('../../../src/lib/models/SnippetModel'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -23,16 +24,18 @@ describe('== Snippets ==', function() {
         emit: stubEvents
       }
     });
-
   });
 
   describe('Snippets API', function() {
     it('exposes the expected methods', function() {
-      expect(Snippets).to.have.property('__snippets');
+      expect(Snippets).to.have.property('dao');
+      expect(Snippets).to.have.property('store');
+      expect(Snippets).to.have.property('validator');
+      expect(Snippets).to.have.property('model');
       expect(Snippets).to.respondTo('resetItems');
       expect(Snippets).to.respondTo('validate');
       expect(Snippets).to.respondTo('getSnippets');
-      expect(Snippets).to.respondTo('getByName');
+      expect(Snippets).to.respondTo('getSnippet');
       expect(Snippets).to.respondTo('compile');
       expect(Snippets).to.respondTo('_compile');
       expect(Snippets).to.respondTo('register');
@@ -42,28 +45,7 @@ describe('== Snippets ==', function() {
     });
   });
 
-  describe('Reset snippets', function() {
-    beforeEach(function() {
-      Snippets.__snippets = {
-        'myDomain': {
-          'snippetName': function() {}
-        }
-      };
-    });
-
-    after(function() {
-      Snippets.__snippets = {};
-    });
-
-    it('Should be an empty object after calling it', function() {
-      Snippets.resetItems();
-
-      expect(Snippets.__snippets).to.be.a('object');
-      expect(Object.keys(Snippets.__snippets).length).to.equals(0);
-    });
-
-  });
-
+ 
   describe('Snippets validation', function() {
 
     it('Validates a good snippet', function(done) {
@@ -109,25 +91,30 @@ describe('== Snippets ==', function() {
     });
 
     it('should compile a well formed snippet', function() {
-      var snippet = snippetsFixtures.correct[0];
-      var result = Snippets.compile(snippet);
 
-      expect(result).to.be.a('object');
+      var result = Snippets.compile('domain', {
+        name : 'UserModel',
+        version : '2.3.3',
+        codehash: ''
+      });
+
+      expect(result).to.be.instanceof(SnippetModel);
       expect(result).to.include.keys(
         'id',
-        'code'
+        'compiled',
+        'json'
       );
 
-      expect(result.id).to.be.a('string');
-      expect(result.name).to.be.a('string');
-      expect(result.name).to.equals('UserModel');
-      expect(result.code).to.be.a('object');
-      expect(result.code.fn).to.be.a('function');
+      expect(result.getName()).to.be.a('string');
+      expect(result.getName()).to.equals('UserModel');
+      expect(result.getId()).to.equals('domain!UserModel-2.3.3');
+      expect(result.compiled.code).to.be.a('object');
+      expect(result.compiled.code.fn).to.be.a('function');
     });
 
     it('should emit an event with information about the compilation', function() {
       var snippet = snippetsFixtures.correct[0];
-      var result = Snippets.compile(snippet);
+      var result = Snippets.compile('domain', snippet);
 
       //one from the evaluate code and one from the compilation
       expect(stubEvents.callCount).to.be.equals(2);
@@ -135,35 +122,40 @@ describe('== Snippets ==', function() {
     });
 
     it('should allow passing a single snippet', function() {
-      var compiled = Snippets.compile(snippetsFixtures.correct[0]);
+      var compiled = Snippets.compile('domain', snippetsFixtures.correct[0]);
       expect(Array.isArray(compiled)).to.equals(false);
     });
 
     it('should allow passing multiple Snippets', function() {
-      var compiledSnippets = Snippets.compile(snippetsFixtures.correct);
+      var compiledSnippets = Snippets.compile('domain', snippetsFixtures.correct);
       expect(Array.isArray(compiledSnippets)).to.equals(true);
     });
 
   });
 
   describe('Get Snippets', function() {
-    beforeEach(function() {
-      Snippets.__snippets = {
-        'testdomain': {
-          'mySnippet1': {
-            id: 'mySnippet1',
-            code: {}
-          },
-          'mySnippet2': {
-            id: 'mySnippet2',
-            code: {}
-          },
-          'mySnippet3': {
-            id: 'mySnippet3',
-            code: {}
-          },
-        }
-      };
+    beforeEach(function(done) {
+      Snippets.register('testdomain', [{
+          name: 'mySnippet1',
+          version : '1.1.1',
+          codehash: new Buffer('exports(1);').toString('base64')
+        },
+        {
+          name: 'mySnippet1',
+          version : '1.1.2',
+          codehash: new Buffer('exports(1);').toString('base64')
+        },
+        {
+          name: 'mySnippet2',
+          version : '1.1.1',
+          codehash: new Buffer('exports(1);').toString('base64')
+        },
+        {
+          name: 'mySnippet3',
+          version : '1.1.1',
+          codehash: new Buffer('exports(1);').toString('base64')
+        }])
+      .should.be.fulfilled.notify(done);
     });
 
     afterEach(function() {
@@ -177,295 +169,21 @@ describe('== Snippets ==', function() {
 
     it('returns all the Snippets for a single domain', function() {
       var candidates = Snippets.getSnippets('testdomain');
-      expect(Object.keys(candidates).length).to.equals(3);
+      expect(candidates.length).to.equals(4);
     });
 
-  });
-
-  describe('Get Snippets by id', function() {
-
-    beforeEach(function() {
-      Snippets.__snippets = {
-        'testdomain': {
-          'testdomain!mySnippet1': {
-            id: 'mySnippet1',
-            code: {}
-          },
-          'testdomain!mySnippet2': {
-            id: 'mySnippet2',
-            code: {}
-          },
-          'testdomain!mySnippet3': {
-            id: 'mySnippet3',
-            code: {}
-          },
-        },
-        'other:domain': {
-          'other:domain!mySnippet1': {
-            id: 'mySnippet1-otherDomain',
-            code: {}
-          }
-        }
-      };
+    it('returns a single snippet with correct version', function(){
+      var theSnippet = Snippets.getSnippet('testdomain', 'mySnippet1', '1.1.1');
+      expect(theSnippet).to.be.a.instanceof(SnippetModel);
+      expect(theSnippet.getVersion()).to.equals('1.1.1');
+      expect(theSnippet.getName()).to.equals('mySnippet1');
     });
 
-    afterEach(function() {
-      Snippets.resetItems();
-    });
-
-    it('should return null if no domain and no id is passed', function() {
-      var snippet = Snippets.getByName();
-      expect(snippet).to.equals(null);
-    });
-
-    it('should return null if no id is passed', function() {
-      var snippet = Snippets.getByName('other:domain');
-      expect(snippet).to.equals(null);
-    });
-
-    it('should not return the first matching snippet if no domain is passed', function() {
-      var snippet = Snippets.getByName('', 'mySnippet1');
-      expect(snippet).to.be.an('null');
-    });
-
-    it('should return the correct matching snippet if a domain is passed', function() {
-      var snippet = Snippets.getByName('other:domain', 'mySnippet1');
-      expect(snippet).to.be.an('object');
-      expect(snippet.id).to.equals('mySnippet1-otherDomain');
-    });
-
-    it('should not return Snippets if the domain is wrong', function() {
-      var snippet = Snippets.getByName('my-domain-not-existing', 'mySnippet1');
-      expect(snippet).to.be.a('null');
-    });
-
-    it('should not return any snippet if id is wrong', function() {
-      var snippetObtained = Snippets.getByName('other:domain', 'test-test-test');
-      expect(snippetObtained).to.be.a('null');
-    });
-
-    //TODO: test to get after registration.
-
-  });
-
-  describe('Add to list', function() {
-
-    beforeEach(function() {
-      Snippets.resetItems();
-    });
-
-    it('Adds a snippet with a domain', function() {
-      var added = Snippets._addToList('addtolist:domain', {
-        id: 'addtolist:domain!UserModelSnippet',
-        value: 'serious'
-      });
-
-      expect(Object.keys(Snippets.getSnippets('addtolist:domain')).length).to.equals(1);
-      expect(Snippets.getByName('addtolist:domain', 'UserModelSnippet')).to.be.an('object');
-      expect(Snippets.getByName('addtolist:domain', 'UserModelSnippet')).to.include.keys(
-        'id',
-        'value'
-      );
-      expect(added).to.equals(true);
-    });
-
-    it('Does not add an empty snippet', function() {
-      var added = Snippets._addToList('addtolist:domain', null);
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add non objects', function() {
-      var added = Snippets._addToList('addtolist:domain', 'Hey');
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-    it('Does not add a snippet without id', function() {
-      var added = Snippets._addToList('addtolist:domain', {});
-
-      expect(Snippets.getSnippets('addtolist:domain')).to.be.a('null');
-      expect(added).to.equals(false);
-    });
-
-  });
-
-  describe('Snippets Registration', function() {
-
-    var spyExtractDomain;
-
-    beforeEach(function() {
-      spyExtractDomain = sinon.spy(Snippets, '_extractDomainFromId');
-    });
-
-    afterEach(function() {
-      spyExtractDomain.restore();
-    });
-
-    it('should allow to register an array of snippet models', function(done) {
-      var snippetsToRegister = snippetsFixtures.correct;
-
-      Snippets.register('domain', snippetsToRegister)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('array');
-          expect(result.length).to.equals(1);
-          expect(spyExtractDomain.callCount).to.be.above(0);
-        })
-        .should.be.fulfilled.notify(done);
-    });
-
-    it('should allow to register a single snippet model', function(done) {
-      var snippet = {
-        id: 'mydomain!TheSnippet',
-        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
-      };
-
-      Snippets.register('mydomain', snippet)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-          expect(result).to.include.keys(
-            'id',
-            'registered',
-            'compiled',
-            'error'
-          );
-
-          expect(result.registered).to.equals(true);
-          expect(result.id).to.equals('mydomain!TheSnippet');
-          expect(result.compiled).to.include.keys(
-            'id',
-            'name',
-            'code'
-          );
-          expect(result.error).to.equals(null);
-          expect(result.compiled.name).to.equals('TheSnippet');
-          expect(result.compiled.id).to.equals('mydomain!TheSnippet');
-          var snippetObtained = Snippets.getByName('mydomain', 'TheSnippet');
-          expect(snippetObtained).to.be.an('object');
-          expect(snippetObtained.id).to.equals('mydomain!TheSnippet');
-        })
-        .should.notify(done);
-    });
-
-    it('should return the registered state when it does NOT register', function(done) {
-      var snippet = snippetsFixtures.malformed[0];
-
-      Snippets.register('domain', snippet)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-          expect(result).to.include.keys(
-            'registered',
-            'id',
-            'compiled',
-            'error'
-          );
-          expect(result.id).to.equals(snippet.id);
-          expect(result.registered).to.equals(false);
-          expect(result.error).not.to.equals(null);
-        })
-        .should.notify(done);
-    });
-
-    it('should be returnable over the registered Snippets', function(done) {
-      var snippet = {
-        id: 'mydomain!TheSnippet',
-        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
-      };
-
-      Snippets.register('mydomain', snippet)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result.registered).to.equals(true);
-
-          var candidates = Snippets.getSnippets('mydomain');
-
-          expect(Object.keys(candidates).length).to.equals(1);
-
-          var sureCandidate = Snippets.getByName('mydomain', 'TheSnippet');
-
-          expect(sureCandidate).to.include.keys(
-            'id',
-            'name',
-            'code'
-          );
-          expect(sureCandidate.id).to.equals('mydomain!TheSnippet');
-        })
-        .should.notify(done);
-    });
-
-
-    it('should not modify the passed objects', function(done) {
-      var snippetToRegister = {
-        id: 'mydomain!TheSnippet2',
-        codehash: 'dmFyIGEgPSAzOwpleHBvcnRzKGEpOw=='
-      };
-
-      Snippets.register('test-domain', snippetToRegister)
-        .then(function(result) {
-          expect(snippetToRegister.name).to.be.undefined;
-          done();
-        })
-        .catch(done);
-    });
-
-    describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList;
-
-      beforeEach(function() {
-        spyRegister = sinon.spy(Snippets, '_register');
-        spyCompile = sinon.spy(Snippets, 'compile');
-        spyValidate = sinon.spy(Snippets, 'validate');
-        spy_compile = sinon.spy(Snippets, '_compile');
-        spyAddToList = sinon.spy(Snippets, '_addToList');
-      });
-
-      afterEach(function() {
-        spyRegister.restore();
-        spyCompile.restore();
-        spyValidate.restore();
-        spy_compile.restore();
-        spyAddToList.restore();
-      });
-
-      it('should call the compilation and validation methods when registering a snippet', function(done) {
-
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyCompile.callCount).to.equals(1);
-            expect(spy_compile.callCount).to.equals(1);
-            expect(spyValidate.callCount).to.equals(1);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _register method with the domain', function(done) {
-
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyRegister.callCount).to.equals(1);
-            expect(spyRegister.calledWith('test-domain', snippetsFixtures.correct[0])).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _addToList method with the domain', function(done) {
-
-        Snippets.register('test-domain', snippetsFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyAddToList.callCount).to.equals(1);
-            expect(spyAddToList.calledWith('test-domain')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
+    it('returns a single phrase with correct version', function(){
+      var theSnippet = Snippets.getSnippet('testdomain', 'mySnippet1', '1.1.2');
+      expect(theSnippet).to.be.a.instanceof(SnippetModel);
+      expect(theSnippet.getVersion()).to.equals('1.1.2');
+      expect(theSnippet.getName()).to.equals('mySnippet1');
     });
 
   });
@@ -473,18 +191,20 @@ describe('== Snippets ==', function() {
   describe('Snippets unregistration', function() {
     beforeEach(function(done) {
       var snippetsToRegister = [{
-        id: 'domainTest!snippetOne',
+        name: 'snippetOne',
+        version : '1.0.0',
         codehash: new Buffer('exports("thing");').toString('base64')
       }, {
-        id: 'domainTest!snippetTwo',
+        name: 'snippetTwo',
+        version : '1.0.0',
         codehash: new Buffer('exports("otherthing");').toString('base64')
       }];
 
       Snippets.register('domainTest', snippetsToRegister)
         .should.be.fulfilled
         .then(function() {
-          var isRegisteredOne = Snippets.getByName('domainTest', 'snippetOne');
-          var isRegisteredTwo = Snippets.getByName('domainTest', 'snippetTwo');
+          var isRegisteredOne = Snippets.getSnippet('domainTest', 'snippetOne', '1.0.0');
+          var isRegisteredTwo = Snippets.getSnippet('domainTest', 'snippetTwo', '1.0.0');
 
           expect(isRegisteredOne).to.be.an('object');
           expect(isRegisteredTwo).to.be.an('object');
@@ -493,9 +213,9 @@ describe('== Snippets ==', function() {
     });
 
     it('should not retrieve a snippet after unregistering it', function() {
-      var hasBeenUnregistered = Snippets.unregister('domainTest', 'domainTest!snippetOne');
+      var hasBeenUnregistered = Snippets.unregister('domainTest', 'domainTest!snippetOne-1.0.0');
 
-      var isRegisteredOne = Snippets.getByName('domainTest', 'snippetOne');
+      var isRegisteredOne = Snippets.getSnippet('domainTest', 'snippetOne', '1.0.0');
       expect(isRegisteredOne).to.be.a('null');
       expect(hasBeenUnregistered).to.equals(true);
     });

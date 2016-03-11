@@ -40,6 +40,10 @@ describe('== Phrases ==', function() {
       expect(Phrases).to.respondTo('getPhrases');
       expect(Phrases).to.respondTo('getByMatchingPath');
       expect(Phrases).to.respondTo('count');
+      expect(Phrases).to.have.property('dao');
+      expect(Phrases).to.have.property('store');
+      expect(Phrases).to.have.property('model');
+      expect(Phrases).to.have.property('validator');
     });
   });
 
@@ -48,6 +52,7 @@ describe('== Phrases ==', function() {
     it('Validates correct models', function(done) {
       var goodPhraseModel = {
         url: 'test',
+        version : '1.2.3',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: {}
@@ -67,9 +72,10 @@ describe('== Phrases ==', function() {
 
     });
 
-    it('Denies invalid models (Missing url and invalid doc field)', function(done) {
+    it('Denies invalid models (Missing url, version and invalid doc field)', function(done) {
       var badPhraseModel = {
         url: '',
+        version : '',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: ''
@@ -84,7 +90,7 @@ describe('== Phrases ==', function() {
           expect(result).to.be.an('object');
           expect(result.valid).to.equals(false);
           expect(result.errors).to.be.an('array');
-          expect(result.errors.length).to.equals(2);
+          expect(result.errors.length).to.equals(3);
 
           done();
         });
@@ -104,6 +110,7 @@ describe('== Phrases ==', function() {
     it('should generate a regular expression for the url', function() {
       var phrase = {
         url: 'test/:param/:optional?',
+        version : '92.1.111',
         get: {
           code: 'console.log(3);'
         }
@@ -140,7 +147,7 @@ describe('== Phrases ==', function() {
 
     it('Calls store reset when calling phrases reset', function(){
       var spyStore = sandbox.spy(Phrases.store, 'reset');
-      Phrases.reset();
+      Phrases.resetItems();
       expect(spyStore.callCount).to.equals(1);
     });
   });
@@ -171,38 +178,37 @@ describe('== Phrases ==', function() {
     });
 
     afterEach(function() {
-      Phrases.store.reset();
+      Phrases.resetItems();
     });
 
     it('Should count all the phrases', function() {
       expect(Phrases.count()).to.equals(5);
     });
-
   });
 
   describe('Find duplicated regexp over the phrases', function() {
 
     beforeEach(function() {
-      Phrases.__phrases = {
+      Phrases.store.set({
         'mydomain': [{
-          regexpReference: {
-            regexp: '^/?test/?$'
+          getRegexp : function() {
+            return '^/?test/?$';
           }
         }, {
-          regexpReference: {
-            regexp: '^/?test-route/?$'
+          getRegexp : function() {
+            return '^/?test-route/?$';
           }
         }],
         'mydomain2': [{
-          regexpReference: {
-            regexp: '^/?test/?$'
+          getRegexp : function() {
+            return '^/?test/?$';
           }
         }, {
-          regexpReference: {
-            regexp: '^/?test-route/?$'
+          getRegexp : function() {
+            return '^/?test-route/?$';
           }
         }]
-      }
+      });
     });
 
     afterEach(function() {
@@ -228,107 +234,20 @@ describe('== Phrases ==', function() {
       var candidates = Phrases._filterByRegexp('nodomain', '^/?test/?$');
       expect(candidates.length).to.equals(0);
     });
-
   });
 
-  describe('Get phrases as list', function() {
-
-    beforeEach(function() {
-      Phrases.__phrases = {
-        'mydomain': [{
-          id: 'id1',
-          url: 'test'
-        }, {
-          id: 'id2',
-          url: 'test'
-        }],
-        'test-domain': [{
-          id: 'id1',
-          url: 'test'
-        }, {
-          id: 'id2',
-          url: 'test'
-        }, {
-          id: 'id3',
-          url: 'test'
-        }]
-      }
-    });
-
-    afterEach(function() {
-      Phrases.resetItems();
-    });
-
-    it('Returns a flattened array with all the phrases', function() {
-      var list = Phrases._getPhrasesAsList();
-      expect(list.length).to.equals(5);
-    });
-
-    it('Returns a flattened array for a single domain', function() {
-      var list = Phrases._getPhrasesAsList('test-domain');
-      expect(list.length).to.equals(3);
-    });
-
-    it('Returns an empty list for a missing domain', function() {
-      var list = Phrases._getPhrasesAsList('nodomain');
-      expect(list.length).to.equals(0);
-    });
-
-  });
 
   describe('Phrases registration', function() {
-    var spyGenerateId;
 
     beforeEach(function() {
-      spyGenerateId = sandbox.spy(Phrases, '_generateId');
       //Reset phrases for each test
       Phrases.resetItems();
-    });
-
-    afterEach(function() {
-      spyGenerateId.restore();
-    });
-
-    it('should allow to register an array of phrase models', function(done) {
-      var phrases = phrasesFixtures.correct;
-
-      Phrases.register('mydomain', phrases)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('array');
-          expect(result.length).to.equals(2);
-          expect(spyGenerateId.callCount).to.be.above(0);
-        })
-        .should.notify(done);
-    });
-
-    it('Should reject if the domain is missing', function(done) {
-      var phrases = phrasesFixtures.correct;
-
-      Phrases.register(null, phrases)
-        .should.be.rejected.notify(done);
-    });
-
-    it('Should reject if the phrases are missing', function(done) {
-
-      Phrases.register('test', null)
-        .should.be.rejected.notify(done);
-    });
-
-    it('should allow to register a single phrase model', function(done) {
-      var phrase = phrasesFixtures.correct[0];
-
-      Phrases.register('mydomain', phrase)
-        .should.be.fulfilled
-        .then(function(result) {
-          expect(result).to.be.an('object');
-        })
-        .should.notify(done);
     });
 
     it('should generate an id for a phrase without id', function(done) {
       var phrase = {
         url: 'thephrase/without/:id',
+        version : '2.2.2',
         get: {
           code: 'console.log(a);',
           doc: {}
@@ -339,20 +258,17 @@ describe('== Phrases ==', function() {
         .should.be.fulfilled
         .then(function(result) {
           expect(result).to.be.an('object');
+    
           expect(result).to.include.keys(
-            'id',
+            'model',
             'registered',
-            'compiled'
+            'id'
           );
           expect(result.registered).to.equals(true);
-          expect(result.id).to.equals('simpledomain!thephrase!without!:id');
-          expect(result.compiled).to.include.keys(
-            'url',
-            'regexpReference',
-            'codes'
-          );
-          expect(result.compiled.url).to.equals(phrase.url);
-          expect(result.compiled.id).to.equals('simpledomain!thephrase!without!:id');
+          expect(result.id).to.equals('simpledomain!thephrase!without!:id-2.2.2');
+          expect(result.model).to.respondTo('getId');
+          expect(result.model.getUrl()).to.equals(phrase.url);
+          expect(result.model.getId()).to.equals('simpledomain!thephrase!without!:id-2.2.2');
         })
         .should.notify(done);
     });
@@ -377,16 +293,10 @@ describe('== Phrases ==', function() {
           expect(result).to.include.keys(
             'registered',
             'id',
-            'compiled',
+            'model',
             'error'
           );
-          expect(result.id).to.equals(phrase.id);
           expect(result.registered).to.equals(true);
-          expect(result.compiled).to.include.keys(
-            'url',
-            'regexpReference',
-            'codes'
-          );
           expect(result.error).to.equals(null);
         })
         .should.notify(done);
@@ -402,7 +312,7 @@ describe('== Phrases ==', function() {
           expect(result).to.include.keys(
             'registered',
             'id',
-            'compiled',
+            'model',
             'error'
           );
           expect(result.id).to.equals(phrase.id);
@@ -415,6 +325,7 @@ describe('== Phrases ==', function() {
     it('should warn when various phrases matches the same regular expression', function(done) {
       var phrase = {
         url: 'test',
+        version : '3.3.3',
         id: 'random-id-1',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
@@ -424,6 +335,7 @@ describe('== Phrases ==', function() {
 
       var similarPhrase = {
         url: 'test',
+        version : '3.3.2',
         id: 'random-id-2',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
@@ -443,8 +355,7 @@ describe('== Phrases ==', function() {
     });
 
     it('should be returnable over the registered phrases', function(done) {
-      var phrase = phrasesFixtures.correct[0];
-      var phraseId = phrase.id;
+      var phrase = _.cloneDeep(phrasesFixtures.correct[0]);
 
       Phrases.register('mydomain', phrase)
         .should.be.fulfilled
@@ -455,15 +366,9 @@ describe('== Phrases ==', function() {
 
           expect(Object.keys(candidates).length).to.equals(1);
 
-          var sureCandidate = Phrases.getById('mydomain', phraseId);
-
-          expect(sureCandidate).to.include.keys(
-            'url',
-            'id',
-            'regexpReference',
-            'codes'
-          );
-          expect(sureCandidate.id).to.equals(phraseId);
+          var sureCandidate = Phrases.getById(result.id);
+          expect(sureCandidate).to.be.a.instanceof(PhraseModel);
+          expect(sureCandidate.getUrl()).to.equals(phrase.url);
         })
         .should.notify(done);
     });
@@ -471,6 +376,7 @@ describe('== Phrases ==', function() {
     it('should not modify the passed objects', function(done) {
       var phraseToRegister = {
         url: 'test',
+        version : '3.2.1',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: {}
@@ -479,119 +385,25 @@ describe('== Phrases ==', function() {
 
       Phrases.register('test-domain', phraseToRegister)
         .then(function(result) {
+          expect(result.model).to.be.a.instanceof(PhraseModel);
+          expect(result.registered).to.equals(true);
+          //It does not add the ID to the original json
           expect(phraseToRegister.id).to.be.undefined;
+          //But instead it generates it for the model
+          expect(result.model.getId()).to.equals('test-domain!test-3.2.1');
           done();
         })
         .catch(done);
     });
 
-    describe('Secure methods called', function() {
-      var spyCompile, spyValidate, spy_compile, spyRegister, spyAddToList,
-        spyPreCompile, spyPreAdd;
-
-      beforeEach(function() {
-        spyRegister = sandbox.spy(Phrases, '_register');
-        spyCompile = sandbox.spy(Phrases, 'compile');
-        spyValidate = sandbox.spy(Phrases, 'validate');
-        spy_compile = sandbox.spy(Phrases, '_compile');
-        spyAddToList = sandbox.spy(Phrases, '_addToList');
-        spyPreCompile = sandbox.spy(Phrases, '__preCompile');
-        spyPreAdd = sandbox.spy(Phrases, '__preAdd');
-      });
-
-      it('should call the compilation and validation methods when registering a phrase', function(done) {
-
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyCompile.callCount).to.equals(1);
-            expect(spy_compile.callCount).to.equals(1);
-            expect(spyValidate.callCount).to.equals(1);
-            expect(spyPreCompile.callCount).to.equals(1);
-            expect(spyPreAdd.callCount).to.equals(1);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _register method with the domain', function(done) {
-
-        Phrases.register('testingdomain:test', phrasesFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyRegister.callCount).to.equals(1);
-            expect(spyRegister.calledWith('testingdomain:test', phrasesFixtures.correct[0])).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should call the _addToList method with the domain', function(done) {
-
-        Phrases.register('testingdomain:test', phrasesFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(spyAddToList.callCount).to.equals(1);
-            expect(spyAddToList.calledWith('testingdomain:test')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-    });
-
-    describe('Validation fail', function() {
-
-      it('should emit an error when the registering fails because the validation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.malformed[0])
-          .should.be.fulfilled
-          .then(function() {
-            expect(stubEvents.callCount).to.be.above(0);
-            expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-      it('should return not registered when the registering fails because the validation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.malformed[0])
-          .should.be.fulfilled
-          .then(function(result) {
-            expect(result.registered).to.equals(false);
-          })
-          .should.be.fulfilled.notify(done);
-      });
-
-    });
-
-    describe('Compilation fail', function() {
-      beforeEach(function() {
-        sandbox.stub(Phrases, 'compile', function() {
-          return false;
-        });
-      });
-
-      it('should emit an error when the registering fails because the compilation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
-          .then(function() {
-            expect(stubEvents.callCount).to.be.above(0);
-            expect(stubEvents.calledWith('warn', 'phrase:not:registered')).to.equals(true);
-            done();
-          });
-      });
-
-      it('should return the unregistered state when the compilation fails', function(done) {
-        Phrases.register('testdomain', phrasesFixtures.correct[0])
-          .should.be.fulfilled
-          .then(function(result) {
-            expect(result.registered).to.equals(false);
-          })
-          .should.notify(done);
-      });
-    });
-
     describe('Domain registration', function() {
-      var existingPhraseId = phrasesFixtures.correct[0].id;
+      var thePhrases = _.cloneDeep(phrasesFixtures.correct);
+      var existingPhraseId = '';
 
       beforeEach(function(done) {
-        Phrases.register('mydomain', phrasesFixtures.correct)
+        Phrases.register('my:test:domain', thePhrases)
           .then(function(res) {
+            existingPhraseId = res[0].id;
             done();
           });
       });
@@ -601,30 +413,33 @@ describe('== Phrases ==', function() {
       });
 
       it('should not return any phrase from other domain', function() {
-        var phraseObtained = Phrases.getById('other:domain', existingPhraseId);
+        var phraseObtained = Phrases.getById('other:domain' + existingPhraseId);
 
         expect(phraseObtained).to.be.a('null');
       });
 
       it('should return the phrase from my domain', function() {
-        var phraseObtained = Phrases.getById('mydomain', existingPhraseId);
+        var phraseObtained = Phrases.getById(existingPhraseId);
 
-        expect(phraseObtained).to.include.keys(
-          'url',
-          'regexpReference',
-          'codes',
-          'id'
-        );
+        expect(phraseObtained).to.be.a.instanceof(PhraseModel);
       });
     });
-
   });
 
   describe('Phrases unregistration', function() {
+    var thePhrases = _.cloneDeep(phrasesFixtures.correct).map(function(item){
+      item.id = null;
+      return item;
+    });
+
     var domain = 'random:domain:unregistration';
+    var existingPhraseId = '';
 
     beforeEach(function(done) {
-      Phrases.register(domain, phrasesFixtures.correct)
+      Phrases.register(domain, thePhrases)
+        .then(function(results){
+          existingPhraseId = results[0].id;
+        })
         .should.be.fulfilled.notify(done);
     });
 
@@ -633,22 +448,20 @@ describe('== Phrases ==', function() {
     });
 
     it('should not be able to get an unregistered phrase', function() {
-      var existingPhraseId = phrasesFixtures.correct[0].id;
-      var existingPhrase = Phrases.getById(domain, existingPhraseId);
+      var existingPhrase = Phrases.getById(existingPhraseId);
 
-      expect(existingPhrase).to.be.a('object');
+      expect(existingPhrase).to.be.an.instanceof(PhraseModel);
 
       Phrases.unregister(domain, existingPhraseId);
 
-      var doesItExist = Phrases.getById(domain, existingPhraseId);
+      var doesItExist = Phrases.getById(existingPhraseId);
 
       expect(doesItExist).to.equals(null);
-
     });
 
     it('Should unregister all the phrases', function() {
       var phrasesIds = Phrases.getPhrases(domain).map(function(phrase) {
-        return phrase.id;
+        return phrase.getId();
       });
 
       expect(phrasesIds.length).to.be.above(0);

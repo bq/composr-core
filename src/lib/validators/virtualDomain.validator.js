@@ -1,15 +1,17 @@
 'use strict';
 
-var validator = require('jsonschema').validate;
+var validator = require('jsonschema').validate,
+  utils = require('../utils'),
+  semver = require('semver');
 
 var virtualDomainSchema = {
   'id': '/VirtualDomain',
   'type': 'object',
   'properties': {
-    'id': {'type': 'string', 'required': true, 'minLength': 5, 'pattern': '^.+!.+$'},
+    'api_id': {'type': 'string', 'required': true, 'minLength': 5},
     'name': {'type': 'string', 'required': false, 'minLength': 3},
     'author': {'type': 'string'},
-    'version': {'type': 'string', 'required': false},
+    'version': {'type': 'string', 'required': true},
     'source_location': {'type': 'string'},
     'git': {'type': 'string'},
     'license': {'type': 'string'},
@@ -35,8 +37,15 @@ var virtualDomainSchema = {
 function validate(virtualDomain) {
 
   var result = validator(virtualDomain, virtualDomainSchema);
+
+  var errors = result.errors;
+
+  var errorAccumulator = utils.errorAccumulator(errors);
+
+  errorAccumulator(semver.valid, virtualDomain.version, 'incorrect:virtualDomain:version');
+
   return new Promise(function(resolve, reject){
-    if(result.errors && result.errors.length > 0){
+    if(errors.length > 0){
       reject(result.errors);
     }else{
       resolve(virtualDomain);

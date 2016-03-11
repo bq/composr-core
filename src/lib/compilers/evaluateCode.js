@@ -29,7 +29,7 @@ function __codeOptimization(code) {
   return optimized.code;
 }
 
-function evaluateCode(functionBody, params, debugFilePath, cb) {
+function evaluateCode(functionBody, params, debugFilePath) {
 
   var functionParams = params ? params : [];
 
@@ -60,11 +60,8 @@ function evaluateCode(functionBody, params, debugFilePath, cb) {
     }
 
     result.script = new vm.Script(optimized, options);
-
-    cb();
   } catch (e) {
-    result.error = true;
-    cb(e);
+    result.error = e;
   }
 
   return result;

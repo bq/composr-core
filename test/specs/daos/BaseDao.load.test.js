@@ -1,12 +1,12 @@
-var snippetDao = require('../../../src/lib/daos/snippetDao'),
+var BaseDao = require('../../../src/lib/daos/BaseDao'),
+  driverStore = require('../../../src/lib/stores/corbelDriver.store'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),
   expect = chai.expect;
 
-describe('loadSnippet', function() {
-
-  var loader, stubResource, stubGetResource;
+describe('BaseDao', function() {
+  var theDao, stubResource, stubGetResource;
 
   beforeEach(function() {
 
@@ -24,47 +24,40 @@ describe('loadSnippet', function() {
       get: stubGetResource
     });
 
-    loader = snippetDao.load.bind({
-      corbelDriver: {
-        resources: {
-          resource: stubResource
-        }
-      },
+    driverStore.setDriver({
       resources: {
-        snippetsCollection: 'testCol'
-      },
-      utils: composrUtils
+        resource: stubResource
+      }
+    });
+
+    theDao = new BaseDao({
+      collection : 'my:collection'
     });
   });
 
   it('invokes the resources.resource', function(done) {
-    loader('myId')
+    theDao.load('myId')
       .should.be.fulfilled
       .then(function(item) {
         expect(item.name).to.equals('test');
         expect(stubResource.calledOnce).to.equals(true);
-        expect(stubResource.calledWith('testCol', 'myId')).to.equals(true);
+        expect(stubResource.calledWith('my:collection', 'myId')).to.equals(true);
         expect(stubGetResource.calledOnce).to.equals(true);
       })
       .should.notify(done);
   });
 
   it('rejects without id', function(done) {
-    loader()
+    theDao.load()
       .should.be.rejected.notify(done);
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = snippetDao.load.bind({
-      utils: composrUtils,
-      resources: {
-        snippetsCollection: 'testCol'
-      }
-    });
-    
-    loaderWithoutDriver()
+    driverStore.setDriver(null);
+
+    theDao.load('myId')
       .should.be.rejected.notify(done);
   });
 
-
+  //TODO: add save with a model sent, a model with getRawJson implementation
 });

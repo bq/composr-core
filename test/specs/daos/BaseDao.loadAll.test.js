@@ -1,12 +1,13 @@
-var snippetDao = require('../../../src/lib/daos/snippetDao'),
+var BaseDao = require('../../../src/lib/daos/BaseDao'),
+  driverStore = require('../../../src/lib/stores/corbelDriver.store'),
   composrUtils = require('../../../src/lib/utils'),
   chai = require('chai'),
   sinon = require('sinon'),
   expect = chai.expect;
 
-describe('loadSnippets', function() {
+describe('BaseDao LoadAll', function() {
 
-  var loader, stubCollection, stubGetCollection;
+  var theDao, stubCollection, stubGetCollection;
 
   beforeEach(function() {
 
@@ -28,41 +29,32 @@ describe('loadSnippets', function() {
       get: stubGetCollection
     });
 
-    loader = snippetDao.loadAll.bind({
-      corbelDriver: {
-        resources: {
-          collection: stubCollection
-        }
-      },
+    driverStore.setDriver({
       resources: {
-        snippetsCollection: 'testCol'
-      },
-      utils: composrUtils
+        collection: stubCollection
+      }
+    });
+
+    theDao = new BaseDao({
+      collection : 'my:collection'
     });
   });
 
   it('invokes the resources.collection as long as it has items', function(done) {
-    loader()
+    theDao.loadAll()
       .should.be.fulfilled
       .then(function() {
         expect(stubCollection.calledTwice).to.equals(true);
-        expect(stubCollection.calledWith('testCol')).to.equals(true);
+        expect(stubCollection.calledWith('my:collection')).to.equals(true);
         expect(stubGetCollection.calledTwice).to.equals(true);
       })
       .should.notify(done);
   });
 
   it('rejects if missing corbelDriver', function(done) {
-    var loaderWithoutDriver = snippetDao.loadAll.bind({
-      utils: composrUtils,
-      resources: {
-        snippetsCollection: 'testCol'
-      }
-    });
-    
-    loaderWithoutDriver()
+    driverStore.setDriver(null);
+
+    theDao.loadAll()
       .should.be.rejected.notify(done);
   });
-
-
 });

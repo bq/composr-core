@@ -1,48 +1,11 @@
 'use strict';
 
-var _ = require('lodash');
+var BaseStore = require('./BaseStore');
 
-var virtualDomains = {};
+var VirtualDomainStore = function() {};
 
-function add(domain, vdModel){
-  if (!virtualDomains[domain]) {
-    virtualDomains[domain] = {};
-  }
+VirtualDomainStore.prototype = new BaseStore();
 
-  virtualDomains[domain][vdModel.getId()] = vdModel;
-}
+var singletonVirtualDomainStore = new VirtualDomainStore();
 
-function remove(domain, id){
-  delete virtualDomains[domain][id];
-}
-
-function exists(domain, id){
-  return virtualDomains[domain] && virtualDomains[domain][id];
-}
-
-function get(domain, id){
-  if(exists(domain, id)){
-    return virtualDomains[domain][id];
-  }else{
-    return null;
-  }
-}
-
-function getAsList(){
-  return _.flatten(Object.keys(virtualDomains).map(function (key) {
-    return virtualDomains[key];
-  }));
-}
-
-function reset(){
-  virtualDomains = {};
-}
-
-module.exports = {
-  add : add,
-  get : get,
-  getAsList : getAsList,
-  remove: remove,
-  reset : reset,
-  exists : exists
-};
+module.exports = singletonVirtualDomainStore;

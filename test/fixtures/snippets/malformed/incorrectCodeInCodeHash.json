@@ -1,4 +1,5 @@
 {
-  "id": "testDomain:incorrectCodeInCodeHash",
+  "name": "incorrectCodeInCodeHash",
+  "version": "2.2.3",
   "codehash": "dmJhciBhID0gMzsKCjMgKyBgOwoK"
 }

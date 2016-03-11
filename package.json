@@ -28,6 +28,7 @@
     "async": "^1.4.2",
     "atob": "^1.1.2",
     "corbel-js": "0.3.7",
+    "jsonschema": "1.0.3",
     "lodash": "^4.3.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
@@ -35,12 +36,12 @@
     "raml-parser": "^0.8.11",
     "raml2html": "^2.1.2",
     "request": "^2.60.0",
+    "semver": "^5.1.0",
     "syntax-error": "^1.1.4",
+    "uglify-js": "2.5.0",
     "uuid": "~2.0.1",
     "xregexp": "^2.0.0",
-    "yamljs": "^0.2.3",
-    "uglify-js": "2.5.0",
-    "jsonschema": "1.0.3"
+    "yamljs": "^0.2.3"
   },
   "devDependencies": {
     "chai": "^2.1.1",

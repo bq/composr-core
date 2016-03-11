@@ -42,15 +42,15 @@ SnippetsManager.prototype.getSnippets = function(domain) {
     return null;
   }
 
-  return this.store.getAsObject(domain);
+  return this.store.getAsList(domain);
 };
 
 //Get a single snippet
-SnippetsManager.prototype.getByName = function(domain, name) {
-  var snippets = this.getSnippets(domain);
+SnippetsManager.prototype.getSnippet = function(domain, name, version) {
+  var snippet = this.store.get(domain, domain + '!' + name + '-' + version);
 
-  if (snippets) {
-    return snippets[domain + '!' + name] ? snippets[domain + '!' + name] : null;
+  if (snippet) {
+    return snippet;
   } else {
     return null;
   }

@@ -21,10 +21,6 @@ VirtualDomainManager.prototype = new BaseManager({
   validator: virtualDomainValidator
 });
 
-VirtualDomainManager.prototype.getVirtualDomains = function (domain) {
-  return this.store.getAsList(domain);
-};
-
 VirtualDomainManager.prototype.getById = function(id) {
   //@TODO
   var domain = this._extractDomainFromId(id);

@@ -21,9 +21,9 @@ describe('Full system usage', function() {
     stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
     stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
     //Stub loaders
-    stubLoadPhrases = sandbox.stub(composr.Phrase, 'load', utilsPromises.resolvedCurriedPromise([]));
-    stubLoadSnippets = sandbox.stub(composr.Snippet, 'load', utilsPromises.resolvedCurriedPromise([]));
-    stubLoadVirtualDomains = sandbox.stub(composr.VirtualDomain, 'load', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadPhrases = sandbox.stub(composr.Phrase.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadSnippets = sandbox.stub(composr.Snippet.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadVirtualDomains = sandbox.stub(composr.VirtualDomain.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
   });
 
   after(function() {
@@ -65,9 +65,9 @@ describe('Full system usage', function() {
 
         var candidates = composr.Snippet.getSnippets('myDomain');
 
-        expect(candidates).to.be.a('object');
+        expect(candidates).to.be.a('array');
 
-        expect(Object.keys(candidates).length).to.be.above(0);
+        expect(candidates.length).to.be.above(0);
 
       }).should.notify(done);
   });

@@ -1,5 +1,5 @@
 {
-      "id": "mydomain:subdomain!myApiID",
+      "api_id": "myApiID",
       "name": "composr-cli",
       "author": "jorge-serrano",
       "version": "1.0.0",

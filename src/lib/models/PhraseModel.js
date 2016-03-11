@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var BaseModel = require('./BaseModel');
 var regexpGenerator = require('../regexpGenerator');
 var paramsExtractor = require('../paramsExtractor');
 var XRegExp = require('xregexp').XRegExp;
@@ -18,9 +19,13 @@ var DEFAULT_PHRASE_PARAMETERS = [
   'metrics'
   ];
 
+
 var PhraseModel = function(json, domain){
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
-  this.id = json.id ? json.id : this._generateId(domain);
+  this.id = this._generateId(domain);
+
+  //Stores the id on the raw model
+  this.json.id = this.id;
 
   //The regexp reference dictaminates the routing mechanisms
   this.regexpReference = regexpGenerator.regexpReference(this.getUrl());
@@ -30,24 +35,14 @@ var PhraseModel = function(json, domain){
   };
 };
 
-PhraseModel.prototype._generateId = function(domain) {
-  return domain + '!' + this.json.url.replace(/\//g, '!');
-};
-
-PhraseModel.prototype.getId = function() {
-  return this.id;
-};
-
-PhraseModel.prototype.getVirtualDomainId = function() {
-  return this.id;
-};
+PhraseModel.prototype = new BaseModel();
 
 PhraseModel.prototype.getUrl = function() {
   return this.json.url;
 };
 
-PhraseModel.prototype.getMD5 = function() {
-  return this.json.md5;
+PhraseModel.prototype.getName = function() {
+  return this.getUrl().replace(/\//g, '!');
 };
 
 PhraseModel.prototype.getRegexp = function(){
@@ -56,10 +51,6 @@ PhraseModel.prototype.getRegexp = function(){
 
 PhraseModel.prototype.getRegexpReference = function(){
   return this.regexpReference;
-};
-
-PhraseModel.prototype.getRawModel = function(){
-  return this.json;
 };
 
 PhraseModel.prototype.canRun = function(verb){
@@ -98,13 +89,14 @@ PhraseModel.prototype.compile = function(events){
 
       var debugInfo = model.json.debug ? model.json.debug[method] : null;
 
-      model.compiled.codes[method] = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo, function(err){
-        if(err){
-          events.emit('debug', model.getId() + ':evaluatecode:good');
-        }else{
-          events.emit('warn', model.getId() + ':evaluatecode:wrong_code', err);
-        }
-      });
+      var codeCompiled = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
+      if (codeCompiled.error){
+        events.emit('warn', model.getId() + ':evaluatecode:wrong_code', codeCompiled.error);
+      }else{
+        events.emit('debug', model.getId() + ':evaluatecode:good');
+      }
+      
+      model.compiled.codes[method] = codeCompiled;
     }
   });
 };
