@@ -27,7 +27,7 @@
     "ascii-art": "0.0.2-alpha",
     "async": "^1.4.2",
     "atob": "^1.1.2",
-    "corbel-js": "0.3.7",
+    "corbel-js": "0.4.0",
     "lodash": "^4.3.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
