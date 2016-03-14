@@ -58,7 +58,7 @@ PhraseModel.prototype.canRun = function(verb){
 };
 
 PhraseModel.prototype.matchesPath = function(path){
-  return XRegExp.test(path, this.getRegexp());
+  return XRegExp.test(path, this.getRegexpReference().xregexp);
 };
 
 /*

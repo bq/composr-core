@@ -78,12 +78,14 @@ PhraseManager.prototype.runById = function(domain, id, verb, params) {
 };
 
 //Executes a phrase matching a path
-PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
+//TODO: add support for various versions at the same time
+PhraseManager.prototype.runByPath = function(domain, path, verb, params, version) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get';
   }
 
-  var phrase = this.getByMatchingPath(domain, path, verb);
+  var phrase = this.getByMatchingPath(domain, path, verb, version);
+  //TODO: use version too , to get the correct version
 
   if (phrase && phrase.canRun(verb)) {
     if (!params) {
@@ -101,7 +103,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params) {
     if (!params.params) {
       //extract params from path
       var sanitizedPath = path.replace(queryParamsString, '');
-      params.params = phrase.getParamsFromPath(sanitizedPath);
+      params.params = phrase.extractParamsFromPath(sanitizedPath);
     }
 
     return this._run(phrase, verb, params, domain);

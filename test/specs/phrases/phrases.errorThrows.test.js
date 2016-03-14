@@ -18,6 +18,7 @@ describe('Phrases runner', function() {
 
   var phrasesToRegister = [{
     'url': 'error/:code',
+    'version': '1.2.3',
     'get': {
       'code': 'var ComposrError = require("ComposrError"); throw new ComposrError("error", "description", req.params.code);',
       'doc': {
@@ -27,6 +28,7 @@ describe('Phrases runner', function() {
   },
   {
     'url': 'senderror/:code',
+    'version': '1.2.3',
     'get': {
       'code': 'var ComposrError = require("ComposrError"); res.status(req.params.code).send(new ComposrError("error", "description", req.params.code));',
       'doc': {
@@ -36,6 +38,7 @@ describe('Phrases runner', function() {
   },
   {
     'url': 'texterror',
+    'version': '1.2.3',
     'get': {
       'code': 'throw("hola");',
       'doc': {

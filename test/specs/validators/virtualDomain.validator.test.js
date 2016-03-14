@@ -21,7 +21,7 @@ describe('Validate Virtual Domain', function () {
     }
 
 
-    validator(domain)
+    validators(domain)
       .then(function () {
         done('Validation error should have been thrown')
       })

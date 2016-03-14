@@ -39,6 +39,11 @@ BaseManager.prototype.resetItems = function() {
 //Entry point for registering or unregistering items
 BaseManager.prototype.register = function(domain, itemOrItems) {
   var module = this;
+
+  if(!domain){
+    return Promise.reject('missing domain');
+  }
+
   var itemsPromisesGenerator = currifiedToArrayPromise(itemOrItems);
 
   return itemsPromisesGenerator(function(item) {

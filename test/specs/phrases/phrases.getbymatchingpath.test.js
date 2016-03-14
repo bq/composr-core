@@ -1,4 +1,5 @@
 var PhraseManager = require('../../../src/lib/managers/Phrase'),
+  PhraseModel = require('../../../src/lib/models/PhraseModel'),
   _ = require('lodash'),
   chai = require('chai'),
   sinon = require('sinon'),
@@ -11,7 +12,7 @@ chai.use(chaiAsPromised);
 var phrasesFixtures = require('../../fixtures/phrases');
 var utilsPromises = require('../../utils/promises');
 
-describe('Phrases -> getByMatchingPath', function() {
+describe.only('Phrases -> getByMatchingPath', function() {
   var stubEvents, Phrases;
 
   beforeEach(function() {
@@ -31,12 +32,14 @@ describe('Phrases -> getByMatchingPath', function() {
 
       var phrasesToRegister = [{
         url: 'test',
+        version : '2.2.2',
         get: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: {}
         }
       }, {
         url: 'user/:id',
+        version : '2.2.2',
         put: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: {}
@@ -47,6 +50,7 @@ describe('Phrases -> getByMatchingPath', function() {
         }
       }, {
         url: 'user/one',
+        version : '2.2.2',
         post: {
           code: 'res.render(\'index\', {title: \'test\'});',
           doc: {}
@@ -76,75 +80,50 @@ describe('Phrases -> getByMatchingPath', function() {
 
     it('returns the correct phrase for path "test"', function() {
       var found = Phrases.getByMatchingPath('mydomain', 'test');
-      expect(found.url).to.equals('test');
-      expect(found.id).to.equals('mydomain!test');
-      expect(found).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
+      expect(found.getUrl()).to.equals('test');
+      expect(found.getId()).to.equals('mydomain!test-2.2.2');
+      expect(found).to.be.a.instanceof(PhraseModel);
     });
 
     it('returns the correct phrase for path "user/one" and verb put', function() {
       var found = Phrases.getByMatchingPath('mydomain', 'user/one', 'put');
-      expect(found.url).to.equals('user/:id');
-      expect(found.id).to.equals('mydomain!user!:id');
-      expect(found).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
+      expect(found.getUrl()).to.equals('user/:id');
+      expect(found.getId()).to.equals('mydomain!user!:id-2.2.2');
+      expect(found).to.be.a.instanceof(PhraseModel);
     });
 
     it('returns the first phrase for path "user/one", that matches two phrases', function() {
       var found = Phrases.getByMatchingPath('mydomain', 'user/one', 'get');
-      expect(found.url).to.equals('user/:id');
-      expect(found.id).to.equals('mydomain!user!:id');
-      expect(found).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
+      expect(found.getUrl()).to.equals('user/:id');
+      expect(found.getId()).to.equals('mydomain!user!:id-2.2.2');
+      expect(found).to.be.a.instanceof(PhraseModel);
     });
 
     it('returns the correct phrase for the mathcing verb', function() {
       var found = Phrases.getByMatchingPath('mydomain', 'user/one', 'post');
-      expect(found.url).to.equals('user/one');
-      expect(found.id).to.equals('mydomain!user!one');
-      expect(found).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
+      expect(found.getUrl()).to.equals('user/one');
+      expect(found.getId()).to.equals('mydomain!user!one-2.2.2');
+      expect(found).to.be.a.instanceof(PhraseModel);
     });
 
     it('returns the first matching phrase if no domain is provided', function() {
 
       var found = Phrases.getByMatchingPath('', 'user/one', 'get');
-      expect(found.url).to.equals('user/:id');
-      expect(found.id).to.equals('mydomain!user!:id');
-      expect(found).to.include.keys(
-        'id',
-        'url',
-        'regexpReference',
-        'codes'
-      );
+      expect(found.getUrl()).to.equals('user/:id');
+      expect(found.getId()).to.equals('mydomain!user!:id-2.2.2');
+      expect(found).to.be.a.instanceof(PhraseModel);
     });
 
     it('should select the correct phrase from the correct domain if a domain is provided', function() {
       var found = Phrases.getByMatchingPath('other-domain', 'user/one', 'get');
-      expect(found.url).to.equals('user/:id');
-      expect(found.id).to.equals('other-domain!user!:id');
+      expect(found.getUrl()).to.equals('user/:id');
+      expect(found.getId()).to.equals('other-domain!user!:id-2.2.2');
     });
 
     it('should ignore query parameters', function() {
       var found = Phrases.getByMatchingPath('other-domain', 'user/one?query={$eq:{name:"hola"}}', 'get');
-      expect(found.url).to.equals('user/:id');
-      expect(found.id).to.equals('other-domain!user!:id');
+      expect(found.getUrl()).to.equals('user/:id');
+      expect(found.getId()).to.equals('other-domain!user!:id-2.2.2');
     });
 
     /**** EVENTS *****/
@@ -197,14 +176,14 @@ describe('Phrases -> getByMatchingPath', function() {
       Phrases.getByMatchingPath('', 'test');
       expect(stubEvents.callCount).to.be.above(0);
       expect(stubEvents.calledWith('debug', 'found:2:candidates')).to.equals(true);
-      expect(stubEvents.calledWith('debug', 'using:candidate:mydomain!test:get')).to.equals(true);
+      expect(stubEvents.calledWith('debug', 'using:candidate:mydomain!test-2.2.2:get')).to.equals(true);
     });
 
     it('should emit an event of phrase with 1 candidate if there is only 1 candidate matching', function() {
       Phrases.getByMatchingPath('other-domain', 'test');
       expect(stubEvents.callCount).to.be.above(0);
       expect(stubEvents.calledWith('debug', 'found:1:candidates')).to.equals(true);
-      expect(stubEvents.calledWith('debug', 'using:candidate:other-domain!test:get')).to.equals(true);
+      expect(stubEvents.calledWith('debug', 'using:candidate:other-domain-2.2.2!test:get')).to.equals(true);
     });
 
     it('should emit an event of phrase not found if no phrase matches', function() {
@@ -237,6 +216,7 @@ describe('Phrases -> getByMatchingPath', function() {
       testValues.forEach(function(testValue) {
         var phrase = {
           url: testValue.path,
+          version : '33.3.3'
         };
 
         testValue.verbs.forEach(function(verb) {
@@ -264,7 +244,7 @@ describe('Phrases -> getByMatchingPath', function() {
           testValue.test.forEach(function(path) {
             var found = Phrases.getByMatchingPath('test-domain', path, verb);
             expect(found).not.to.equals(null);
-            expect(found.url).to.equals(testValue.path);
+            expect(found.getUrl()).to.equals(testValue.path);
           });
         });
       });
@@ -294,36 +274,42 @@ describe('Phrases -> getByMatchingPath', function() {
 
       var phrases = [{
         url: 'composererror',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: ':param',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: 'pepito',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: 'test/:arg/:arg2',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: 'test/:arg/:optional?',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: 'user/:arg/:optional?/name',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
@@ -341,32 +327,32 @@ describe('Phrases -> getByMatchingPath', function() {
 
       it('gets phrases with url parameters: /:param', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'francisco');
-        expect(phrase.url).to.equals(':param');
+        expect(phrase.getUrl()).to.equals(':param');
       });
 
       it('gets the first phrase that matches with url parameters: /pepito', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'pepito');
-        expect(phrase.url).to.equals(':param');
+        expect(phrase.getUrl()).to.equals(':param');
       });
 
       it('gets the first phrase that matches with url parameters: /composererror', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'composererror');
-        expect(phrase.url).to.equals('composererror');
+        expect(phrase.getUrl()).to.equals('composererror');
       });
 
       it('gets phrases with query params: /url?param=test', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'url?param=test');
-        expect(phrase.url).to.equals(':param');
+        expect(phrase.getUrl()).to.equals(':param');
       });
 
       it('gets phrases with optional parameters at the end: test/:arg/:optional?', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'test/hola');
-        expect(phrase.url).to.equals('test/:arg/:optional?');
+        expect(phrase.getUrl()).to.equals('test/:arg/:optional?');
       });
 
       it('gets the first phrase if 2 phrases collide with number of arguments and importancy', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'test/hola/adios');
-        expect(phrase.url).to.equals('test/:arg/:arg2');
+        expect(phrase.getUrl()).to.equals('test/:arg/:arg2');
       });
 
     });
@@ -376,12 +362,14 @@ describe('Phrases -> getByMatchingPath', function() {
 
       var phrases = [{
         url: 'thematics',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
         }
       }, {
         url: 'back-thematics',
+        version : '0.2.2',
         get: {
           code: 'console.log("ey");',
           doc: {}
@@ -397,12 +385,12 @@ describe('Phrases -> getByMatchingPath', function() {
 
       it('gets the correct phrase', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'back-thematics');
-        expect(phrase.url).to.equals('back-thematics');
+        expect(phrase.getUrl()).to.equals('back-thematics');
       });
 
       it('gets the correct phrase', function() {
         var phrase = Phrases.getByMatchingPath(domain, 'thematics');
-        expect(phrase.url).to.equals('thematics');
+        expect(phrase.getUrl()).to.equals('thematics');
       });
 
 

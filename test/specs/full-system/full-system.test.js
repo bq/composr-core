@@ -82,7 +82,7 @@ describe('Full system usage', function() {
           expect(result.registered).to.equals(true);
         });
 
-        var candidates = composr.VirtualDomain.getVirtualDomains('myDomain');
+        var candidates = composr.VirtualDomain.getByDomain('myDomain');
 
         expect(candidates).to.be.a('array');
 
