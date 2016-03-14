@@ -1,6 +1,7 @@
 {
   "id": "client:demo!loginclient",
   "url": "loginclient",
+  "version": "2.3.3",
   "post": {
     "code": "var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.status(200).send('test');",
     "doc": {

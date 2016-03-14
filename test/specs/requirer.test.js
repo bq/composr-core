@@ -14,22 +14,28 @@ chai.use(chaiAsPromised);
 describe('Requirer', function() {
 
   var snippets = [{
-    id: 'DOMAIN!TheSnippet1',
+    name: 'TheSnippet1',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('var userModel = function(id){ this.id = id; }; exports(userModel);')
   }, {
-    id: 'DOMAIN!TheSnippet2',
+    name: 'TheSnippet2',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('exports(1);')
   }, {
-    id: 'DOMAIN!TheSnippet3',
+    name: 'TheSnippet3',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('exports("My test");')
   }, {
-    id: 'DOMAIN!TheSnippet4',
+    name: 'TheSnippet4',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('exports(1);')
   }, {
-    id: 'DOMAIN!TheSnippet5',
+    name: 'TheSnippet5',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('exports(1);')
   }, {
-    id: 'DOMAIN!TheSnippet6',
+    name: 'TheSnippet6',
+    version : '1.0.0',
     codehash: utils.encodeToBase64('exports(1);')
   }];
 
@@ -40,15 +46,9 @@ describe('Requirer', function() {
 
     composr.requirer.configure(composr.config);
 
-    var snippetsDomainOne = _.take(snippets, 3).map(function(snippet) {
-      snippet.id = snippet.id.replace('DOMAIN', 'testDomain');
-      return snippet;
-    });
+    var snippetsDomainOne = _.take(snippets, 3);
 
-    var snippetsDomainTwo = _.takeRight(snippets, 6).map(function(snippet) {
-      snippet.id = snippet.id.replace('DOMAIN', 'otherDomain');
-      return snippet;
-    });
+    var snippetsDomainTwo = _.takeRight(snippets, 6);
 
     composr.Snippets.register('testDomain', snippetsDomainOne)
       .should.be.fulfilled

@@ -1,18 +1,19 @@
 'use strict';
 
 var q = require('q');
+var driverStore = require('./stores/corbelDriver.store');
 
 function clientLogin() {
   /*jshint validthis:true */
   var module = this;
   var dfd = q.defer();
 
-  if (!this.corbelDriver) {
+  if (!driverStore.getDriver()) {
     module.events.emit('error', 'error:missing:corbelDriver');
     return Promise.reject('error:missing:corbelDriver');
   }
 
-  this.corbelDriver.iam.token().create()
+  driverStore.getDriver().iam.token().create()
     .then(function(response) {
       if (response.data && response.data.accessToken) {
         module.events.emit('debug', 'login:successful');
