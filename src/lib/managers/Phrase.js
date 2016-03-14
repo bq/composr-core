@@ -62,14 +62,15 @@ PhraseManager.prototype._compile = function(domain, phrase) {
 };
 
 //Executes a phrase by id
-PhraseManager.prototype.runById = function(domain, id, verb, params) {
+PhraseManager.prototype.runById = function(id, verb, params) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get';
   }
 
-  var phrase = this.getById(domain, id);
+  var phrase = this.getById(id);
 
   if (phrase && phrase.canRun(verb)) {
+    var domain = this._extractDomainFromId(id);
     return this._run(phrase, verb, params, domain);
   } else {
     //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
@@ -117,7 +118,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params, version
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper){
+function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper, version){
   sb.console = console;
   sb.Promise = Promise;
 
@@ -135,7 +136,7 @@ function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWra
 
   sb.domain = domain;
 
-  sb.require = options.browser ? requirer.forDomain(domain, true) : requirer.forDomain(domain);
+  sb.require = options.browser ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version);
   
   sb.config = {};
 
@@ -146,7 +147,7 @@ function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWra
 
 //Executes a phrase
 PhraseManager.prototype._run = function(phrase, verb, params, domain) {
-  this.events.emit('debug', 'running:phrase:' + phrase.id + ':' + verb);
+  this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb);
   
   if (!params) {
     params = {};
@@ -160,7 +161,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   var sandbox = {};
 
   //Fill the sandbox params
-  buildSandbox(sandbox, params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper);
+  buildSandbox(sandbox, params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper, phrase.getVersion());
   
   //trigger the execution 
   try {
@@ -190,7 +191,6 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
 
   //Resolve on any promise resolution or rejection, either res or next
   return Promise.race([resWrapper.promise, nextWrapper.promise]);
-
 };
 
 

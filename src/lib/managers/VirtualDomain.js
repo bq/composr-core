@@ -21,6 +21,7 @@ VirtualDomainManager.prototype = new BaseManager({
   validator: virtualDomainValidator
 });
 
+/*
 VirtualDomainManager.prototype.getById = function(id) {
   //@TODO
   var domain = this._extractDomainFromId(id);
@@ -45,7 +46,7 @@ VirtualDomainManager.prototype.getAll = function() {
   if(vdomains.length === 0){
     this.loadAndRegisterAll();
   }
-};
+};*/
 
 /*
   Receives a JSON of a virtual domain and saves the domain the phrases and snippets

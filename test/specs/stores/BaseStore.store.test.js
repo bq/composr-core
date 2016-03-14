@@ -66,19 +66,24 @@ describe('Base Store', function() {
     beforeEach(function() {
       var items = [{
         url : 'example/test',
-        domain : 'my:domain:1'
+        domain : 'my:domain:1',
+        version : '1.2.1'
       },{
         url : 'example/test/2',
-        domain : 'my:domain:1'
+        domain : 'my:domain:1',
+        version : '1.2.1'
       },{
         url : 'example/test',
-        domain : 'my:domain:2'
+        domain : 'my:domain:2',
+        version : '1.2.1'
       },{
         url : 'example/test/test',
-        domain : 'my:domain:2'
+        domain : 'my:domain:2',
+        version : '1.2.1'
       },{
         url : 'example/test',
-        domain : 'my:domain:3'
+        domain : 'my:domain:3',
+        version : '1.2.1'
       }];
 
       items.forEach(function(item){
@@ -97,17 +102,17 @@ describe('Base Store', function() {
     });
 
     it('should return the index of the item in the domain list', function() {
-      var result = theStore.getItemIndexById('my:domain:1', 'my:domain:1!example!test');
+      var result = theStore.getItemIndexById('my:domain:1', 'my:domain:1!example!test-1.2.1');
       expect(result).to.equals(0);
     });
 
     it('should return the index of the item on another domain', function() {
-      var result = theStore.getItemIndexById('my:domain:2', 'my:domain:2!example!test');
+      var result = theStore.getItemIndexById('my:domain:2', 'my:domain:2!example!test-1.2.1');
       expect(result).to.equals(0);
     });
 
     it('should return the index of the item on the full list if no domain was provided', function() {
-      var result = theStore.getItemIndexById(null, 'my:domain:2!example!test');
+      var result = theStore.getItemIndexById(null, 'my:domain:2!example!test-1.2.1');
       expect(result).to.equals(2);
     });
 

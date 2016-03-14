@@ -35,18 +35,18 @@ var virtualDomainSchema = {
 };
 
 function validate(virtualDomain) {
-
-  var result = validator(virtualDomain, virtualDomainSchema);
-
-  var errors = result.errors;
-
-  var errorAccumulator = utils.errorAccumulator(errors);
-
-  errorAccumulator(semver.valid, virtualDomain.version, 'incorrect:virtualDomain:version');
-
   return new Promise(function(resolve, reject){
+
+    var result = validator(virtualDomain, virtualDomainSchema);
+
+    var errors = result.errors;
+
+    var errorAccumulator = utils.errorAccumulator(errors);
+
+    errorAccumulator(semver.valid, virtualDomain.version, 'incorrect:virtualDomain:version');
+
     if(errors.length > 0){
-      reject(result.errors);
+      reject(errors);
     }else{
       resolve(virtualDomain);
     }

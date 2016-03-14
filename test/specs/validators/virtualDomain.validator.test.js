@@ -21,15 +21,14 @@ describe('Validate Virtual Domain', function () {
     }
 
 
-    validators(domain)
+    validator(domain)
       .then(function () {
         done('Validation error should have been thrown')
       })
       .catch(function (errors) {
-        expect(errors.length).to.be.equal(3)
-        done()
+        expect(errors.length).to.be.equal(4)
       })
-
+      .should.notify(done);
   });
 
   it('when it is ok', function (done) {

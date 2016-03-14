@@ -12,7 +12,7 @@ chai.use(chaiAsPromised);
 var phrasesFixtures = require('../../fixtures/phrases');
 var utilsPromises = require('../../utils/promises');
 
-describe.only('Phrases -> getByMatchingPath', function() {
+describe('Phrases -> getByMatchingPath', function() {
   var stubEvents, Phrases;
 
   beforeEach(function() {
@@ -183,7 +183,7 @@ describe.only('Phrases -> getByMatchingPath', function() {
       Phrases.getByMatchingPath('other-domain', 'test');
       expect(stubEvents.callCount).to.be.above(0);
       expect(stubEvents.calledWith('debug', 'found:1:candidates')).to.equals(true);
-      expect(stubEvents.calledWith('debug', 'using:candidate:other-domain-2.2.2!test:get')).to.equals(true);
+      expect(stubEvents.calledWith('debug', 'using:candidate:other-domain!test-2.2.2:get')).to.equals(true);
     });
 
     it('should emit an event of phrase not found if no phrase matches', function() {
