@@ -34,7 +34,7 @@ var Snippets = new SnippetsManager({
 
 var requirer = new Requirer({
   events: events,
-  Snippets: Snippets
+  Snippet: Snippets
 });
 
 CompoSR.prototype.requirer = requirer;

@@ -17,7 +17,7 @@ var LOCAL_LIBRARIES = {
 };
 
 function Requirer(options) {
-  this.Snippets = options.Snippets;
+  this.Snippet = options.Snippet;
   this.events = options.events;
 }
 
@@ -36,7 +36,7 @@ Requirer.prototype.forDomain = function(domain, version, functionMode) {
     if (libName.indexOf(SNIPPETS_PREFIX) !== -1) {
 
       libName = libName.replace(SNIPPETS_PREFIX, '');
-      var snippet = module.Snippets.getSnippet(domain, libName, version);
+      var snippet = module.Snippet.getSnippet(domain, libName, version);
 
       var returnedResult = null;
       //Execute the exports function

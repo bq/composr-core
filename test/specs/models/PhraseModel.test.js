@@ -164,4 +164,60 @@ describe('Phrase Model', function() {
     });
 
   });
+
+  describe('Can run', function(){
+    it('Returns true for GET', function(){
+      var model = new PhraseModel({
+        url : 'a/b',
+        version : '2.2.3',
+        get : {
+          code : 'console.log(3);'
+        }
+      }, 'domain');
+
+      model.compile();
+
+      expect(model.canRun('get')).to.equals(true);
+      expect(model.canRun('post')).to.equals(false);
+      expect(model.canRun('put')).to.equals(false);
+      expect(model.canRun('delete')).to.equals(false);
+    });
+
+    it('Returns true for PUT AND POST', function(){
+      var model = new PhraseModel({
+        url : 'a/b',
+        version : '2.2.3',
+        put : {
+          code : 'console.log(3);'
+        },
+        post : {
+          code : 'console.log(3);'
+        }
+      }, 'domain');
+
+      model.compile();
+
+      expect(model.canRun('get')).to.equals(false);
+      expect(model.canRun('post')).to.equals(true);
+      expect(model.canRun('put')).to.equals(true);
+      expect(model.canRun('delete')).to.equals(false);
+    });
+
+    it('Returns true for DELETE', function(){
+      var model = new PhraseModel({
+        url : 'a/b',
+        version : '2.2.3',
+        delete : {
+          code : 'console.log(3);'
+        }
+      }, 'domain');
+
+      model.compile();
+
+      expect(model.canRun('get')).to.equals(false);
+      expect(model.canRun('post')).to.equals(false);
+      expect(model.canRun('put')).to.equals(false);
+      expect(model.canRun('delete')).to.equals(true);
+    });
+  });
 });
