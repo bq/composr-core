@@ -54,7 +54,7 @@ PhraseModel.prototype.getRegexpReference = function(){
 };
 
 PhraseModel.prototype.canRun = function(verb){
-  return this.compiled.codes[verb] && this.compiled.codes[verb].error === false;
+  return (this.compiled.codes[verb] && this.compiled.codes[verb].error === false) || false;
 };
 
 PhraseModel.prototype.matchesPath = function(path){
@@ -77,7 +77,10 @@ PhraseModel.prototype.compile = function(events){
   methods.forEach(function(method) {
     if (model.json[method] && (model.json[method].code || model.json[method].codehash)) {
       //@TODO: emit events for the evaluation of the codes
-      events.emit('debug', 'phrase:evaluatecode:', method, model.getId());
+      //
+      if(events){
+        events.emit('debug', 'phrase:evaluatecode:', method, model.getId());
+      }
       
       var code;
 
@@ -90,10 +93,13 @@ PhraseModel.prototype.compile = function(events){
       var debugInfo = model.json.debug ? model.json.debug[method] : null;
 
       var codeCompiled = evaluateCode(code, DEFAULT_PHRASE_PARAMETERS, debugInfo);
-      if (codeCompiled.error){
-        events.emit('warn', model.getId() + ':evaluatecode:wrong_code', codeCompiled.error);
-      }else{
-        events.emit('debug', model.getId() + ':evaluatecode:good');
+
+      if(events){
+        if (codeCompiled.error){
+          events.emit('warn', model.getId() + ':evaluatecode:wrong_code', codeCompiled.error);
+        }else{
+          events.emit('debug', model.getId() + ':evaluatecode:good');
+        }
       }
       
       model.compiled.codes[method] = codeCompiled;

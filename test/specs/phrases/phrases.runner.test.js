@@ -86,6 +86,15 @@ describe('Phrases runner', function() {
 
       }
     }
+  },{
+    'url': 'timeoutbrowser/:value',
+    'version' : '1.2.5',
+    'get': {
+      'code': 'setTimeout(function(){ res.send(200); }, parseInt(req.params.value) * 3);',
+      'doc': {
+
+      }
+    }
   }, {
     'url': 'queryparameters',
     'version' : '1.2.2',
@@ -157,7 +166,7 @@ describe('Phrases runner', function() {
     spyRun = sinon.spy(Phrases, '_run');
 
     //New snippets instance
-    var Snippets = new SnippetsManager({
+    var SnippetManager = new SnippetsManager({
       events: {
         emit: sinon.stub()
       }
@@ -167,10 +176,10 @@ describe('Phrases runner', function() {
       events: {
         emit: sinon.stub()
       },
-      Snippets: Snippets
+      Snippet: SnippetManager
     });
 
-    q.all([Phrases.register(domain, phrasesToRegister), Snippets.register(domain, snippetsToRegister)])
+    q.all([Phrases.register(domain, phrasesToRegister), SnippetManager.register(domain, snippetsToRegister)])
       .should.be.fulfilled.notify(done);
 
   });
@@ -524,7 +533,7 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
       })
-      .should.notify(done);
+     .should.notify(done);
   });
 
   it('Should be able to receive a ExpressJS res object, and wrap it on a RESOLVED promise', function(done) {
@@ -740,9 +749,25 @@ describe('Phrases runner', function() {
 
       result
         .should.be.rejected
-        .then(function() {
+        .then(function(response) {
           expect(spyRun.callCount).to.equals(1);
+          expect(response.status).to.equals(503);
           expect(stubEvents.calledWith('warn', 'phrase:timedout')).to.equals(true);
+        })
+        .should.notify(done);
+    });
+
+    it('cuts the phrase execution at 500 ms with browser mode', function(done) {
+      var result = Phrases.runByPath(domain, 'timeoutbrowser/500', 'get', {
+        timeout: 500,
+        browser: true
+      });
+
+      result
+        .should.be.rejected
+        .then(function(response) {
+          expect(spyRun.callCount).to.equals(1);
+          expect(response.status).to.equals(503);
         })
         .should.notify(done);
     });

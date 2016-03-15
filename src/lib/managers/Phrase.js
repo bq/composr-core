@@ -166,6 +166,13 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain) {
   //trigger the execution 
   try {
     if (params.browser) {
+      
+      setTimeout(function(){
+        if(resWrapper.hasEnded() === false){
+          resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503));
+        }
+      }, params.timeout);
+
       phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file);
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file);
