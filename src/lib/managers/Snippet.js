@@ -56,4 +56,9 @@ SnippetsManager.prototype.getSnippet = function(domain, name, version) {
   }
 };
 
+//TODO: Remove for using the MD5 check defined in BaseManager
+SnippetsManager.prototype.__shouldSave = function(){
+  return true;
+};
+
 module.exports = SnippetsManager;

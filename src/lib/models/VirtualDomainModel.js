@@ -22,6 +22,7 @@ var VirtualDomainModel = function (json, domain) {
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
 
   this.id = this._generateId(domain);
+  this.domain = domain;
 
   this.json.id = this.id;
 };

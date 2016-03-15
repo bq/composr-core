@@ -271,4 +271,9 @@ PhraseManager.prototype.count = function() {
   return this.store.getAsList().length;
 };
 
+//TODO: Remove for using the MD5 check defined in BaseManager
+PhraseManager.prototype.__shouldSave = function(){
+  return true;
+};
+
 module.exports = PhraseManager;

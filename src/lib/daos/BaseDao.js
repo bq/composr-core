@@ -84,4 +84,15 @@ BaseDao.prototype.save = function(item){
     .update(item);
 };
 
+BaseDao.prototype.delete = function(id){
+  if(!driverStore.getDriver()){
+    return Promise.reject('missing:driver');
+  }
+
+  return driverStore.getDriver()
+    .resources
+    .resource(this.COLLECTION, id)
+    .delete();
+};
+
 module.exports = BaseDao;
