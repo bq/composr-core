@@ -28,16 +28,24 @@ var storeAPI = {
   exists : () => true
 };
 
+var daoAPI = {
+  load : () => Promise.resolve(),
+  loadAll : () => Promise.resolve(),
+  save : () => Promise.resolve()
+};
+
 describe('Base manager', function() {
-  var mockStore, manager, stubEvents;
+  var mockStore, mockDao, manager, stubEvents;
   var sandbox = sinon.sandbox.create();
 
   beforeEach(function(){
     mockStore = sinon.mock(storeAPI);
+    mockDao = sinon.mock(daoAPI);
 
     manager = new BaseManager({
       itemName: 'phrases',
       store: storeAPI,
+      dao : daoAPI,
       model: modelFixture,
       validator: function(item) {
         return Promise.resolve(item);
@@ -471,8 +479,75 @@ describe('Base manager', function() {
     });
   });
 
-  describe.skip('_extractDomainFromId', function(){
+  describe('_extractDomainFromId', function(){
+    it('Succesfully returns the domain from the id', function(){
+      var ids = [{
+        value : 'test:demo:1!hi',
+        id : 'test:demo:1'
+      },{
+        value : 'test!hi',
+        id : 'test'
+      },{
+        value : 'test:demo!hi!sandbox!url:whatever!another',
+        id : 'test:demo'
+      },{
+        value : 'hi:hi',
+        id : 'hi:hi'
+      }];
 
+      ids.forEach(function(item){
+        var result = manager._extractDomainFromId(item.id);
+        expect(result).to.equals(item.id);
+      });
+    });
+  });
+
+  describe('Load', function(){
+    var mockitem = {
+      name : 'me'
+    };
+
+    it('Calls the dao with an id', function(done){
+      mockDao.expects('load').once().withArgs('my:domain!id')
+        .returns(Promise.resolve(mockitem));
+      
+      manager.load('my:domain!id')
+        .then(function(res){
+          mockDao.verify();
+          mockDao.restore();
+          done();
+        });
+    });
+
+    it('Registers the item', function(done){
+      var spyRegister = sandbox.spy(manager, 'register');
+
+      mockDao.expects('load').once().withArgs('my:domain!id')
+        .returns(Promise.resolve(mockitem));
+      
+      manager.load('my:domain!id')
+        .then(function(){
+          mockDao.verify();
+          expect(spyRegister.callCount).to.equals(1);
+          expect(spyRegister.calledWith('my:domain')).to.equals(true);
+          done();
+        });
+    });
+
+    it('calls load all without id', function(){
+      var spyRegister = sandbox.spy(manager, 'register');
+
+      mockDao.expects('loadAll').once()
+        .returns(Promise.resolve([mockitem]));
+      
+      manager.load()
+        .then(function(){
+          mockDao.verify();
+          expect(spyRegister.callCount).to.equals(1);
+          expect(spyRegister.calledWith('my:domain')).to.equals(true);
+          done();
+        });
+    });
   });
 
 });
