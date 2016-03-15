@@ -261,6 +261,7 @@ BaseManager.prototype.load = function(id){
 
   if(id){
     var domain = this._extractDomainFromId(id);
+    
     return this.dao.load(id)
     .then(function(item){
       return module.register(domain, item);
