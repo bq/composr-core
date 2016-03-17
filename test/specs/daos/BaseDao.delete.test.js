@@ -7,14 +7,11 @@ var BaseDao = require('../../../src/lib/daos/BaseDao'),
   corbel = require('corbel-js'),
   expect = chai.expect;
 
-describe('BaseDao save ', function() {
+describe('BaseDao delete ', function() {
   this.timeout(10000);
   var theDao;
 
   beforeEach(function() {
-
-    
-    
     theDao = new BaseDao({
       collection : 'composr:Phrase'
     });
@@ -28,9 +25,7 @@ describe('BaseDao save ', function() {
       "scopes": "composr:comp:admin"
     }));
 
-    theDao.save({
-      id : 'not-save',
-    })
+    theDao.delete('theid')
       .catch(function(response) {
         expect(response).to.be.a.instanceof(ComposrError);
       })
@@ -40,7 +35,7 @@ describe('BaseDao save ', function() {
   it('Returns missing driver warning', function(done){
     driverStore.setDriver(null);
 
-    theDao.save({})
+    theDao.delete({})
       .catch(function(err){
         expect(err).to.be.a('string');
         done();
@@ -48,8 +43,8 @@ describe('BaseDao save ', function() {
   });
 
   it('Resolves if the request works well', function(done){
-    var stubUpdate = sinon.stub();
-    stubUpdate.onCall(0).returns(Promise.resolve({
+    var stubDelete = sinon.stub();
+    stubDelete.onCall(0).returns(Promise.resolve({
       data: {
         name : 'test'
       }
@@ -58,7 +53,7 @@ describe('BaseDao save ', function() {
     //Stub resources.resource
     var stubResource = sinon.stub();
     stubResource.returns({
-      update: stubUpdate
+      delete: stubDelete
     });
 
     driverStore.setDriver({
@@ -67,7 +62,7 @@ describe('BaseDao save ', function() {
       }
     });
 
-    theDao.save({})
+    theDao.delete({})
       .should.be.fulfilled.notify(done);
   });
 

@@ -12,6 +12,8 @@ BaseDao.prototype.load = function (id) {
     return Promise.reject('missing:id');
   }
 
+  var that = this;
+
   if (driverStore.getDriver()) {
     return driverStore.getDriver()
       .resources
@@ -19,6 +21,10 @@ BaseDao.prototype.load = function (id) {
       .get()
       .then(function (response) {
         return response.data;
+      })
+      .catch(function(response){
+        var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+        throw error;
       });
   } else {
     return Promise.reject('missing:driver');
@@ -51,7 +57,11 @@ BaseDao.prototype.loadSome = function(ids){
       });
     };
     
-    return utils.getAllRecursively(caller);
+    return utils.getAllRecursively(caller)
+      .catch(function(response){
+        var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+        throw error;
+      });
   } else {
     return Promise.reject('missing:driver');
   }
@@ -71,7 +81,11 @@ BaseDao.prototype.loadAll = function () {
       });
   };
 
-  return utils.getAllRecursively(caller);
+  return utils.getAllRecursively(caller)
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+      throw error;
+    });
 };
 
 BaseDao.prototype.save = function(item){
