@@ -15,8 +15,9 @@ var utilsPromises = require('../../utils/promises');
 
 var modelFixture = function(json){
   this.json = json;
-  this.getId = () => 'myid';
+  this.getId = () => json.id;
   this.getMD5 = () => json.md5;
+  this.getRawModel = () => json;
 };
 
 var storeAPI = { 
@@ -440,13 +441,13 @@ describe('Base manager', function() {
       });
 
       it('returns false if the md5 is the same', function(){
-        var result = manager.__shouldSave({ md5 : 'abc', id : 'domain!myid'});
+        var result = manager.__shouldSave(new modelFixture({ md5 : 'abc', id : 'domain!myid'}));
         expect(result).to.equals(false);
         expect(stubGet.calledWith('domain', 'domain!myid')).to.equals(true);
       });
 
       it('returns true if the md5 differs', function(){
-        var result = manager.__shouldSave({ md5 : 'dfg', id : 'domain!myid'});
+        var result = manager.__shouldSave(new modelFixture({ md5 : 'dfg', id : 'domain!myid'}));
         expect(result).to.equals(true);
         expect(stubGet.calledWith('domain', 'domain!myid')).to.equals(true);
       });

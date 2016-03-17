@@ -1,6 +1,7 @@
 'use strict';
 var driverStore = require('../stores/corbelDriver.store');
 var utils = require('../utils');
+var parseToComposrError = require('../parseToComposrError');
 
 var BaseDao = function(options) {
   this.COLLECTION = options.collection;
@@ -11,6 +12,8 @@ BaseDao.prototype.load = function (id) {
     return Promise.reject('missing:id');
   }
 
+  var that = this;
+
   if (driverStore.getDriver()) {
     return driverStore.getDriver()
       .resources
@@ -18,6 +21,10 @@ BaseDao.prototype.load = function (id) {
       .get()
       .then(function (response) {
         return response.data;
+      })
+      .catch(function(response){
+        var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+        throw error;
       });
   } else {
     return Promise.reject('missing:driver');
@@ -50,7 +57,11 @@ BaseDao.prototype.loadSome = function(ids){
       });
     };
     
-    return utils.getAllRecursively(caller);
+    return utils.getAllRecursively(caller)
+      .catch(function(response){
+        var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+        throw error;
+      });
   } else {
     return Promise.reject('missing:driver');
   }
@@ -70,18 +81,46 @@ BaseDao.prototype.loadAll = function () {
       });
   };
 
-  return utils.getAllRecursively(caller);
+  return utils.getAllRecursively(caller)
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' load', response.status);
+      throw error;
+    });
 };
 
 BaseDao.prototype.save = function(item){
   if(!driverStore.getDriver()){
     return Promise.reject('missing:driver');
   }
+  
+  var that = this;
 
   return driverStore.getDriver()
     .resources
     .resource(this.COLLECTION, item.id)
-    .update(item);
+    .update(item)
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' save', response.status);
+      throw error;
+    });
+};
+
+
+BaseDao.prototype.delete = function(id){
+  if(!driverStore.getDriver()){
+    return Promise.reject('missing:driver');
+  }
+
+  var that = this;
+
+  return driverStore.getDriver()
+    .resources
+    .resource(this.COLLECTION, id)
+    .delete()
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' delete', response.status);
+      throw error;
+    });
 };
 
 module.exports = BaseDao;

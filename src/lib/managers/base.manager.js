@@ -282,40 +282,32 @@ BaseManager.prototype.load = function(id){
  * - If not, resolves
  * - If it is invalid, rejects
  */
-BaseManager.prototype.save = function(json){
+BaseManager.prototype.save = function(domain, json){
+  var item = new this.model(json, domain); //Constructs the id
 
-  var shouldBeSaved = this.__shouldSave(json);
+  var shouldBeSaved = this.__shouldSave(item);
 
   var module = this;
 
   return new Promise(function(resolve, reject){
-    //Validate in pre save
-    var validationResult = this.validate(json);
-
-    if(validationResult.valid === true){
-
-      if (shouldBeSaved) {
-        module.__save(json)
-        .then(function(item){
-          module.events.emit('saved:'+ module.itemName, item);
-          resolve(item);
-        })
-        .catch(function(err){
-          module.events.emit('error', module.itemName, 'not:saved', json.id);
-          reject(err);
-        });
-      }else{
-        resolve(json);
-      }
-
+    if (shouldBeSaved) {
+      module.__save(item.getRawModel()) //For the json with the ID
+      .then(function(result){
+        module.events.emit('saved:'+ module.itemName, result);
+        resolve(item.getRawModel());
+      })
+      .catch(function(aComposrError){
+        module.events.emit('error', module.itemName, 'not:saved', item.getId());
+        reject(aComposrError);
+      });
     }else{
-      reject(validationResult);
+      resolve(item.getRawModel());
     }
   });
 };
 
-BaseManager.prototype.__shouldSave = function(json){
-  return this.getById(json.id) && this.getById(json.id).getMD5() !== json.md5;
+BaseManager.prototype.__shouldSave = function(item){
+  return this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== item.getMD5();
 };
 
 BaseManager.prototype.__save = function(json){

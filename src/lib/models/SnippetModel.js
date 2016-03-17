@@ -10,6 +10,7 @@ var SnippetModel = function(json, domain){
   this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
 
   this.id = this._generateId(domain);
+  this.domain = domain;
 
   //Stores the id on the raw model
   this.json.id = this.id;

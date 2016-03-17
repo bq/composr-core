@@ -1,5 +1,4 @@
 {
-  "id": "client:demo!loginclient",
   "url": "loginclient",
   "version": "2.3.3",
   "post": {

@@ -81,4 +81,9 @@ VirtualDomainManager.prototype._saveSnippets = function(snippets){
   return Promise.all(promises);
 };
 
+//TODO: Remove for using the MD5 check defined in BaseManager
+VirtualDomainManager.prototype.__shouldSave = function(){
+  return true;
+};
+
 module.exports = VirtualDomainManager;

@@ -10,6 +10,10 @@ BaseModel.prototype.getId = function() {
   return this.id;
 };
 
+BaseModel.prototype.getDomain = function() {
+  return this.domain;
+};
+
 BaseModel.prototype.getVirtualDomainId = function() {
   //return this.id;
 };

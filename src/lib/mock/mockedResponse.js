@@ -122,8 +122,9 @@ MockedResponse.prototype.send = function(data) {
     body: data,
     headers: this.headers
   };
+
   if(!params.headers['Content-Length']) {
-      this.setHeader('Content-Length', data.toString().length);
+    this.setHeader('Content-Length', data.toString().length);
   }
 
   if (this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0) {
@@ -145,8 +146,9 @@ MockedResponse.prototype.json = function(data) {
     headers: this.headers,
     cookies: this.cookies
   };
+
   if(!params.headers['Content-Length']) {
-      this.setHeader('Content-Length', data.toString().length);
+    this.setHeader('Content-Length', data.toString().length);
   }
 
   this.resolve(params);

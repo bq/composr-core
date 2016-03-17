@@ -1,7 +1,7 @@
 {
   "url": "loginclient",
   "version": "2.3.5",
-  "mocked": "true",
+  "middlewares": ["mock", "validate"],
   "post": {
     "code": "var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.status(200).send('test');",
     "doc": {

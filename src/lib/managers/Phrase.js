@@ -106,13 +106,11 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params, version
       var sanitizedPath = path.replace(queryParamsString, '');
       params.params = phrase.extractParamsFromPath(sanitizedPath);
     }
-
     return this._run(phrase, verb, params, domain);
   } else {
     //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     return Promise.reject('phrase:cant:be:runned');
   }
-
 };
 
 /*
@@ -269,6 +267,11 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
 //Counts all the loaded phrases
 PhraseManager.prototype.count = function() {
   return this.store.getAsList().length;
+};
+
+//TODO: Remove for using the MD5 check defined in BaseManager
+PhraseManager.prototype.__shouldSave = function(){
+  return true;
 };
 
 module.exports = PhraseManager;
