@@ -20,7 +20,7 @@
     "bq"
   ],
   "engines": {
-    "node": "4.2.1",
+    "node": "5.8.0",
     "npm": "3.3.6"
   },
   "dependencies": {

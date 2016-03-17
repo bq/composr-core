@@ -1,6 +1,7 @@
 'use strict';
 var driverStore = require('../stores/corbelDriver.store');
 var utils = require('../utils');
+var parseToComposrError = require('../parseToComposrError');
 
 var BaseDao = function(options) {
   this.COLLECTION = options.collection;
@@ -77,22 +78,35 @@ BaseDao.prototype.save = function(item){
   if(!driverStore.getDriver()){
     return Promise.reject('missing:driver');
   }
+  
+  var that = this;
 
   return driverStore.getDriver()
     .resources
     .resource(this.COLLECTION, item.id)
-    .update(item);
+    .update(item)
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' save', response.status);
+      throw error;
+    });
 };
+
 
 BaseDao.prototype.delete = function(id){
   if(!driverStore.getDriver()){
     return Promise.reject('missing:driver');
   }
 
+  var that = this;
+
   return driverStore.getDriver()
     .resources
     .resource(this.COLLECTION, id)
-    .delete();
+    .delete()
+    .catch(function(response){
+      var error = parseToComposrError(response.data, 'Invalid ' + that.COLLECTION + ' delete', response.status);
+      throw error;
+    });
 };
 
 module.exports = BaseDao;

@@ -294,11 +294,11 @@ BaseManager.prototype.save = function(domain, json){
       module.__save(item.getRawModel()) //For the json with the ID
       .then(function(result){
         module.events.emit('saved:'+ module.itemName, result);
-        resolve(result);
+        resolve(item.getRawModel());
       })
-      .catch(function(err){
+      .catch(function(aComposrError){
         module.events.emit('error', module.itemName, 'not:saved', item.getId());
-        reject(err);
+        reject(aComposrError);
       });
     }else{
       resolve(item.getRawModel());
@@ -307,9 +307,7 @@ BaseManager.prototype.save = function(domain, json){
 };
 
 BaseManager.prototype.__shouldSave = function(item){
-  var isValid = this.validate(item.getRawModel()).valid === true;
-
-  return isValid && this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== json.md5;
+  return this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== item.getMD5();
 };
 
 BaseManager.prototype.__save = function(json){

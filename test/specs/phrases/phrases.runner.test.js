@@ -543,7 +543,8 @@ describe('Phrases runner', function() {
         return {
           send: stubSend
         }
-      }
+      },
+      set : function(){}
     };
 
     var spyStatus = sinon.spy(res, 'status');
@@ -604,7 +605,8 @@ describe('Phrases runner', function() {
         return {
           send: stubSend
         }
-      }
+      },
+      set : function(){}
     };
 
     var spyStatus = sinon.spy(res, 'status');

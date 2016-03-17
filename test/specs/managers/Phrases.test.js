@@ -475,4 +475,11 @@ describe('== Phrases ==', function() {
     });
 
   });
+
+  describe('_shouldSave', function(){
+    it('Allways returns true', function(){
+      var result = Phrases.__shouldSave(new PhraseModel({ md5 : 'abc', url : 'domain!myid'}));
+      expect(result).to.equals(true);
+    });
+  })
 });

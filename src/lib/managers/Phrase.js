@@ -106,13 +106,11 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params, version
       var sanitizedPath = path.replace(queryParamsString, '');
       params.params = phrase.extractParamsFromPath(sanitizedPath);
     }
-
     return this._run(phrase, verb, params, domain);
   } else {
     //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     return Promise.reject('phrase:cant:be:runned');
   }
-
 };
 
 /*

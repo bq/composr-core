@@ -2,10 +2,10 @@
 
 var ComposrError = require('./ComposrError');
 
-function parseToComposrError(e, defaultError) {
+function parseToComposrError(e, defaultError, defaultStatus) {
 
-  var status = 500;
-  var error = defaultError;
+  var status = defaultStatus || 500;
+  var error = defaultError || 'Internal error';
   var errorDescription = e;
 
   if (typeof e === 'object'){

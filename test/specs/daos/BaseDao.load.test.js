@@ -5,7 +5,7 @@ var BaseDao = require('../../../src/lib/daos/BaseDao'),
   sinon = require('sinon'),
   expect = chai.expect;
 
-describe('BaseDao', function() {
+describe('BaseDao load', function() {
   var theDao, stubResource, stubGetResource;
 
   beforeEach(function() {
@@ -58,6 +58,4 @@ describe('BaseDao', function() {
     theDao.load('myId')
       .should.be.rejected.notify(done);
   });
-
-  //TODO: add save with a model sent, a model with getRawJson implementation
 });
