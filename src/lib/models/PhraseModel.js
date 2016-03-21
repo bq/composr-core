@@ -54,6 +54,10 @@ PhraseModel.prototype.getRegexpReference = function(){
   return this.regexpReference;
 };
 
+PhraseModel.prototype.getMiddlewares = function(){
+  return this.json.middlewares || [];
+};
+
 PhraseModel.prototype.canRun = function(verb){
   return (this.compiled.codes[verb] && this.compiled.codes[verb].error === false) || false;
 };
