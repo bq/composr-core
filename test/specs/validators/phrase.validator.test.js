@@ -20,7 +20,7 @@ describe('Phrase validator', function() {
         .then(function(){
           done();
         })
-        .catch(function(){
+        .catch(function(err){
           done('Error');
         });
     });

@@ -8,6 +8,8 @@ module.exports = [
   require('./brokenSchema.json'),
   require('./malformedCode.json'),
   require('./malformedCodeHash.json'),
+  require('./incorrectVersion.json'),
+  require('./missingVersion.json'),
   require('./incorrectCodeInCodeHash.json'),
   require('./returnsValue.json')
 ];

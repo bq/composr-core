@@ -1,5 +1,5 @@
-var PhraseManager = require('../../../src/lib/Phrases'),
-  SnippetsManager = require('../../../src/lib/Snippets'),
+var PhraseManager = require('../../../src/lib/managers/Phrase'),
+  SnippetsManager = require('../../../src/lib/managers/Snippet'),
   Requirer = require('../../../src/lib/requirer'),
   events = require('../../../src/lib/events'),
   _ = require('lodash'),
@@ -18,12 +18,14 @@ describe('Phrases runner', function() {
   var stubEvents, Phrases;
 
   var snippetsToRegister = [{
-    id: domain + '!modelSnippet',
+    name: 'modelSnippet',
+    version : '1.2.2',
     codehash: new Buffer('exports({ iam: "A model"});').toString('base64')
   }];
 
   var phrasesToRegister = [{
     'url': 'user/:name',
+    'version' : '1.2.2',
     'get': {
       'code': 'var name = req.params.name; res.send({ name: name });',
       'doc': {
@@ -32,6 +34,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'test',
+    'version' : '1.2.2',
     'get': {
       'code': 'res.send("testValue");',
       'doc': {
@@ -40,6 +43,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'changestatus',
+    'version' : '1.2.2',
     'get': {
       'code': 'res.status(401).send("Allo allo");',
       'doc': {
@@ -48,6 +52,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'nextmiddleware',
+    'version' : '1.2.2',
     'get': {
       'code': 'next();',
       'doc': {
@@ -56,6 +61,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'require',
+    'version' : '1.2.2',
     'get': {
       'code': 'var model = require("snippet-modelSnippet"); res.send(model);',
       'doc': {
@@ -64,6 +70,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'usecorbeldriver/:value',
+    'version' : '1.2.2',
     'get': {
       'code': 'corbelDriver.stubbed(req.params.value); res.send();',
       'doc': {
@@ -72,6 +79,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'timeout',
+    'version' : '1.2.2',
     'get': {
       'code': 'var a = 3; while(true){ a = a + 3; };',
       'doc': {
@@ -80,6 +88,7 @@ describe('Phrases runner', function() {
     }
   },{
     'url': 'timeoutbrowser/:value',
+    'version' : '1.2.5',
     'get': {
       'code': 'setTimeout(function(){ res.send(200); }, parseInt(req.params.value) * 3);',
       'doc': {
@@ -88,6 +97,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'queryparameters',
+    'version' : '1.2.2',
     'get': {
       'code': 'res.send(req.query)',
       'doc': {
@@ -96,6 +106,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'queryparameters/:optional',
+    'version' : '1.2.2',
     'get': {
       'code': 'res.send({ query : req.query, params : req.params })',
       'doc': {
@@ -104,6 +115,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'promise',
+    'version' : '1.2.2',
     'get': {
       'code': 'var a = Promise.resolve(); a.then(function(){ res.send({hello: "world"}) });',
       'doc': {
@@ -112,6 +124,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'console',
+    'version' : '1.2.2',
     'get': {
       'code': 'console.log("hey"); res.send();',
       'doc': {
@@ -120,6 +133,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'config',
+    'version' : '1.2.2',
     'get': {
       'code': 'res.send(config)',
       'doc': {
@@ -128,6 +142,7 @@ describe('Phrases runner', function() {
     }
   }, {
     'url': 'metrics',
+    'version' : '1.2.2',
     'get': {
       'code': 'metrics.emit("Phrase executed"); res.send(200)',
       'doc': {
@@ -151,7 +166,7 @@ describe('Phrases runner', function() {
     spyRun = sinon.spy(Phrases, '_run');
 
     //New snippets instance
-    var Snippets = new SnippetsManager({
+    var SnippetManager = new SnippetsManager({
       events: {
         emit: sinon.stub()
       }
@@ -161,10 +176,10 @@ describe('Phrases runner', function() {
       events: {
         emit: sinon.stub()
       },
-      Snippets: Snippets
+      Snippet: SnippetManager
     });
 
-    q.all([Phrases.register(domain, phrasesToRegister), Snippets.register(domain, snippetsToRegister)])
+    q.all([Phrases.register(domain, phrasesToRegister), SnippetManager.register(domain, snippetsToRegister)])
       .should.be.fulfilled.notify(done);
 
   });
@@ -172,12 +187,12 @@ describe('Phrases runner', function() {
   describe('Can be run', function() {
     it('only allows to run a phrase with the registered codes', function() {
 
-      var phrase = Phrases.getById(domain, domain + '!user!:name');
+      var phrase = Phrases.getById(domain + '!user!:name-1.2.2');
 
-      var canBeRunnedWithGet = Phrases.canBeRun(phrase, 'get');
-      var canBeRunnedWithPost = Phrases.canBeRun(phrase, 'post');
-      var canBeRunnedWithPut = Phrases.canBeRun(phrase, 'put');
-      var canBeRunnedWithDelete = Phrases.canBeRun(phrase, 'delete');
+      var canBeRunnedWithGet = phrase.canRun('get');
+      var canBeRunnedWithPost = phrase.canRun('post');
+      var canBeRunnedWithPut = phrase.canRun('put');
+      var canBeRunnedWithDelete = phrase.canRun('delete');
 
       expect(canBeRunnedWithGet).to.equals(true);
       expect(canBeRunnedWithPost).to.equals(false);
@@ -188,7 +203,7 @@ describe('Phrases runner', function() {
   });
 
   it('Should be able to run a registered phrase', function(done) {
-    var result = Phrases.runById(domain, domain + '!test');
+    var result = Phrases.runById(domain + '!test-1.2.2');
 
     expect(result).to.exist;
 
@@ -207,7 +222,7 @@ describe('Phrases runner', function() {
   });
 
   it('Should be able to receive a req object', function(done) {
-    var result = Phrases.runById(domain, domain + '!user!:name', 'get', {
+    var result = Phrases.runById(domain + '!user!:name-1.2.2', 'get', {
       req: {
         params: {
           name: 'Pepito the user'
@@ -235,7 +250,7 @@ describe('Phrases runner', function() {
   });
 
   it('Can change the status', function(done) {
-    var result = Phrases.runById(domain, domain + '!changestatus');
+    var result = Phrases.runById(domain + '!changestatus-1.2.2');
     result
       .should.be.rejected
       .then(function(response) {
@@ -251,7 +266,7 @@ describe('Phrases runner', function() {
   });
 
   it('receives a config object', function(done) {
-    var result = Phrases.runById(domain, domain + '!config');
+    var result = Phrases.runById(domain + '!config-1.2.2');
     result
       .should.be.fulfilled
       .then(function(response) {
@@ -267,7 +282,7 @@ describe('Phrases runner', function() {
   });
 
   it('receives a config object, function mode', function(done) {
-    var result = Phrases.runById(domain, domain + '!config', null, {
+    var result = Phrases.runById(domain + '!config-1.2.2', null, {
       browser: true
     });
 
@@ -289,7 +304,7 @@ describe('Phrases runner', function() {
     var stub = sinon.stub();
     events.on('metrics', 'TestsPhrasesRunner', stub);
 
-    var result = Phrases.runById(domain, domain + '!metrics');
+    var result = Phrases.runById(domain + '!metrics-1.2.2');
     result
       .should.be.fulfilled
       .then(function(response) {
@@ -528,7 +543,8 @@ describe('Phrases runner', function() {
         return {
           send: stubSend
         }
-      }
+      },
+      set : function(){}
     };
 
     var spyStatus = sinon.spy(res, 'status');
@@ -589,7 +605,8 @@ describe('Phrases runner', function() {
         return {
           send: stubSend
         }
-      }
+      },
+      set : function(){}
     };
 
     var spyStatus = sinon.spy(res, 'status');
@@ -682,7 +699,7 @@ describe('Phrases runner', function() {
   });
 
   it('Should be able to require a snippet inside a phrase', function(done) {
-    var result = Phrases.runById(domain, domain + '!require');
+    var result = Phrases.runById(domain + '!require-1.2.2');
     result
       .should.be.fulfilled
       .then(function(response) {
@@ -702,7 +719,7 @@ describe('Phrases runner', function() {
   });
 
   it('should not allow to run an unregistered phrase', function(done) {
-    var result = Phrases.runById(domain, 'nonexisting!id');
+    var result = Phrases.runById('nonexisting!id-1.2.2');
 
     result
       .should.be.rejected
@@ -713,7 +730,7 @@ describe('Phrases runner', function() {
   });
 
   it('Should not allow to run an unregistered VERB', function(done) {
-    var result = Phrases.runById(domain, domain + ':user!:name', 'post');
+    var result = Phrases.runById(domain + ':user!:name-1.2.2', 'post');
 
     result
       .should.be.rejected
@@ -762,8 +779,9 @@ describe('Phrases runner', function() {
     var spyScript, spyBrowser;
 
     beforeEach(function() {
-      spyScript = sinon.spy(Phrases, '__executeScriptMode');
-      spyBrowser = sinon.spy(Phrases, '__executeFunctionMode');
+      var phrase = Phrases.getById(domain + '!changestatus-1.2.2');
+      spyScript = sinon.spy(phrase, '__executeScriptMode');
+      spyBrowser = sinon.spy(phrase, '__executeFunctionMode');
     });
 
     afterEach(function() {
@@ -772,7 +790,7 @@ describe('Phrases runner', function() {
     });
 
     it('Can be invoked with the browser option', function(done) {
-      var result = Phrases.runById(domain, domain + '!changestatus', null, {
+      var result = Phrases.runById(domain + '!changestatus-1.2.2', null, {
         browser: true
       });
 
@@ -787,7 +805,7 @@ describe('Phrases runner', function() {
     });
 
     it('Runs by default with script mode', function(done) {
-      var result = Phrases.runById(domain, domain + '!changestatus');
+      var result = Phrases.runById(domain + '!changestatus-1.2.2');
 
       result
         .should.be.rejected

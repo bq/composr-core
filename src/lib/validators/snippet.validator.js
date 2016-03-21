@@ -3,9 +3,8 @@
 var check = require('syntax-error'),
   q = require('q'),
   utils = require('../utils'),
+  semver = require('semver'),
   vUtils = utils.values;
-
-
 
 function validate(snippet) {
   var dfd = q.defer();
@@ -15,15 +14,20 @@ function validate(snippet) {
   var errorAccumulator = utils.errorAccumulator(errors);
 
   errorAccumulator(vUtils.isValue, snippet, 'undefined:snippet');
-  errorAccumulator(vUtils.isValue, snippet.id, 'undefined:snippet:id');
+  errorAccumulator(vUtils.isValue, snippet.name, 'undefined:snippet:name');
+  errorAccumulator(vUtils.isValue, snippet.version, 'undefined:snippet:version');
+  errorAccumulator(semver.valid, snippet.version, 'incorrect:snippet:version');
   errorAccumulator(vUtils.isValue, snippet.codehash, 'undefined:snippet:codehash');
 
   //validate that id is well formed "domain!Name"
-  if (snippet.id) {
-    var parts = snippet.id.split('!');
+  if (snippet.name) {
+    //TODO : Validate format of the name, if needed. 
+    /*var parts = snippet.id.split('!');
     if (parts.length < 2) {
       errors.push('error:invalid:snippet:id');
-    }
+    }*/
+  }else{
+    errors.push('undefined:snippet:name');
   }
 
 

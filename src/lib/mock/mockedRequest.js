@@ -7,7 +7,6 @@ var capitalizeParam = function(param) {
 };
 
 function MockedRequest(serverType, req, options) {
-  var module = this;
 
   this.serverType = serverType === 'express' ? 'express' : 'restify';
 
@@ -23,12 +22,12 @@ function MockedRequest(serverType, req, options) {
   if (this.headers && typeof(this.headers) === 'object') {
     this.capitalizeHeaders();
   }
-
-  this.get = function(headerName) {
-    headerName = capitalizeParam(headerName);
-    return module.headers[headerName];
-  };
 }
+
+MockedRequest.prototype.get = function(headerName){
+  headerName = capitalizeParam(headerName);
+  return this.headers[headerName];
+};
 
 MockedRequest.prototype.capitalizeHeaders = function() {
   var newHeaders = {};
