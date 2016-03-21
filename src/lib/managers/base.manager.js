@@ -282,7 +282,7 @@ BaseManager.prototype.load = function(id){
  * - If not, resolves
  * - If it is invalid, rejects
  */
-BaseManager.prototype.save = function(domain, json){
+BaseManager.prototype.save = function(domain, json, optionalDriver){
   var item = new this.model(json, domain); //Constructs the id
 
   var shouldBeSaved = this.__shouldSave(item);
@@ -291,7 +291,7 @@ BaseManager.prototype.save = function(domain, json){
 
   return new Promise(function(resolve, reject){
     if (shouldBeSaved) {
-      module.__save(item.getRawModel()) //For the json with the ID
+      module.__save(item.getRawModel(), optionalDriver) //For the json with the ID
       .then(function(result){
         module.events.emit('saved:'+ module.itemName, result);
         resolve(item.getRawModel());
@@ -310,8 +310,16 @@ BaseManager.prototype.__shouldSave = function(item){
   return this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== item.getMD5();
 };
 
-BaseManager.prototype.__save = function(json){
-  return this.dao.save(json);
+BaseManager.prototype.__save = function(json, optionalDriver){
+  return this.dao.save(json, optionalDriver);
+};
+
+/* Delete interface */
+BaseManager.prototype.delete = function(id, optionalDriver){
+
+  this.events.emit('debug', 'delete:'+ this.itemName, id);
+
+  return this.dao.delete(id, optionalDriver);
 };
 
 /********************************

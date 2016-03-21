@@ -8,7 +8,7 @@ var BaseDao = require('../../../src/lib/daos/BaseDao'),
   expect = chai.expect;
 
 describe('BaseDao delete ', function() {
-  this.timeout(10000);
+  this.timeout(30000);
   var theDao;
 
   beforeEach(function() {
@@ -18,12 +18,25 @@ describe('BaseDao delete ', function() {
   });
 
   it('Returns a COMPOSR error', function(done) {
-    driverStore.setDriver(corbel.getDriver({
-      urlBase : 'https://proxy-qa.bqws.io/{{module}}/v1.0/',
-      "clientId": "xxx",
-      "clientSecret": "xxx",
-      "scopes": "composr:comp:admin"
+    var stubDelete = sinon.stub();
+    stubDelete.onCall(0).returns(Promise.reject({
+      status : 401,
+      data: {
+        name : 'test'
+      }
     }));
+
+    //Stub resources.resource
+    var stubResource = sinon.stub();
+    stubResource.returns({
+      delete: stubDelete
+    });
+
+    driverStore.setDriver({
+      resources: {
+        resource: stubResource
+      }
+    });
 
     theDao.delete('theid')
       .catch(function(response) {

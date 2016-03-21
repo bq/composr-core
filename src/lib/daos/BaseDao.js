@@ -88,14 +88,16 @@ BaseDao.prototype.loadAll = function () {
     });
 };
 
-BaseDao.prototype.save = function(item){
-  if(!driverStore.getDriver()){
+BaseDao.prototype.save = function(item, driver){
+  if(!driverStore.getDriver() && !driver){
     return Promise.reject('missing:driver');
   }
-  
+
   var that = this;
 
-  return driverStore.getDriver()
+  var theDriver = driver ? driver : driverStore.getDriver();
+
+  return theDriver
     .resources
     .resource(this.COLLECTION, item.id)
     .update(item)
@@ -106,14 +108,20 @@ BaseDao.prototype.save = function(item){
 };
 
 
-BaseDao.prototype.delete = function(id){
-  if(!driverStore.getDriver()){
+BaseDao.prototype.delete = function(id, driver){
+  if(!driverStore.getDriver() && !driver){
     return Promise.reject('missing:driver');
+  }
+
+  if(!id){
+    return Promise.reject(parseToComposrError({}, 'Invalid ' + this.COLLECTION + ' delete', 401));
   }
 
   var that = this;
 
-  return driverStore.getDriver()
+  var theDriver = driver ? driver : driverStore.getDriver();
+
+  return theDriver
     .resources
     .resource(this.COLLECTION, id)
     .delete()
