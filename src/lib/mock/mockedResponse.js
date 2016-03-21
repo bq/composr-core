@@ -123,7 +123,7 @@ MockedResponse.prototype.send = function(data) {
     headers: this.headers
   };
 
-  if(!params.headers['Content-Length'] && data && data.toString) {
+  if(!params.headers['Content-Length'] && data.toString) {
     //Check if the object passed has the "toString" method, if not, don't use it
     this.setHeader('Content-Length', data.toString().length);
   }
