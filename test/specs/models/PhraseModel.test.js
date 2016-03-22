@@ -258,4 +258,43 @@ describe('Phrase Model', function() {
       expect(model.getMiddlewares('')).to.be.a('array');
     });
   });
+
+  describe('Get Doc', function(){
+    var model = new PhraseModel({
+        url : 'a/b',
+        version : '2.2.3',
+        delete : {
+          code : 'console.log(3);',
+          doc : 'delete Doc'
+        },
+        get : {
+          code : 'console.log(1)',
+          doc : 'get Doc'
+        },
+        post : {
+          code : 'console.log(1)',
+          doc : 'post Doc'
+        },
+        put : {
+          code : 'console.log(1)'
+        }
+      }, 'domain');
+
+    it('Returns null if its not defined', function(){
+      expect(model.getDoc('put')).to.be.a('null');
+    });
+
+    it('Returns the correct middlewars for get', function(){
+      expect(model.getDoc('get')).to.equals('get Doc');
+    });
+
+    it('Returns the correct middlewars for post', function(){
+      expect(model.getDoc('post')).to.equals('post Doc');
+    });
+
+    it('Returns null if no verb is passed', function(){
+      expect(model.getDoc('')).to.be.a('null');
+    });
+  });
+
 });

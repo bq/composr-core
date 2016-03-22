@@ -62,6 +62,14 @@ PhraseModel.prototype.getMiddlewares = function(verb){
   }
 };
 
+PhraseModel.prototype.getDoc = function(verb){
+  if(verb && this.json[verb] && this.json[verb].doc){
+    return this.json[verb].doc;
+  }else{
+    return null;
+  }
+};
+
 PhraseModel.prototype.canRun = function(verb){
   return (this.compiled.codes[verb] && this.compiled.codes[verb].error === false) || false;
 };
