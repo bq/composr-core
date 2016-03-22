@@ -220,4 +220,37 @@ describe('Phrase Model', function() {
       expect(model.canRun('delete')).to.equals(true);
     });
   });
+
+  describe('Get middlewares', function(){
+    var model = new PhraseModel({
+        url : 'a/b',
+        version : '2.2.3',
+        delete : {
+          code : 'console.log(3);'
+        },
+        get : {
+          code : 'console.log(1)',
+          middlewares: ['mock', 'validate']
+        },
+        post : {
+          code : 'console.log(1)',
+          middlewares: ['validate']
+        }
+      }, 'domain');
+
+    it('Returns an empty array if its not defined', function(){
+      expect(model.getMiddlewares('delete').length).to.equals(0);
+      expect(model.getMiddlewares('delete')).to.be.a('array');
+    });
+
+    it('Returns the correct middlewars for get', function(){
+      expect(model.getMiddlewares('get').length).to.equals(2);
+      expect(model.getMiddlewares('get')).to.be.a('array');
+    });
+
+    it('Returns the correct middlewars for post', function(){
+      expect(model.getMiddlewares('post').length).to.equals(1);
+      expect(model.getMiddlewares('post')).to.be.a('array');
+    });
+  });
 });

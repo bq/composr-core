@@ -11,22 +11,29 @@ describe('BaseDao save ', function() {
   this.timeout(10000);
   var theDao;
 
-  beforeEach(function() {
-
-    
-    
+  beforeEach(function() {    
     theDao = new BaseDao({
       collection : 'composr:Phrase'
     });
   });
 
   it('Returns a COMPOSR error', function(done) {
-    driverStore.setDriver(corbel.getDriver({
-      urlBase : 'https://proxy-qa.bqws.io/{{module}}/v1.0/',
-      "clientId": "xxx",
-      "clientSecret": "xxx",
-      "scopes": "composr:comp:admin"
+    var stubUpdate = sinon.stub();
+    stubUpdate.onCall(0).returns(Promise.reject({
+      status: 401
     }));
+
+    //Stub resources.resource
+    var stubResource = sinon.stub();
+    stubResource.returns({
+      update: stubUpdate
+    });
+
+    driverStore.setDriver({
+      resources: {
+        resource: stubResource
+      }
+    });
 
     theDao.save({
       id : 'not-save',
