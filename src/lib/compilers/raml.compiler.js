@@ -56,7 +56,7 @@ function transform(phrases, urlBase, domain, version) {
   var phrasesOfEachVersion = _.groupBy(phrases, 'version');
 
   Object.keys(phrasesOfEachVersion).forEach(function(version){
-    tableWithVersions.push('        | [' + version + '](/doc/' + domain + '/' + version + ') | ' + phrasesOfEachVersion[version].length + ' |')
+    tableWithVersions.push('        | [' + version + '](/doc/' + domain + '/' + version + ') | ' + phrasesOfEachVersion[version].length + ' |');
   });
 
   tableWithVersions.push('');
