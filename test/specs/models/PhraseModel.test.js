@@ -252,5 +252,10 @@ describe('Phrase Model', function() {
       expect(model.getMiddlewares('post').length).to.equals(1);
       expect(model.getMiddlewares('post')).to.be.a('array');
     });
+
+    it('Returns an empty array if no verb is passed', function(){
+      expect(model.getMiddlewares('').length).to.equals(0);
+      expect(model.getMiddlewares('')).to.be.a('array');
+    });
   });
 });

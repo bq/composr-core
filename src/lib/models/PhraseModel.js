@@ -55,7 +55,7 @@ PhraseModel.prototype.getRegexpReference = function(){
 };
 
 PhraseModel.prototype.getMiddlewares = function(verb){
-  if(this.json[verb] && this.json[verb].middlewares && Array.isArray(this.json[verb].middlewares)){
+  if(verb && this.json[verb] && this.json[verb].middlewares && Array.isArray(this.json[verb].middlewares)){
     return this.json[verb].middlewares;
   }else{
     return [];
