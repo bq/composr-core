@@ -40,7 +40,7 @@ function documentation(phrases, domain, version) {
           incorrectPhrases.push(result.reason);
         }
       });
-      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version);
+      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version); 
       var config = raml2html.getDefaultConfig();
       return raml2html.render(data, config);
     })
