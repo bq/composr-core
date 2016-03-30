@@ -142,7 +142,7 @@
                 {% if method.responses %}
                   <div class="tab-pane" id="{{ resource.uniqueId }}_{{ method.method }}_response">
                     {% for key, response in method.responses %}
-                      <h2>HTTP status code <a href="http://httpstatus.es/{{ key }}" target="_blank">{{ key }}</a></h2>
+                      <h2>HTTP status code <a href="https://http.cat/{{ key }}" target="_blank">{{ key }}</a></h2>
                       {% markdown %}{{ response.description}}{% endmarkdown %}
 
                       {% if response.headers %}
