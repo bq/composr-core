@@ -6,24 +6,28 @@ var composr = require('../../../src/composr-core'),
 var utilsPromises = require('../../utils/promises');
 var phrasesFixtures = require('../../fixtures/phrases');
 var snippetsFixtures = require('../../fixtures/snippets');
+var virtualDomainFixtures = require('../../fixtures/virtualdomains');
 
 
 describe('Full system usage', function() {
+  this.timeout(10000);
 
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, stubFetchData;
+  var sandbox = sinon.sandbox.create();
+
+  var stubLogClient, stubRegisterData, stubInitCorbelDriver;
+  var stubLoadPhrases, stubLoadSnippets, stubLoadVirtualDomains;
 
   before(function() {
-    stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-    stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-    stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-    stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
+    stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
+    stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
+    //Stub loaders
+    stubLoadPhrases = sandbox.stub(composr.Phrase.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadSnippets = sandbox.stub(composr.Snippet.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+    stubLoadVirtualDomains = sandbox.stub(composr.VirtualDomain.dao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
   });
 
   after(function() {
-    stubInitCorbelDriver.restore();
-    stubLogClient.restore();
-    stubFetchData.restore();
-    stubRegisterData.restore();
+    sandbox.restore();
   });
 
   it('Can register phrases', function(done) {
@@ -31,16 +35,14 @@ describe('Full system usage', function() {
 
     composr.init(options, true)
       .then(function() {
-        return composr.Phrases.register('myDomain', phrasesFixtures.correct);
+        return composr.Phrase.register('myDomain', phrasesFixtures.correct);
       })
-      .should.be.fulfilled
       .then(function(results) {
-
         results.forEach(function(result) {
           expect(result.registered).to.equals(true);
         });
 
-        var candidates = composr.Phrases.getPhrases('myDomain');
+        var candidates = composr.Phrase.getPhrases('myDomain');
 
         expect(candidates.length).to.be.above(0);
 
@@ -52,7 +54,7 @@ describe('Full system usage', function() {
 
     composr.init({}, true)
       .then(function() {
-        return composr.Snippets.register('myDomain', snippetsFixtures.correct);
+        return composr.Snippet.register('myDomain', snippetsFixtures.correct);
       })
       .should.be.fulfilled
       .then(function(results) {
@@ -61,13 +63,32 @@ describe('Full system usage', function() {
           expect(result.registered).to.equals(true);
         });
 
-        var candidates = composr.Snippets.getSnippets('myDomain');
+        var candidates = composr.Snippet.getSnippets('myDomain');
 
-        expect(candidates).to.be.a('object');
+        expect(candidates).to.be.a('array');
 
-        expect(Object.keys(candidates).length).to.be.above(0);
+        expect(candidates.length).to.be.above(0);
 
       }).should.notify(done);
+  });
+
+  it('Can register virtualDomains', function(done){
+    composr.init({}, true)
+      .then(function() {
+        return composr.VirtualDomain.register('myDomain', virtualDomainFixtures.correct);
+      })
+      .then(function(results) {
+        results.forEach(function(result) {
+          expect(result.registered).to.equals(true);
+        });
+
+        var candidates = composr.VirtualDomain.getByDomain('myDomain');
+
+        expect(candidates).to.be.a('array');
+
+        expect(candidates.length).to.be.above(0);
+      })
+      .should.notify(done);
   });
 
 
@@ -76,9 +97,9 @@ describe('Full system usage', function() {
     var stub2 = sinon.stub();
 
     composr.events.on('debug', 'myProject', stub);
-    composr.Phrases.events.on('debug', 'myProject2', stub2);
+    composr.Phrase.events.on('debug', 'myProject2', stub2);
 
-    composr.Phrases.register('myDomain', phrasesFixtures.correct)
+    composr.Phrase.register('myDomain', phrasesFixtures.correct)
       .should.be.fulfilled
       .then(function(results) {
         expect(stub.callCount).to.be.above(0);

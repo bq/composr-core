@@ -1,7 +1,12 @@
 'use strict';
 
+var capitalizeParam = function(param) {
+    return param.split('-').map(function(item) {
+      return item.charAt(0).toUpperCase() + item.slice(1);
+    }).join('-');
+};
+
 function MockedRequest(serverType, req, options) {
-  var module = this;
 
   this.serverType = serverType === 'express' ? 'express' : 'restify';
 
@@ -17,20 +22,19 @@ function MockedRequest(serverType, req, options) {
   if (this.headers && typeof(this.headers) === 'object') {
     this.capitalizeHeaders();
   }
-
-  this.get = function(headerName) {
-    return module.headers[headerName];
-  };
 }
+
+MockedRequest.prototype.get = function(headerName){
+  headerName = capitalizeParam(headerName);
+  return this.headers[headerName];
+};
 
 MockedRequest.prototype.capitalizeHeaders = function() {
   var newHeaders = {};
   var module = this;
 
   Object.keys(this.headers).forEach(function(key) {
-    var newKey = key.split('-').map(function(item) {
-      return item.charAt(0).toUpperCase() + item.slice(1);
-    }).join('-');
+    var newKey = capitalizeParam(key);
     newHeaders[newKey] = module.headers[key];
   });
 

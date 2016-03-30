@@ -1,6 +1,6 @@
 {
   "name": "composr-core",
-  "version": "1.2.3",
+  "version": "2.0.2",
   "description": "CompoSR core functions",
   "main": "src/composr-core.js",
   "directories": {
@@ -10,7 +10,7 @@
     "test": "grunt test",
     "build": "grunt build",
     "preversion": "npm test",
-    "coverage": "istanbul cover node_modules/.bin/_mocha -- -R dot"
+    "coverage": "istanbul cover --root ./src node_modules/.bin/_mocha -- -R dot './test/**/*.test.js'"
   },
   "keywords": [
     "composr",
@@ -20,14 +20,15 @@
     "bq"
   ],
   "engines": {
-    "node": "4.2.1",
+    "node": "5.8.0",
     "npm": "3.3.6"
   },
   "dependencies": {
     "ascii-art": "0.0.2-alpha",
     "async": "^1.4.2",
     "atob": "^1.1.2",
-    "corbel-js": "0.3.7",
+    "jsonschema": "1.0.3",
+    "corbel-js": "0.4.0",
     "lodash": "^4.3.0",
     "mkdirp": "^0.5.1",
     "q": "^1.2.0",
@@ -35,11 +36,12 @@
     "raml-parser": "^0.8.11",
     "raml2html": "^2.1.2",
     "request": "^2.60.0",
+    "semver": "^5.1.0",
     "syntax-error": "^1.1.4",
+    "uglify-js": "2.5.0",
     "uuid": "~2.0.1",
     "xregexp": "^2.0.0",
-    "yamljs": "^0.2.3",
-    "uglify-js": "2.5.0"
+    "yamljs": "^0.2.3"
   },
   "devDependencies": {
     "chai": "^2.1.1",
@@ -50,12 +52,12 @@
     "grunt-contrib-jshint": "^0.11.0",
     "grunt-madge": "0.0.5",
     "grunt-mocha-test": "~0.12.7",
-    "istanbul": "^0.3.17",
+    "istanbul": "^0.4.2",
     "jshint-stylish": "^2.0.1",
     "load-grunt-tasks": "~3.1.0",
     "madge": "^0.5.0",
-    "mocha": "~2.2.1",
-    "sinon": "^1.14.1",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3",
     "supertest": "^1.0.0",
     "time-grunt": "^1.2.1"
   },
@@ -67,7 +69,9 @@
     "Rafael Pedrola <@rafinskipg>",
     "Josep Arpí <@jarpi>",
     "Samuel Martin <@samuelmartingc>",
-    "Jorge Serrano <@jscmr>"
+    "Jorge Serrano <@jscmr>",
+    "Miguel Jimenez <@milingo>",
+    "Ricardo Martinez <@rackdon>"
   ],
   "license": "ISC"
 }

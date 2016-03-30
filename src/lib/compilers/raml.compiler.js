@@ -46,12 +46,41 @@ function transform(phrases, urlBase, domain, version) {
     _.extend(doc, buildPhraseDefinition(phrase));
   });
 
-  var definition = [
+  // Build a small table with the versions,
+  var tableWithVersions = [
+  '',
+  '        | Version | Phrases Published |',
+  '        |---|---|'
+  ];
+
+  var phrasesOfEachVersion = _.groupBy(phrases, 'version');
+
+  Object.keys(phrasesOfEachVersion).forEach(function(version){
+    tableWithVersions.push('        | [' + version + '](/doc/' + domain + '/' + version + ') | ' + phrasesOfEachVersion[version].length + ' |');
+  });
+
+  tableWithVersions.push('');
+
+  var definition_0 = [
     '#%RAML 0.8',
     '---',
     'title: ' + domain,
     'baseUri: ' + urlBase + domain,
     'version: ' + version,
+    'documentation:',
+    '    - title: Composr Dynamic Endpoints',
+    '      content: |',
+    '        Welcome to the Composr - dynamic endpoints - generated documentation.',
+    '',
+    '        *You can make requests to each version sending the `Accept-Version` header in the request*',
+    '',
+    '        See also [the snippets site](/snippets/' + domain+').',
+    '',
+    '        **Versions published**',
+    ''
+  ];
+
+  var definition_1 = [
     'securitySchemes:',
     '    - oauth_2_0:',
     '        description: Corbel supports OAuth 2.0 for authenticating all API requests.',
@@ -82,9 +111,11 @@ function transform(phrases, urlBase, domain, version) {
     '        put?: *common',
     '        delete?: *common',
     YAML.stringify(doc, 4)
-  ].join('\n');
+  ];
 
-  return definition;
+  return _.concat(definition_0, tableWithVersions, definition_1).join('\n');
+
+  //return definition;
 }
 
 /**

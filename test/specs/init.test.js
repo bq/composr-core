@@ -5,29 +5,26 @@ var composr = require('../../src/composr-core'),
 
 var utilsPromises = require('../utils/promises');
 
-
 describe('Config initialization', function() {
 
-  var stubLogClient, stubRegisterData, stubInitCorbelDriver, 
-    stubFetchData, spyRequirerConfigure, spyPhrasesConfigure;
+  var stubLogClient, stubRegisterDomains, stubInitCorbelDriver, 
+    stubLoadVirtualDomains, spyRequirerConfigure, spyPhrasesConfigure;
+
+  var sandbox = sinon.sandbox.create();
 
   describe('Correct initialization', function() {
-    before(function() {
-      stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
-      stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-      stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-      stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
-      spyRequirerConfigure = sinon.spy(composr.requirer, 'configure');
-      spyPhrasesConfigure = sinon.spy(composr.Phrases, 'configure');
+    beforeEach(function() {
+      stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
+      stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
+      spyRequirerConfigure = sandbox.spy(composr.requirer, 'configure');
+      spyPhrasesConfigure = sandbox.spy(composr.Phrase, 'configure');
+      sandbox.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+      sandbox.stub(composr.phraseDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
+      sandbox.stub(composr.snippetDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
     });
 
-    after(function() {
-      stubInitCorbelDriver.restore();
-      stubLogClient.restore();
-      stubFetchData.restore();
-      stubRegisterData.restore();
-      spyRequirerConfigure.restore();
-      spyPhrasesConfigure.restore();
+    afterEach(function() {
+      sandbox.restore();
     });
 
     it('Creates the config object', function(done) {
@@ -46,7 +43,8 @@ describe('Config initialization', function() {
         })
         .catch(function(err) {
           console.log(err);
-        })
+          done(err);
+        });
     });
 
     it('Config is correctly initialized', function(done) {
@@ -77,11 +75,13 @@ describe('Config initialization', function() {
           expect(composr.config.urlBase).to.equals('demo');
           expect(composr.config.timeout).to.equals(3000);
           
-          expect(composr.Phrases.config.urlBase).to.equals('demo');
+          expect(spyPhrasesConfigure.callCount).to.equals(1);
+          expect(composr.Phrase.config.urlBase).to.equals('demo');
           done();
         })
         .catch(function(err) {
           console.log(err);
+          done(err);
         })
     });
   });
@@ -90,19 +90,15 @@ describe('Config initialization', function() {
     var spyEvents;
 
     before(function() {
-      stubInitCorbelDriver = sinon.stub(composr, 'initCorbelDriver', utilsPromises.rejectedPromise);
-      stubLogClient = sinon.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-      stubFetchData = sinon.stub(composr, 'fetchData', utilsPromises.resolvedPromise);
-      stubRegisterData = sinon.stub(composr, 'registerData', utilsPromises.resolvedPromise);
-      spyEvents = sinon.spy(composr.events, 'emit');
+      stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.rejectedPromise);
+      stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
+      stubLoadVirtualDomains = sandbox.stub(composr.VirtualDomain.dao, 'loadAll', utilsPromises.resolvedPromise);
+      stubRegisterDomains = sandbox.stub(composr.VirtualDomain, 'registerWithoutDomain', utilsPromises.resolvedPromise);
+      spyEvents = sandbox.spy(composr.events, 'emit');
     });
 
     after(function() {
-      stubInitCorbelDriver.restore();
-      stubLogClient.restore();
-      stubFetchData.restore();
-      stubRegisterData.restore();
-      spyEvents.restore();
+      sandbox.restore();
     });
 
     it('should emit an error event', function(done) {

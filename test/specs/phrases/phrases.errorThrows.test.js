@@ -1,5 +1,5 @@
-var PhraseManager = require('../../../src/lib/Phrases'),
-  SnippetsManager = require('../../../src/lib/Snippets'),
+var PhraseManager = require('../../../src/lib/managers/Phrase'),
+  SnippetsManager = require('../../../src/lib/managers/Snippet'),
   Requirer = require('../../../src/lib/requirer'),
   events = require('../../../src/lib/events'),
   _ = require('lodash'),
@@ -18,6 +18,7 @@ describe('Phrases runner', function() {
 
   var phrasesToRegister = [{
     'url': 'error/:code',
+    'version': '1.2.3',
     'get': {
       'code': 'var ComposrError = require("ComposrError"); throw new ComposrError("error", "description", req.params.code);',
       'doc': {
@@ -27,6 +28,7 @@ describe('Phrases runner', function() {
   },
   {
     'url': 'senderror/:code',
+    'version': '1.2.3',
     'get': {
       'code': 'var ComposrError = require("ComposrError"); res.status(req.params.code).send(new ComposrError("error", "description", req.params.code));',
       'doc': {
@@ -36,6 +38,7 @@ describe('Phrases runner', function() {
   },
   {
     'url': 'texterror',
+    'version': '1.2.3',
     'get': {
       'code': 'throw("hola");',
       'doc': {

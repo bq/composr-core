@@ -1,8 +1,9 @@
 'use strict';
 
 var events = require('./lib/events');
-var PhraseManager = require('./lib/Phrases');
-var SnippetsManager = require('./lib/Snippets');
+var PhraseManager = require('./lib/managers/Phrase');
+var SnippetsManager = require('./lib/managers/Snippet');
+var VirtualDomainManager = require('./lib/managers/VirtualDomain');
 var Requirer = require('./lib/requirer');
 
 function CompoSR() {
@@ -13,44 +14,49 @@ CompoSR.prototype.init = require('./lib/init');
 CompoSR.prototype.initCorbelDriver = require('./lib/initCorbelDriver');
 CompoSR.prototype.clientLogin = require('./lib/clientLogin');
 CompoSR.prototype.bindConfiguration = require('./lib/bindConfiguration');
-CompoSR.prototype.loadPhrases = require('./lib/loaders/loadPhrases');
-CompoSR.prototype.loadPhrase = require('./lib/loaders/loadPhrase');
-CompoSR.prototype.loadSnippets = require('./lib/loaders/loadSnippets');
-CompoSR.prototype.loadSnippet = require('./lib/loaders/loadSnippet');
-CompoSR.prototype.addPhrasesToDataStructure = require('./lib/addPhrasesToDataStructure');
-CompoSR.prototype.addSnippetsToDataStructure = require('./lib/addSnippetsToDataStructure');
-CompoSR.prototype.removePhrasesFromDataStructure = require('./lib/removePhrasesFromDataStructure');
-CompoSR.prototype.removeSnippetsFromDataStructure = require('./lib/removeSnippetsFromDataStructure');
-CompoSR.prototype.fetchData = require('./lib/fetchData');
-CompoSR.prototype.registerData = require('./lib/registerData');
+
+CompoSR.prototype.phraseDao = require('./lib/daos/phraseDao');
+CompoSR.prototype.snippetDao = require('./lib/daos/snippetDao');
+CompoSR.prototype.virtualDomainDao = require('./lib/daos/virtualDomainDao');
+
 CompoSR.prototype.documentation = require('./lib/doc/documentation');
 CompoSR.prototype.reset = require('./lib/reset');
-CompoSR.prototype.status = require('./lib/status');
+
 CompoSR.prototype.ComposrError = require('./lib/ComposrError');
 CompoSR.prototype.parseToComposrError = require('./lib/parseToComposrError');
 CompoSR.prototype.utils = require('./lib/utils');
 CompoSR.prototype.events = events;
 
+
 var Snippets = new SnippetsManager({
   events: events
 });
 
-
 var requirer = new Requirer({
   events: events,
-  Snippets: Snippets
+  Snippet: Snippets
 });
 
 CompoSR.prototype.requirer = requirer;
 
-CompoSR.prototype.Snippets = Snippets;
+CompoSR.prototype.Snippet = Snippets;
 
-CompoSR.prototype.Phrases = new PhraseManager({
+var Phrases = new PhraseManager({
   events: events,
   requirer : requirer
 });
 
-CompoSR.prototype.Publisher = require('./lib/Publisher');
+CompoSR.prototype.Phrase = Phrases;
+
+
+var VirtualDomain = new VirtualDomainManager({
+  events: events,
+  Phrase : Phrases,
+  Snippet : Snippets
+});
+
+CompoSR.prototype.VirtualDomain = VirtualDomain;
+
 //CompoSR.prototype._logger = require('./lib/logger');
 //TODO: load integrations, integrations with load a logger that will suscribe to the debug, warn , error and info events and log them
 //All the integrations will be handled by the events module.

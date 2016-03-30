@@ -1,0 +1,31 @@
+{
+      "api_id": "myApiID",
+      "name": "composr-cli",
+      "author": "jorge-serrano",
+      "version": "1.0.0",
+      "source_location": "./src",
+      "git": "",
+      "license": "MIT",
+      "mock_middleware": false,
+      "validate_middleware": true,
+      "vd_dependencies": {},
+      "_apiRML": {},
+      "md5" : "ASBAG12312",
+      "phrases" : [{
+            "url": "phrase/url",
+            "id" : "mydomain:subdomain!myApiID!phrase!url",
+            "md5" : "ASBAG12312",
+            "get": {
+              "codehash": "cmVzLnJlbmRlcignaW5kZXgnLCB7dGl0bGU6ICdoZWxsbyB3b3JsZCd9KTs=",
+              "doc": {
+                  "securedBy": ["oauth_2_0"],
+                  "description": "Phrase with base64 code"
+              }
+            }
+      }],
+      "snippets" : [{
+        "id": "mydomain:subdomain!myApiID!UserModel",
+        "md5" : "ASBAG12312",
+        "codehash": "ZnVuY3Rpb24gVXNlck1vZGVsKG9wdGlvbnMpewogIHRoaXMubmFtZSA9IG9wdGlvbnMubmFtZTsKfQoKVXNlck1vZGVsLnByb3RvdHlwZS5nZXROYW1lID0gZnVuY3Rpb24oKXsKIHJldHVybiB0aGlzLm5hbWU7IAp9CgpleHBvcnRzKFVzZXJNb2RlbCk7"
+      }]
+}

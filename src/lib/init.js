@@ -11,7 +11,7 @@ function init(options, fetch) {
 
   this.config = this.bindConfiguration(options);
 
-  this.Phrases.configure(this.config);
+  this.Phrase.configure(this.config);
 
   this.requirer.configure(this.config);
 
@@ -21,12 +21,12 @@ function init(options, fetch) {
       .then(function() {
         return module.clientLogin();
       })
-      .then(function(token) {
-        module.data.token = token;
-        return module.fetchData();
-      })
       .then(function() {
-        return module.registerData();
+        return Promise.all([
+          module.Phrase.load(),
+          module.Snippet.load(),
+          module.VirtualDomain.load()
+        ]);
       })
       .then(function() {
         module.events.emit('debug', 'success:initializing');

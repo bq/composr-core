@@ -5,8 +5,8 @@ var check = require('syntax-error'),
   q = require('q'),
   utils = require('../utils'),
   vm = require('vm'),
+  semver = require('semver'),
   vUtils = utils.values;
-
 
 function validate(phrase) {
   var dfd = q.defer();
@@ -18,6 +18,8 @@ function validate(phrase) {
   errorAccumulator(vUtils.isValue, phrase, 'undefined:phrase');
   errorAccumulator(vUtils.isValue, phrase.url, 'undefined:phrase:url');
   errorAccumulator(vUtils.isValidEndpoint, phrase.url, 'error:phrase:url:syntax');
+  
+  errorAccumulator(semver.valid, phrase.version, 'incorrect:phrase:version');
 
   var methodPresent = false;
 

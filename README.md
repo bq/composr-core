@@ -292,7 +292,7 @@ Later on, from your project, you can launch `node-inspector` debug and add breac
 [travis-badge]: https://travis-ci.org/corbel-platform/composr-core.svg
 [travis-url]: https://travis-ci.org/corbel-platform/composr-core
 
-[codeclimate-badge]: https://codeclimate.com/github/bq/composr-core/badges/gpa.svg
-[codeclimate-url]: https://codeclimate.com/github/bq/composr-core
+[codeclimate-badge]: https://codeclimate.com/github/corbel-platform/composr-core/badges/gpa.svg
+[codeclimate-url]: https://codeclimate.com/github/corbel-platform/composr-core
 
-[coverage-badge]: https://codeclimate.com/github/bq/composr-core/badges/coverage.svg
+[coverage-badge]: https://codeclimate.com/github/corbel-platform/composr-core/badges/coverage.svg
