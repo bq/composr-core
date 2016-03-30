@@ -41,7 +41,7 @@ function documentation(phrases, domain, version) {
         }
       });
       var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version);
-      var config = raml2html.getDefaultConfig();
+      var config = raml2html.getDefaultConfig('template.nunjucks', __dirname);
       return raml2html.render(data, config);
     })
     .then(function(result) {
