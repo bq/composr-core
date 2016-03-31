@@ -40,8 +40,9 @@ function documentation(phrases, domain, version) {
           incorrectPhrases.push(result.reason);
         }
       });
-      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version); 
-      var config = raml2html.getDefaultConfig();
+
+      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version);
+      var config = raml2html.getDefaultConfig('template.nunjucks', __dirname);
       return raml2html.render(data, config);
     })
     .then(function(result) {
