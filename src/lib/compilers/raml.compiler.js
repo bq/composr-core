@@ -19,7 +19,7 @@ var buildPhraseDefinition = function(phrase) {
     return item;
   }).join('/');
 
-  url = '/' + url;
+  url =  '/' + url;
   doc[url] = {};
 
   // model version
@@ -46,20 +46,6 @@ function transform(phrases, urlBase, domain, version) {
     _.extend(doc, buildPhraseDefinition(phrase));
   });
 
-  // Build a small table with the versions,
-  var tableWithVersions = [
-  '',
-  '        | Version | Phrases Published |',
-  '        |---|---|'
-  ];
-
-  var phrasesOfEachVersion = _.groupBy(phrases, 'version');
-
-  Object.keys(phrasesOfEachVersion).forEach(function(version){
-    tableWithVersions.push('        | [' + version + '](/doc/' + domain + '/' + version + ') | ' + phrasesOfEachVersion[version].length + ' |');
-  });
-
-  tableWithVersions.push('');
 
   var definition_0 = [
     '#%RAML 0.8',
@@ -67,16 +53,11 @@ function transform(phrases, urlBase, domain, version) {
     'title: ' + domain,
     'baseUri: ' + urlBase + domain,
     'version: ' + version,
+    'protocols: [ HTTP, HTTPS ]',
+    'mediaType: application/json',
     'documentation:',
     '    - title: Composr Dynamic Endpoints',
     '      content: |',
-    '        Welcome to the Composr - dynamic endpoints - generated documentation.',
-    '',
-    '        *You can make requests to each version sending the `Accept-Version` header in the request*',
-    '',
-    '        See also [the snippets site](/snippets/' + domain+').',
-    '',
-    '        **Versions published**',
     ''
   ];
 
@@ -113,7 +94,7 @@ function transform(phrases, urlBase, domain, version) {
     YAML.stringify(doc, 4)
   ];
 
-  return _.concat(definition_0, tableWithVersions, definition_1).join('\n');
+  return _.concat(definition_0, definition_1).join('\n');
 
   //return definition;
 }

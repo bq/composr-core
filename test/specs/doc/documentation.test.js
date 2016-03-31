@@ -4,6 +4,7 @@ var documentation = require('../../../src/lib/doc/documentation'),
   chai = require('chai'),
   chaiAsPromised = require('chai-as-promised'),
   sinon = require('sinon'),
+  PhraseModel = require('../../../src/lib/models/PhraseModel'),
   expect = chai.expect,
   should = chai.should();
 
@@ -13,7 +14,7 @@ var phrases = require('../../fixtures/phrases');
 var correctPhrases = phrases.correct;
 var malformedPhrases = phrases.malformed;
 
-var docmethod;
+var docmethod, phrasesToRegister;
 
 describe('Documentation', function() {
   this.timeout(10000);
@@ -30,10 +31,14 @@ describe('Documentation', function() {
         emit: stub
       }
     });
+
+    phrasesToRegister = correctPhrases.map(function(item){
+      return new PhraseModel(item, 'test:domain');
+    });
   });
 
   it('Compiles correctly', function(done) {
-    docmethod(correctPhrases)
+    docmethod(phrasesToRegister)
       .should.be.fulfilled
       .then(function(result) {
         expect(result).to.be.a('string');
@@ -42,25 +47,5 @@ describe('Documentation', function() {
       .should.notify(done);
   });
 
-  it('Does not break with invalid phrases', function(done) {
-    docmethod(malformedPhrases)
-      .should.be.fulfilled
-      .then(function(result) {
-        expect(result).to.be.a('string');
-        expect(result.indexOf('DOCTYPE') !== -1).to.equals(true);
-      })
-      .should.notify(done);
-  });
-
-
-  it('Does emit an event telling that some phrase could not be processed', function(done) {
-    docmethod([malformedPhrases[0]])
-      .should.be.fulfilled
-      .then(function(result) {
-        expect(stub.callCount).to.be.above(0);
-        expect(stub.calledWith('warn', 'generating:documentation:invalid-phrase')).to.equals(true);
-      })
-      .should.notify(done);
-  });
-
+  //TODO: add tests for snippets, and versions and so on
 });

@@ -15,15 +15,30 @@
     <link rel="stylesheet" href="https://rawgithub.com/yesmeck/jquery-jsonview/master/dist/jquery.jsonview.css" />
 
     <script type="text/javascript">
-    function formatJSONResponses(){
-      var items = $('.example-response');
+      function formatJSONResponses(){
+        var items = $('.example-response');
 
-      $.each(items, function(index, item){
-        var domElement = $(item);
-        var jsonContent = JSON.parse(domElement.html());
-        domElement.JSONView(jsonContent, { collapsed: true });
-      })
-    }
+        $.each(items, function(index, item){
+          var domElement = $(item);
+          var jsonContent = JSON.parse(domElement.html());
+          domElement.JSONView(jsonContent, { collapsed: true });
+        })
+      }
+
+      function bindVersionSelector(){
+        $('.version-toggle').on('click', function(e){
+          e.preventDefault();
+          var version = $(this).attr('id');
+          var basePathDoc = '{{basePathDoc}}';
+          var baseUrl = window.location.href;
+
+          if(basePathDoc){
+            //Remove all that is after the basePathDoc (for ex: doc/thing/version)
+            baseUrl = baseUrl.substring(0, baseUrl.indexOf(basePathDoc) + basePathDoc.length);
+          }
+          window.location = baseUrl + '/' + version;
+        })
+      }
       $(document).ready(function() {
         $('.page-header pre code, .top-resource-description pre code').each(function(i, block) {
           hljs.highlightBlock(block);
@@ -60,6 +75,9 @@
         });
         //Format jsons
         formatJSONResponses();
+
+        //Bind version selector
+        bindVersionSelector();
       });
     </script>
 
@@ -171,44 +189,114 @@
       .list-group-item:hover {
         background-color: #f5f5f5;
       }
+      .navbar{
+        background: #DFF0D8;
+      }
     </style>
   </head>
 
   <body data-spy="scroll" data-target="#sidebar">
+    <nav class="navbar navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Composr API documentation</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          {% if versions %}
+          <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Versions <span class="caret"></span></a>
+              <ul class="dropdown-menu version-selector">
+                {% for version in versions %}
+                  <li>
+                    <a href="#" class="version-toggle" id="{{version.name}}">
+                      <span style="margin-right: 10px">{{version.name}}</span>
+                      <span class="label label-info">Phrases: {{version.phrases.length}}</span>
+                      <span class="label label-info">Snippets: {{version.snippets.length}}</span>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </li>
+          </ul>
+          {% endif %}
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
     <div class="container">
       <div class="row">
         <div class="col-md-9" role="main">
           <div class="page-header">
-            <h1>Composr API documentation{% if title %} <small>{{ title }}</small>{% endif %}</h1>
-
-            <div class="well">
-              {{ baseUri }}
+            
+            <div class="alert alert-info" role="alert">
+              Welcome to the Composr - dynamic endpoints - generated documentation.
+              <br/>
+              <i>You can make requests to each version sending the <code>Accept-Version</code> header in the request</i>
             </div>
+
+            <h2>{{title}}</h2><span class="label label-primary">Showing version {{version}}</span>
 
             {% for chapter in documentation %}
               {% markdown %}{{ chapter.content }}{% endmarkdown %}
             {% endfor %}
           </div>
 
-          {% for resource in resources %}
-            <div class="panel panel-success">
-              <div class="panel-heading">
-                <h3 id="{{ resource.uniqueId }}" class="panel-title"><strong>{% if resource.displayName %}{{ resource.displayName}}{% else %}{{ resource.relativeUri }}{% endif %}</strong></h3>
-              </div>
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#phrases" aria-controls="phrases" role="tab" data-toggle="tab">Phrases <span class="label label-info">{{resources.length}}</span></a></li>
+            <li role="presentation"><a href="#snippets" aria-controls="snippets" role="tab" data-toggle="tab">Snippets <span class="label label-info">{{snippets.length}}</span></a></li>
+          </ul>
 
-              <div class="panel-body">
-                {% if resource.description %}
-                  <div class="top-resource-description">
-                    <small>{% markdown %}{{ resource.description }}{% endmarkdown %}</small>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="phrases">
+              {% for resource in resources %}
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    <h3 id="{{ resource.uniqueId }}" class="panel-title"><strong>{% if resource.displayName %}{{ resource.displayName}}{% else %}{{ resource.relativeUri }}{% endif %}</strong></h3>
                   </div>
-                {% endif %}
 
-                <div class="panel-group">
-                  {% include "./resource.nunjucks" %}
+                  <div class="panel-body">
+                    {% if resource.description %}
+                      <div class="top-resource-description">
+                        <small>{% markdown %}{{ resource.description }}{% endmarkdown %}</small>
+                      </div>
+                    {% endif %}
+
+                    <div class="panel-group">
+                      {% include "./resource.nunjucks" %}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              {% endfor %}
             </div>
-          {% endfor %}
+            <div role="tabpanel" class="tab-pane" id="snippets">
+              {% if snippets.length > 0 %}
+                {% for snippet in snippets %}
+                  <div class="panel panel-success">
+                    <div class="panel-heading">
+                      <h3 id="{{ snippet.id }}" class="panel-title"><strong>{{ snippet.name}}</strong></h3>
+                    </div>
+
+                    <div class="panel-body">
+                      <div class="top-resource-description">
+                        <small><p>release {{ snippet.version }}</p></small>
+                      </div>
+                      Created at {{ snippet.date }}
+                    </div>
+                  </div>
+                {% endfor %} 
+              {% else %}
+                <div class="alert alert-warning" role="alert">There are no snippets for this version</div>
+              {% endif %}
+
+            </div>
+          </div>
         </div>
 
         <div class="col-md-3">

@@ -1,9 +1,10 @@
 'use strict';
 
 var q = require('q');
+var _ = require('lodash');
+var semver = require('semver');
+var raml2obj = require('raml2obj');
 var ramlCompiler = require('../compilers/raml.compiler');
-var phraseValidator = require('../validators/phrase.validator');
-var raml2html = require('raml2html');
 
 /**
  * Loads a raml definition from the doc contained into a phrase
@@ -11,10 +12,22 @@ var raml2html = require('raml2html');
  * @param  {Object} phrases
  * @return {String}
  */
-function documentation(phrases, domain, version) {
+function documentation(phrases, snippets, domain, version, basePathDoc) {
   /*jshint validthis:true */
   if (!phrases) {
     phrases = [];
+  }
+
+  if (!snippets) {
+    snippets = [];
+  }
+
+  if (!version) {
+    var versions = _.uniq(phrases.map(function(phrase){
+      return phrase.getVersion();
+    }));
+    //Get the max version for the default screen
+    version = semver.maxSatisfying(versions, '*');
   }
 
   var dfd = q.defer();
@@ -22,42 +35,86 @@ function documentation(phrases, domain, version) {
 
   var urlBase = this.config.urlBase.replace('{{module}}', 'composr').replace('/v1.0', '');
 
-  var validationPromises = phrases.map(function(phrase) {
-    return phraseValidator(phrase);
+  var phrasesOfEachVersion = _.groupBy(phrases, function(item){
+    return item.getVersion();
   });
 
-  var correctPhrases = [];
-  var incorrectPhrases = [];
+  var versionsData = Object.keys(phrasesOfEachVersion).map(function(version){
+    return {
+      name : version,
+      phrases : _.filter(phrases, ['json.version', version]),
+      snippets : _.filter(snippets, ['json.version', version]),
+    };
+  });
 
-  q.allSettled(validationPromises)
-    .then(function(results) {
-      results.forEach(function(result, index) {
-        if (result.state === 'fulfilled') {
-          correctPhrases.push(result.value);
-        } else {
-          var phrase = phrases[index];
-          module.events.emit('warn', 'generating:documentation:invalid-phrase', 'phrase:id: ' + phrase.id, result.reason);
-          incorrectPhrases.push(result.reason);
-        }
+  var phrasesToShow = phrases.filter(function (item) {
+    return item.getVersion() === version;
+  });
+
+  var snippetsToShow = snippets.filter(function (item) {
+    return item.getVersion() === version;
+  });
+
+  phrasesToShow = phrasesToShow.map(function (item) {
+    return item.getRawModel();
+  });
+
+  snippetsToShow = snippetsToShow.map(function (item) {
+    return item.getRawModel();
+  });
+
+  var data = ramlCompiler.transform(phrasesToShow, urlBase, domain, version);
+  
+  raml2obj.parse(data)
+    .then(function (ramlObj) {
+
+      var nunjucks = require('nunjucks');
+      var markdown = require('nunjucks-markdown');
+      var marked = require('marked');
+      var ramljsonexpander = require('raml-jsonschema-expander');
+      var renderer = new marked.Renderer();
+      renderer.table = function (thead, tbody) {
+        // Render Bootstrap style tables
+        return '<table class="table"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+      };
+
+      // Setup the Nunjucks environment with the markdown parser
+      var env = nunjucks.configure(__dirname, { watch: false });
+      markdown.register(env, function (md) {
+        return marked(md, { renderer: renderer });
       });
 
-      var data = ramlCompiler.transform(correctPhrases, urlBase, domain, version);
-      var config = raml2html.getDefaultConfig('template.nunjucks', __dirname);
-      return raml2html.render(data, config);
-    })
-    .then(function(result) {
+      // Add extra function for finding a security scheme by name
+      ramlObj.securitySchemeWithName = function (name) {
+        for (var index = 0; index < ramlObj.securitySchemes.length; ++index) {
+          if (ramlObj.securitySchemes[index][name] !== null) {
+            return ramlObj.securitySchemes[index][name];
+          }
+        }
+      };
+
+      // Find and replace the $ref parameters.
+      ramlObj = ramljsonexpander.expandJsonSchemas(ramlObj);
+
+      ramlObj.versions = versionsData;
+
+      ramlObj.snippets = snippetsToShow.map(function(snippet){
+        snippet.date = Date(snippet._createdAt);
+        return snippet;
+      });
+
+      ramlObj.basePathDoc = basePathDoc || '';
+
+      // Render the main template using the raml object and fix the double quotes
+      var html = env.render('./template.nunjucks', ramlObj);
+      html = html.replace(/&quot;/g, '"');
       module.events.emit('debug', 'generated:documentation');
-      dfd.resolve(result);
-    }, function(error) {
-      module.events.emit('warn', 'generating:documentation', error);
-      dfd.reject(error);
+      dfd.resolve(html); 
     })
     .catch(function(err){
       module.events.emit('error', 'error:generating:documentation', err);
       dfd.reject(err);
     });
-
-
 
   return dfd.promise;
 }

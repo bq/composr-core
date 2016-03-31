@@ -2,8 +2,18 @@
   "url": "loginclient",
   "version": "2.3.3",
   "post": {
+    "middlewares" : ["mock"],
     "code": "var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.status(200).send('test');",
     "doc": {
+      "securedBy": [
+        "oauth_2_0"
+      ],
+      "headers": {
+        "Authorization" : {
+          "displayName": "Authorization",
+          "description": "A client token, can be a super admin or a shop admin"
+        }
+      },
       "description": "Phrase for testing purposes",
       "body": {
         "application/json": {
