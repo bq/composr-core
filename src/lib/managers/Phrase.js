@@ -140,6 +140,8 @@ function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWra
 
   sb.config.urlBase = urlBase;
 
+  sb.userId = userId;
+
   sb.metrics = new MetricsFirer(domain);
 }
 

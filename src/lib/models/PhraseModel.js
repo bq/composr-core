@@ -16,7 +16,8 @@ var DEFAULT_PHRASE_PARAMETERS = [
   'domain', 
   'require', 
   'config', 
-  'metrics'
+  'metrics',
+  'userId'
   ];
 
 
@@ -153,7 +154,8 @@ PhraseModel.prototype.__executeFunctionMode = function(verb, parameters, timeout
       parameters.domain,
       parameters.require,
       parameters.config,
-      parameters.metrics
+      parameters.metrics,
+      parameters.userId
     );
   } else {
     
@@ -164,7 +166,8 @@ PhraseModel.prototype.__executeFunctionMode = function(verb, parameters, timeout
       parameters.domain,
       parameters.require,
       parameters.config,
-      parameters.metrics
+      parameters.metrics,
+      parameters.userId
     ]);
   }
 };
