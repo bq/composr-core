@@ -328,11 +328,11 @@ BaseManager.prototype.delete = function(id, optionalDriver){
 
 //Pre add call
 BaseManager.prototype.__preAdd = function() {
-  this.events.emit('warn', '__preAdd not implemented');
+  this.events.emit('trace', '__preAdd not implemented');
 };
 
 BaseManager.prototype.__postAdd = function() {
-  this.events.emit('warn', '__postAdd not implemented');
+  this.events.emit('trace', '__postAdd not implemented');
 };
 
 module.exports = BaseManager;
