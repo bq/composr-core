@@ -88,7 +88,7 @@ PhraseManager.prototype.runByPath = function(domain, path, verb, params, version
   var phrase = this.getByMatchingPath(domain, path, verb, version);
   //TODO: use version too , to get the correct version
 
-  if (phrase && phrase.canRun(verb)) {
+  if (phrase) {
     if (!params) {
       params = {};
     }
@@ -217,7 +217,7 @@ PhraseManager.prototype.getPhrases = function(domain) {
   CORE Entry point. One of the purposes of composr-core is to provide a fast and reliable
   getByMatchingPath method.
  **/
-PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
+PhraseManager.prototype.getByMatchingPath = function(domain, path, verb, version) {
   var candidate = null;
 
   if (!verb) {
@@ -247,7 +247,9 @@ PhraseManager.prototype.getByMatchingPath = function(domain, path, verb) {
 
   candidates = _.compact(candidates.map(function(phrase) {
     if (phrase.canRun(verb) && phrase.matchesPath(path)) {
-      return phrase;
+      if(!version || (version && phrase.getVersion() === version)){
+        return phrase;
+      }
     }
   }));
 
