@@ -35,18 +35,16 @@ BaseStore.prototype.getItemIndexById = function(domain, id){
 };
 
 BaseStore.prototype.add = function(domain, model){
-  var store = this;
-
-  if (!store.item[domain]) {
-    store.item[domain] = [];
+  if (!this.item[domain]) {
+    this.item[domain] = [];
   }
 
-  var index = store.getItemIndexById(domain, model.getId());
+  var index = this.getItemIndexById(domain, model.getId());
 
   if (index === -1) {
-    store.item[domain].push(model);
+    this.item[domain].push(model);
   } else {
-    store.item[domain][index] = model;
+    this.item[domain][index] = model;
   }
 };
 
