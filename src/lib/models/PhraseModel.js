@@ -8,6 +8,7 @@ var XRegExp = require('xregexp').XRegExp;
 var utils = require('../utils.js');
 var evaluateCode = require('../compilers/evaluateCode');
 var methods = ['get', 'put', 'post', 'delete', 'options'];
+var ComposrError = require('../ComposrError');
 var DEFAULT_PHRASE_PARAMETERS = [
   'req', 
   'res', 
@@ -143,6 +144,14 @@ PhraseModel.prototype.__executeScriptMode = function(verb, parameters, timeout, 
 PhraseModel.prototype.__executeFunctionMode = function(verb, parameters, timeout, file) {
   //@TODO: configure timeout
   //@TODO: enable VM if memory bug gets solved
+  var url = this.getUrl();
+
+  setTimeout(function(){
+    if(parameters.res.hasEnded() === false){
+      parameters.res.status(503).send(new ComposrError('error:phrase:timedout:' + url, 'The phrase endpoint is timing out', 503));
+    }
+  }, timeout || 10000);
+
   if (file) {
     var fn = require(file);
     fn(
