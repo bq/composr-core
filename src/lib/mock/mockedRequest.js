@@ -16,7 +16,7 @@ function MockedRequest(serverType, req, options) {
 
   this.params = options.params ? options.params : (req && req.params ? req.params : {});
   this.query = options.query ? options.query : (req && req.query ? req.query : {});
-  this.headers = req ? req.headers : options.headers || {};
+  this.headers = req && req.headers ? req.headers : options.headers || {};
   this.body = req ? req.body : options.body || {};
 
   if (this.headers && typeof(this.headers) === 'object') {

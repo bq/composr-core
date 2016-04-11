@@ -156,7 +156,6 @@ PhraseModel.prototype.__executeFunctionMode = function(verb, parameters, timeout
       parameters.metrics
     );
   } else {
-    
     this.compiled.codes[verb].fn.apply(null, [parameters.req,
       parameters.res,
       parameters.next,

@@ -9,6 +9,7 @@ var MetricsFirer = require('../MetricsFirer');
 var phrasesStore = require('../stores/phrases.store');
 var parseToComposrError = require('../parseToComposrError');
 var mockedServer = require('../mock');
+var corbel = require('corbel-js');
 var utils = require('../utils');
 
 var _ = require('lodash');
@@ -126,8 +127,14 @@ function buildSandbox(sb, options, urlBase, domain, requirer, reqWrapper, resWra
 
   sb.next = nextWrapper.resolve;
 
-  if (!options.corbelDriver) {
-    sb.corbelDriver = null;
+  if (!options.corbelDriver && reqWrapper.get('Authorization')) {
+    sb.corbelDriver = corbel.getDriver({
+      urlBase: urlBase,
+      iamToken: {
+        accessToken: reqWrapper.get('Authorization')
+      },
+      domain: domain
+    });
   } else {
     sb.corbelDriver = options.corbelDriver;
   }
