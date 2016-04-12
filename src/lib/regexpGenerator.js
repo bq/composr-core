@@ -1,6 +1,6 @@
 'use strict'
 
-var XRegExp = require('xregexp').XRegExp
+var XRegExp = require('xregexp')
 
 /**
  * Returns a regexp for a express route

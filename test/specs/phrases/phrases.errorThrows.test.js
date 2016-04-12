@@ -78,7 +78,6 @@ describe('Phrases runner', function() {
 
     Phrases.register(domain, phrasesToRegister)
       .should.be.fulfilled.notify(done);
-
   });
 
 
@@ -101,7 +100,7 @@ describe('Phrases runner', function() {
             'body'
           );
           expect(response.status).to.equals(506);
-          expect(response.body).to.be.an('object');
+          expect(typeof response.body).to.equals('object');
           expect(response.body.error).to.equals('error');
           expect(response.body.errorDescription).to.equals('description');
           
@@ -126,7 +125,7 @@ describe('Phrases runner', function() {
             'body'
           );
           expect(response.status).to.equals(507);
-          expect(response.body).to.be.an('object');
+          expect(typeof response.body).to.equals('object');
           expect(response.body.error).to.equals('error');
           expect(response.body.errorDescription).to.equals('description');
           
@@ -151,7 +150,7 @@ describe('Phrases runner', function() {
             'body'
           );
           expect(response.status).to.equals(500);
-          expect(response.body).to.be.an('object');
+          expect(typeof response.body).to.equals('object');
           expect(response.body.error).to.equals('error:phrase:exception:texterror');
           expect(response.body.errorDescription).to.equals('hola');
           

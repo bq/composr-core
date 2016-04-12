@@ -1,7 +1,7 @@
 'use strict'
 
 var regexpGenerator = require('../regexpGenerator')
-var XRegExp = require('xregexp').XRegExp
+var XRegExp = require('xregexp')
 /**
  * Checks if some value is not undefined
  * @param  {Mixed}  value
