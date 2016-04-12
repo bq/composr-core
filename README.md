@@ -5,6 +5,8 @@
 [![Build Status][travis-badge]][travis-url]
 [![Test Coverage][coverage-badge]][codeclimate-url]
 [![Code Climate][codeclimate-badge]][codeclimate-url]
+[![Dependency status](https://david-dm.org/corbel-platform/composr-core/status.png)](https://david-dm.org/corbel-platform/composr-core#info=dependencies&view=table)
+[![Dev Dependency Status](https://david-dm.org/corbel-platform/composr-core/dev-status.png)](https://david-dm.org/corbel-platform/composr-core#info=devDependencies&view=table)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
