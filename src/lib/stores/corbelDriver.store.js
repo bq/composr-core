@@ -1,12 +1,12 @@
-'use strict';
+'use strict'
 
-var driver = null;
+var driver = null
 
 module.exports = {
-  setDriver : function(corbelDriver){
-    driver = corbelDriver;
+  setDriver: function (corbelDriver) {
+    driver = corbelDriver
   },
-  getDriver : function(){
-    return driver;
+  getDriver: function () {
+    return driver
   }
-};
+}

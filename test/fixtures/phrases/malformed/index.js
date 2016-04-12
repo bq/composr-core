@@ -1,5 +1,4 @@
-'use strict';
-
+'use strict'
 
 module.exports = [
   require('./missingUrl.json'),
@@ -12,4 +11,4 @@ module.exports = [
   require('./missingVersion.json'),
   require('./incorrectCodeInCodeHash.json'),
   require('./returnsValue.json')
-];
+]

@@ -1,6 +1,5 @@
-'use strict';
-
+'use strict'
 
 module.exports = [
   require('./malicious.json')
-];
+]

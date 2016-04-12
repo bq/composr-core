@@ -5,6 +5,11 @@
 [![Build Status][travis-badge]][travis-url]
 [![Test Coverage][coverage-badge]][codeclimate-url]
 [![Code Climate][codeclimate-badge]][codeclimate-url]
+[![Dependency status](https://david-dm.org/corbel-platform/composr-core/status.png)](https://david-dm.org/corbel-platform/composr-core#info=dependencies&view=table)
+[![Dev Dependency Status](https://david-dm.org/corbel-platform/composr-core/dev-status.png)](https://david-dm.org/corbel-platform/composr-core#info=devDependencies&view=table)
+
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
 
 > The core package for Corbel's Composr. [NPM page][npm-url]
 
@@ -47,10 +52,10 @@ composr.init(options)
 var composr = require('composr-core');
 
 //Register phrases (Returns a promise)
-var phrasesLoaded = composr.Phrases.register(domain, phrases);
+var phrasesLoaded = composr.Phrase.register(domain, phrases);
 
 //Register snippets (Returns a promise)
-var snippetsLoaded = composr.Snippets.register(domain, snippets);
+var snippetsLoaded = composr.Snippet.register(domain, snippets);
 
 Promise.all([phrasesLoaded, snippetsLoaded])
   .then(function(){
@@ -94,7 +99,7 @@ var params = {
   timeout: 10000
 };
 
-var executionPromise = composr.Phrases.runByPath(domain, url, method, params);
+var executionPromise = composr.Phrase.runByPath(domain, url, method, params);
 ```
 
 ## Tunneling "express-js" req, res, next
@@ -109,7 +114,7 @@ var params = {
   timeout: 10000
 };
 
-var executionPromise = composr.Phrases.runByPath(domain, url, method, params);
+var executionPromise = composr.Phrase.runByPath(domain, url, method, params);
 ```
 
 
@@ -118,7 +123,7 @@ var executionPromise = composr.Phrases.runByPath(domain, url, method, params);
 ## Using mocked handlers
 
 You can send an object containing the request headers and other for the body.
-Use `params` if you don't want to extract the params from the url or if you are using `composr.Phrases.runByID`
+Use `params` if you don't want to extract the params from the url or if you are using `composr.Phrase.runByID`
 
 ```javascript
 var headers = {
@@ -226,7 +231,7 @@ function executePhrase(endpointPath, req, res, next) {
     timeout: 10000 
   };
 
-  composr.Phrases.runByPath(domain, phrasePath, method, params)
+  composr.Phrase.runByPath(domain, phrasePath, method, params)
     .catch(function(err){
       res.status(404).send(new ComposrError('endpoint:not:found', 'Not found', 404));
     });
@@ -244,44 +249,44 @@ phraseModel.debug = {
   'get' : '/myAbsolute/path/phrase.code.js'
 };
 
-composr.Phrases.register(phraseModel);
+composr.Phrase.register(phraseModel);
 ```
 
 Later on, from your project, you can launch `node-inspector` debug and add breackpoints in the `phrase.code.js` file.
 
 # API
 
-**composr.Phrases.validate**
+**composr.Phrase.validate**
 
-**composr.Phrases.compile**
+**composr.Phrase.compile**
 
-**composr.Phrases.register**
+**composr.Phrase.register**
 
-**composr.Phrases.unregister**
+**composr.Phrase.unregister**
 
-**composr.Phrases.runById**
+**composr.Phrase.runById**
 
-**composr.Phrases.runByPath**
+**composr.Phrase.runByPath**
 
-**composr.Phrases.getPhrases**
+**composr.Phrase.getPhrases**
 
-**composr.Phrases.getById**
+**composr.Phrase.getById**
 
-**composr.Phrases.getByMatchingPath**
+**composr.Phrase.getByMatchingPath**
 
-**composr.Snippets.validate**
+**composr.Snippet.validate**
 
-**composr.Snippets.compile**
+**composr.Snippet.compile**
 
-**composr.Snippets.register**
+**composr.Snippet.register**
 
-**composr.Snippets.unregister**
+**composr.Snippet.unregister**
 
-**composr.Snippets.runByName**
+**composr.Snippet.runByName**
 
-**composr.Snippets.getByName**
+**composr.Snippet.getByName**
 
-**composr.Snippets.getSnippets**
+**composr.Snippet.getSnippets**
 
 
 

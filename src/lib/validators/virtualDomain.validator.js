@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-var validator = require('jsonschema').validate,
-  utils = require('../utils'),
-  semver = require('semver');
+var validator = require('jsonschema').validate
+var utils = require('../utils')
+var semver = require('semver')
 
 var virtualDomainSchema = {
   'id': '/VirtualDomain',
@@ -19,39 +19,37 @@ var virtualDomainSchema = {
     'validate_middleware': {'type': 'boolean'},
     'vd_dependencies': {'type': 'object'},
     '_apiRML': {'type': 'object'},
-    'phrases' : { 
-      'type' : 'array',
-      'items' : {
-        'type' : 'object'
+    'phrases': {
+      'type': 'array',
+      'items': {
+        'type': 'object'
       }
     },
-    'snippets' : { 
-      'type' : 'array',
-      'items' : {
-        'type' : 'object'
+    'snippets': {
+      'type': 'array',
+      'items': {
+        'type': 'object'
       }
     }
   }
-};
-
-function validate(virtualDomain) {
-  return new Promise(function(resolve, reject){
-
-    var result = validator(virtualDomain, virtualDomainSchema);
-
-    var errors = result.errors;
-
-    var errorAccumulator = utils.errorAccumulator(errors);
-
-    errorAccumulator(semver.valid, virtualDomain.version, 'incorrect:virtualDomain:version');
-
-    if(errors.length > 0){
-      reject(errors);
-    }else{
-      resolve(virtualDomain);
-    }
-  });
-
 }
 
-module.exports = validate;
+function validate (virtualDomain) {
+  return new Promise(function (resolve, reject) {
+    var result = validator(virtualDomain, virtualDomainSchema)
+
+    var errors = result.errors
+
+    var errorAccumulator = utils.errorAccumulator(errors)
+
+    errorAccumulator(semver.valid, virtualDomain.version, 'incorrect:virtualDomain:version')
+
+    if (errors.length > 0) {
+      reject(errors)
+    } else {
+      resolve(virtualDomain)
+    }
+  })
+}
+
+module.exports = validate

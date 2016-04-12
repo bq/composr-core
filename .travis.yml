@@ -1,24 +1,24 @@
 sudo: false
 language: node_js
 node_js:
-  - "5.9.0"
+  - "5.10.1"
 
 notifications:
   email:
     - "rafael.pedrola@bq.com"
+    - "jorge.serrano@bq.com"
+    - "josep.arpi@bq.com"
+    - "miguel.jimenez@bq.com"
 
 addons:
   code_climate:
-    repo_token: a7fef3826962cda37b31c0e97b93247967641bae95f7942f9d272aa143a901d9
+    repo_token: 4db1d31b1d02b573dc56844161c97c9038d388574c5d4168e36f6d330121782a
 
 before_install:
   - npm install -g grunt-cli
   - npm install -g mocha
   - npm install -g istanbul
   - npm install -g codeclimate-test-reporter
-
-before_script:
-  - grunt jshint
 
 after_script:
   - istanbul cover node_modules/.bin/_mocha -- -R dot

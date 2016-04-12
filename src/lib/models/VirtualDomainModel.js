@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var BaseModel = require('./BaseModel');
+var _ = require('lodash')
+var BaseModel = require('./BaseModel')
 
 /**
  * virtualDomain json example
@@ -19,24 +19,22 @@ var BaseModel = require('./BaseModel');
  * }
  */
 var VirtualDomainModel = function (json, domain) {
-  this.json = _.cloneDeep(json); //Clone to avoid modifications on parent object
+  this.json = _.cloneDeep(json) // Clone to avoid modifications on parent object
 
-  this.id = this._generateId(domain);
-  this.domain = domain;
+  this.id = this._generateId(domain)
+  this.domain = domain
 
-  this.json.id = this.id;
-};
+  this.json.id = this.id
+}
 
-VirtualDomainModel.prototype = new BaseModel();
+VirtualDomainModel.prototype = new BaseModel()
 
 VirtualDomainModel.prototype.getMiddlewares = function () {
-  return this.json.middlewares;
-};
+  return this.json.middlewares
+}
 
 VirtualDomainModel.prototype.getName = VirtualDomainModel.prototype.getApiId = function () {
-  return this.json.api_id;
-};
+  return this.json.api_id
+}
 
-module.exports = VirtualDomainModel;
-
- 
+module.exports = VirtualDomainModel
