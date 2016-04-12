@@ -1,12 +1,12 @@
-'use strict';
+'use strict'
 
-var COLLECTION = 'composr:VirtualDomain';
-var BaseDao = require('./BaseDao');
+var COLLECTION = 'composr:VirtualDomain'
+var BaseDao = require('./BaseDao')
 
-var VirtualDomainDao = function() {};
+var VirtualDomainDao = function () {}
 
 VirtualDomainDao.prototype = new BaseDao({
-  collection : COLLECTION
-});
+  collection: COLLECTION
+})
 
-module.exports = new VirtualDomainDao();
+module.exports = new VirtualDomainDao()

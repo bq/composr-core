@@ -1,51 +1,50 @@
-'use strict';
+'use strict'
 
-var raml = require('raml-parser'),
-  YAML = require('yamljs'),
-  q = require('q'),
-  _ = require('lodash');
+var raml = require('raml-parser')
+var YAML = require('yamljs')
+var q = require('q')
+var _ = require('lodash')
 
-var buildPhraseDefinition = function(phrase) {
-  var doc = {};
+var buildPhraseDefinition = function (phrase) {
+  var doc = {}
 
   // convert express URL `path/:param1/:param2` to
   // RAML URL`path/{param1}/{param2}`
-  var url = phrase.url ? phrase.url.split('/') : [];
-  url = url.map(function(item) {
+  var url = phrase.url ? phrase.url.split('/') : []
+  url = url.map(function (item) {
     if (item[0] === ':') {
-      item = item.replace(':', '{').replace('?', '');
-      item += '}';
+      item = item.replace(':', '{').replace('?', '')
+      item += '}'
     }
-    return item;
-  }).join('/');
+    return item
+  }).join('/')
 
-  url =  '/' + url;
-  doc[url] = {};
+  url = '/' + url
+  doc[url] = {}
 
   // model version
-  doc[url].description = 'release ' + phrase.version;
+  doc[url].description = 'release ' + phrase.version
 
-  ['get', 'post', 'put', 'delete', 'options'].forEach(function(method) {
+  ;['get', 'post', 'put', 'delete', 'options'].forEach(function (method) {
     if (phrase[method]) {
-      doc[url][method] = phrase[method].doc;
+      doc[url][method] = phrase[method].doc
 
       // oauth_2_0 has specific type for common header documentation
       if (phrase[method].doc && phrase[method].doc.securedBy && phrase[method].doc.securedBy.indexOf('oauth_2_0') !== -1) {
-        doc[url].type = 'secured';
+        doc[url].type = 'secured'
       }
     }
-  });
+  })
 
-  return doc;
-};
+  return doc
+}
 
-function transform(phrases, urlBase, domain, version) {
-  var doc = {};
+function transform (phrases, urlBase, domain, version) {
+  var doc = {}
 
-  phrases.forEach(function(phrase) {
-    _.extend(doc, buildPhraseDefinition(phrase));
-  });
-
+  phrases.forEach(function (phrase) {
+    _.extend(doc, buildPhraseDefinition(phrase))
+  })
 
   var definition_0 = [
     '#%RAML 0.8',
@@ -59,7 +58,7 @@ function transform(phrases, urlBase, domain, version) {
     '    - title: Composr Dynamic Endpoints',
     '      content: |',
     ''
-  ];
+  ]
 
   var definition_1 = [
     'securitySchemes:',
@@ -92,11 +91,11 @@ function transform(phrases, urlBase, domain, version) {
     '        put?: *common',
     '        delete?: *common',
     YAML.stringify(doc, 4)
-  ];
+  ]
 
-  return _.concat(definition_0, definition_1).join('\n');
+  return _.concat(definition_0, definition_1).join('\n')
 
-  //return definition;
+// return definition
 }
 
 /**
@@ -105,21 +104,21 @@ function transform(phrases, urlBase, domain, version) {
  * @param  {Object} phrase
  * @return {String}
  */
-var compile = function(phrases, urlBase, domain, version) {
-  var dfd = q.defer();
+var compile = function (phrases, urlBase, domain, version) {
+  var dfd = q.defer()
 
-  urlBase = urlBase || 'http://test.com';
-  domain = domain || 'test-domain';
-  version = version || '';
+  urlBase = urlBase || 'http://test.com'
+  domain = domain || 'test-domain'
+  version = version || ''
 
-  var definition = transform(phrases, urlBase, domain, version);
+  var definition = transform(phrases, urlBase, domain, version)
 
-  //Use the raml.load to parse the formed raml
+  // Use the raml.load to parse the formed raml
   raml.load(definition)
-    .then(dfd.resolve, dfd.reject);
+    .then(dfd.resolve, dfd.reject)
 
-  return dfd.promise;
-};
+  return dfd.promise
+}
 
-module.exports.transform = transform;
-module.exports.compile = compile;
+module.exports.transform = transform
+module.exports.compile = compile

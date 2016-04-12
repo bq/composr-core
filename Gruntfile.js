@@ -9,7 +9,6 @@ module.exports = function (grunt) {
   require('load-grunt-tasks')(grunt)
 
   grunt.initConfig({
-
     pkg: grunt.file.readJSON('./package.json'),
 
     jshint: {
@@ -39,7 +38,8 @@ module.exports = function (grunt) {
     standard: {
       lint: {
         src: [
-          './{scripts,src,test}/**/*.js',
+          './{scripts,src}/**/*.js',
+          // './test/**/**.test.js',
           '*.js'
         ]
       },
@@ -49,7 +49,8 @@ module.exports = function (grunt) {
           lint: true
         },
         src: [
-          './{scripts,src,test}/**/*.js',
+          './{scripts,src}/**/*.js',
+          // './test/**/**.test.js',
           '*.js'
         ]
       }
@@ -58,7 +59,7 @@ module.exports = function (grunt) {
   })
 
   // Register circular dependencies
-  grunt.registerTask('madge', 'Run madge.', function() {
+  grunt.registerTask('madge', 'Run madge.', function () {
     var dependencyObject = madge('./src')
     var listOfCircularDependencies = dependencyObject.circular().getArray()
 
@@ -72,7 +73,7 @@ module.exports = function (grunt) {
   })
 
   grunt.registerTask('test', [
-    'jshint',
+    'standard:format',
     'madge',
     'mochaTest:ci'
   ])

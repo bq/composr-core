@@ -1,51 +1,46 @@
-'use strict';
+'use strict'
 
-var q = require('q');
+function init (options, fetch) {
+  var module = this
 
-function init(options, fetch) {
-  /*jshint validthis:true */
-  var dfd = q.defer();
-  var module = this;
+  this.reset()
 
-  this.reset();
+  this.config = this.bindConfiguration(options)
 
-  this.config = this.bindConfiguration(options);
+  this.Phrase.configure(this.config)
 
-  this.Phrase.configure(this.config);
+  this.requirer.configure(this.config)
 
-  this.requirer.configure(this.config);
+  if (!fetch) {
+    return Promise.resolve()
+  }
 
-  if (fetch) {
-    //Do the stuff
-    this.initCorbelDriver()
-      .then(function() {
-        return module.clientLogin();
+  return new Promise(function (resolve, reject) {
+    // Do the stuff
+    module.initCorbelDriver()
+      .then(function () {
+        return module.clientLogin()
       })
-      .then(function() {
+      .then(function () {
         return Promise.all([
           module.Phrase.load(),
           module.Snippet.load(),
           module.VirtualDomain.load()
-        ]);
+        ])
       })
-      .then(function() {
-        module.events.emit('debug', 'success:initializing');
-        dfd.resolve();
+      .then(function () {
+        module.events.emit('debug', 'success:initializing')
+        resolve()
       })
-      .catch(function(err) {
-        err = err && err.data ? err.data : err;
-        //something failed, then reset the module to it's original state
-        //TODO: emit('error') causes an unhandled execption in node.
-        module.events.emit('errore', 'error:initializing', err);
-        module.reset();
-        dfd.reject(err);
-      });
-  } else {
-    dfd.resolve();
-  }
-
-
-  return dfd.promise;
+      .catch(function (err) {
+        err = err && err.data ? err.data : err
+        // something failed, then reset the module to it's original state
+        // TODO: emit('error') causes an unhandled execption in node.
+        module.events.emit('errore', 'error:initializing', err)
+        module.reset()
+        reject(err)
+      })
+  })
 }
 
-module.exports = init;
+module.exports = init

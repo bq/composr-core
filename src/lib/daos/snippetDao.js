@@ -1,12 +1,12 @@
-'use strict';
+'use strict'
 
-var COLLECTION = 'composr:Snippet';
-var BaseDao = require('./BaseDao');
+var COLLECTION = 'composr:Snippet'
+var BaseDao = require('./BaseDao')
 
-var SnippetDao = function() {};
+var SnippetDao = function () {}
 
 SnippetDao.prototype = new BaseDao({
-  collection : COLLECTION
-});
+  collection: COLLECTION
+})
 
-module.exports = new SnippetDao();
+module.exports = new SnippetDao()

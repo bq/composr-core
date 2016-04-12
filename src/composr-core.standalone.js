@@ -1,3 +1,3 @@
-var composrCore = require('./composr-core');
+var composrCore = require('./composr-core')
 
-global.window.composr = composrCore;
+global.window.composr = composrCore

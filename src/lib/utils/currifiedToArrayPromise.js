@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var q = require('q');
+var _ = require('lodash')
+var q = require('q')
 /*
  Proxy that accepts one or multiple items
  returns a function that executes a promise for each item
@@ -9,48 +9,47 @@ var q = require('q');
 
  returns : promise
  */
-function currifiedToArrayPromise(itemOrItems) {
+function currifiedToArrayPromise (itemOrItems) {
   if (!itemOrItems) {
-    return function(){
-      return Promise.reject();
-    };
+    return function () {
+      return Promise.reject()
+    }
   }
 
-  var isArray = Array.isArray(itemOrItems);
-  
-  var theItems = _.cloneDeep(itemOrItems);
+  var isArray = Array.isArray(itemOrItems)
+
+  var theItems = _.cloneDeep(itemOrItems)
 
   if (isArray === false) {
-    theItems = [theItems];
+    theItems = [theItems]
   }
 
-  return function(itemCb, cb){
-    var promises = theItems.map(function(item) {
-      return itemCb(item);
-    });
+  return function (itemCb, cb) {
+    var promises = theItems.map(function (item) {
+      return itemCb(item)
+    })
 
-    return new Promise(function(resolve){
+    return new Promise(function (resolve) {
       q.allSettled(promises)
-      .then(function(results) {
-        if(cb){
-          results = results.map(function(result, index){
-            return cb(result, theItems[index]);
-          });
-        }else{
-          results = results.map(function(result){
-            return result.value;
-          });
-        }
+        .then(function (results) {
+          if (cb) {
+            results = results.map(function (result, index) {
+              return cb(result, theItems[index])
+            })
+          } else {
+            results = results.map(function (result) {
+              return result.value
+            })
+          }
 
-        if (isArray) {
-          resolve(results);
-        } else {
-          resolve(results[0]);
-        }
-      });
-    });
-  };
-
+          if (isArray) {
+            resolve(results)
+          } else {
+            resolve(results[0])
+          }
+        })
+    })
+  }
 }
 
-module.exports = currifiedToArrayPromise;
+module.exports = currifiedToArrayPromise
