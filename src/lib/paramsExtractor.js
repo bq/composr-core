@@ -1,6 +1,6 @@
 'use strict'
 
-var XRegExp = require('xregexp').XRegExp
+var XRegExp = require('xregexp')
 
 function extractParams (path, phraseRegexpReference) {
   var params = {}

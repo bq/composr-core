@@ -6,7 +6,7 @@
   it('should evaluate a function', function() {
     var result = evaluateCode('console.log(a);');
     expect(result.fn).to.be.a('function');
-    expect(result.script).to.be.a('object');
+    expect(typeof result.script).to.equals('object');
     expect(result.error).to.equals(false);
   });
 

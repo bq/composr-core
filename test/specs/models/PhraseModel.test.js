@@ -31,18 +31,18 @@ describe('Phrase Model', function() {
       var examplePhrases = [{
         url: 'test',
         domain: 'mydomain',
-        version : '2.2.2',
+        version: '2.2.2',
         expected: 'mydomain!test-2.2.2'
       }, {
         url: 'test/:user',
         domain: 'mydomain',
-        version : '0.2.2',
+        version: '0.2.2',
         expected: 'mydomain!test!:user-0.2.2'
       }, {
-        url: 'test/:path/:path/:path/:path?/user',
+        url: 'test/:path/:path2/:path3/:path4?/user',
         domain: 'anotherdomain',
-        version : '2.3.2',
-        expected: 'anotherdomain!test!:path!:path!:path!:path?!user-2.3.2'
+        version: '2.3.2',
+        expected: 'anotherdomain!test!:path!:path2!:path3!:path4?!user-2.3.2'
       }];
 
       examplePhrases.forEach(function(value) {
@@ -53,7 +53,7 @@ describe('Phrase Model', function() {
 
     it('Generates the regexpreference for each phrase', function(){
       var phrase = {
-        url : 'user/me/:param'
+        url: 'user/me/:param'
       };
 
       var model = new PhraseModel(phrase, 'test:domain');
@@ -124,7 +124,7 @@ describe('Phrase Model', function() {
     it('launches an event with the evaluation', function() {
       var phrase = {
         url: 'thephrase/without/:id',
-        version : '2.3.4',
+        version: '2.3.4',
         get: {
           code: 'console.log(a);',
           doc: {}
@@ -145,7 +145,7 @@ describe('Phrase Model', function() {
     it('launches a warn event with a wrong code', function() {
       var phrase = {
         url: 'thephrase/without/:id',
-        version : '2.3.4',
+        version: '2.3.4',
         get: {
           code: '}',
           doc: {}
@@ -168,10 +168,10 @@ describe('Phrase Model', function() {
   describe('Can run', function(){
     it('Returns true for GET', function(){
       var model = new PhraseModel({
-        url : 'a/b',
-        version : '2.2.3',
-        get : {
-          code : 'console.log(3);'
+        url: 'a/b',
+        version: '2.2.3',
+        get: {
+          code: 'console.log(3);'
         }
       }, 'domain');
 
@@ -185,13 +185,13 @@ describe('Phrase Model', function() {
 
     it('Returns true for PUT AND POST', function(){
       var model = new PhraseModel({
-        url : 'a/b',
-        version : '2.2.3',
-        put : {
-          code : 'console.log(3);'
+        url: 'a/b',
+        version: '2.2.3',
+        put: {
+          code: 'console.log(3);'
         },
-        post : {
-          code : 'console.log(3);'
+        post: {
+          code: 'console.log(3);'
         }
       }, 'domain');
 
@@ -205,10 +205,10 @@ describe('Phrase Model', function() {
 
     it('Returns true for DELETE', function(){
       var model = new PhraseModel({
-        url : 'a/b',
-        version : '2.2.3',
-        delete : {
-          code : 'console.log(3);'
+        url: 'a/b',
+        version: '2.2.3',
+        delete: {
+          code: 'console.log(3);'
         }
       }, 'domain');
 
@@ -223,20 +223,20 @@ describe('Phrase Model', function() {
 
   describe('Get middlewares', function(){
     var model = new PhraseModel({
-        url : 'a/b',
-        version : '2.2.3',
-        delete : {
-          code : 'console.log(3);'
-        },
-        get : {
-          code : 'console.log(1)',
-          middlewares: ['mock', 'validate']
-        },
-        post : {
-          code : 'console.log(1)',
-          middlewares: ['validate']
-        }
-      }, 'domain');
+      url: 'a/b',
+      version: '2.2.3',
+      delete: {
+        code: 'console.log(3);'
+      },
+      get: {
+        code: 'console.log(1)',
+        middlewares: ['mock', 'validate']
+      },
+      post: {
+        code: 'console.log(1)',
+        middlewares: ['validate']
+      }
+    }, 'domain');
 
     it('Returns an empty array if its not defined', function(){
       expect(model.getMiddlewares('delete').length).to.equals(0);
@@ -261,22 +261,22 @@ describe('Phrase Model', function() {
 
   describe('Get Doc', function(){
     var model = new PhraseModel({
-        url : 'a/b',
-        version : '2.2.3',
-        delete : {
-          code : 'console.log(3);',
-          doc : 'delete Doc'
+        url: 'a/b',
+        version: '2.2.3',
+        delete: {
+          code: 'console.log(3);',
+          doc: 'delete Doc'
         },
-        get : {
-          code : 'console.log(1)',
-          doc : 'get Doc'
+        get: {
+          code: 'console.log(1)',
+          doc: 'get Doc'
         },
-        post : {
-          code : 'console.log(1)',
-          doc : 'post Doc'
+        post: {
+          code: 'console.log(1)',
+          doc: 'post Doc'
         },
-        put : {
-          code : 'console.log(1)'
+        put: {
+          code: 'console.log(1)'
         }
       }, 'domain');
 

@@ -2,7 +2,7 @@
 
 var regexpGenerator = require('../../src/lib/regexpGenerator.js'),
   paramsExtractor = require('../../src/lib/paramsExtractor.js'),
-  XRegExp = require('xregexp').XRegExp,
+  XRegExp = require('xregexp'),
   chai = require('chai'),
   expect = chai.expect;
 
