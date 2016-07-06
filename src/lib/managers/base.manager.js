@@ -81,12 +81,12 @@ BaseManager.prototype._register = function (domain, item) {
 
         return modelInstance
       } else {
-        module.events.emit('warn', module.itemName + ':not:registered', item.id)
+        module.events.emit('warn', module.itemName + ':not:registered', item.id, item.url)
         throw new Error('not:registered')
       }
     })
     .catch(function (err) {
-      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, err)
+      module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, item.url, err)
       throw err
     })
 }
