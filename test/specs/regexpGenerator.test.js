@@ -3,7 +3,7 @@
 var regexpGenerator = require('../../src/lib/regexpGenerator.js'),
   chai = require('chai'),
   expect = chai.expect,
-  XRegExp = require('xregexp').XRegExp;
+  XRegExp = require('xregexp');
 
 describe('in regexpGenerator module', function() {
 

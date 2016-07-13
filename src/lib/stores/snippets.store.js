@@ -1,11 +1,11 @@
-'use strict';
+'use strict'
 
-var BaseStore = require('./BaseStore');
+var BaseStore = require('./BaseStore')
 
-var SnippetStore = function() {};
+var SnippetStore = function () {}
 
-SnippetStore.prototype = new BaseStore();
+SnippetStore.prototype = new BaseStore()
 
-var singletonSnippetStore = new SnippetStore();
+var singletonSnippetStore = new SnippetStore()
 
-module.exports = singletonSnippetStore;
+module.exports = singletonSnippetStore

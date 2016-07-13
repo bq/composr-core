@@ -1,90 +1,88 @@
-'use strict';
+'use strict'
 
-var check = require('syntax-error'),
-  ramlCompiler = require('../compilers/raml.compiler'),
-  q = require('q'),
-  utils = require('../utils'),
-  vm = require('vm'),
-  semver = require('semver'),
-  vUtils = utils.values;
+var check = require('syntax-error')
+var ramlCompiler = require('../compilers/raml.compiler')
+var q = require('q')
+var utils = require('../utils')
+var vm = require('vm')
+var semver = require('semver')
+var vUtils = utils.values
 
-function validate(phrase) {
-  var dfd = q.defer();
+function validate (phrase) {
+  var dfd = q.defer()
 
-  var errors = [];
+  var errors = []
 
-  var errorAccumulator = utils.errorAccumulator(errors);
+  var errorAccumulator = utils.errorAccumulator(errors)
 
-  errorAccumulator(vUtils.isValue, phrase, 'undefined:phrase');
-  errorAccumulator(vUtils.isValue, phrase.url, 'undefined:phrase:url');
-  errorAccumulator(vUtils.isValidEndpoint, phrase.url, 'error:phrase:url:syntax');
-  
-  errorAccumulator(semver.valid, phrase.version, 'incorrect:phrase:version');
+  errorAccumulator(vUtils.isValue, phrase, 'undefined:phrase')
+  errorAccumulator(vUtils.isValue, phrase.url, 'undefined:phrase:url')
+  errorAccumulator(vUtils.isValidEndpoint, phrase.url, 'error:phrase:url:syntax')
 
-  var methodPresent = false;
+  errorAccumulator(semver.valid, phrase.version, 'incorrect:phrase:version')
 
-  ['get', 'post', 'put', 'delete', 'options'].forEach(function(method) {
+  var methodPresent = false
+
+  ;['get', 'post', 'put', 'delete', 'options'].forEach(function (method) {
     if (phrase[method]) {
-
-      var code;
+      var code
 
       if (!phrase[method].codehash) {
-        var isCandidate = errorAccumulator(vUtils.isValue, phrase[method].code, 'undefined:phrase:' + method + ':code');
+        var isCandidate = errorAccumulator(vUtils.isValue, phrase[method].code, 'undefined:phrase:' + method + ':code')
         if (isCandidate) {
-          code = phrase[method].code;
+          code = phrase[method].code
         }
       }
 
       if (!phrase[method].code) {
-        var isValue = errorAccumulator(vUtils.isValue, phrase[method].codehash, 'undefined:phrase:' + method + ':codehash');
-        var isValidBase64 = errorAccumulator(vUtils.isValidBase64, phrase[method].codehash, 'invalid:phrase:' + method + ':codehash');
+        var isValue = errorAccumulator(vUtils.isValue, phrase[method].codehash, 'undefined:phrase:' + method + ':codehash')
+        var isValidBase64 = errorAccumulator(vUtils.isValidBase64, phrase[method].codehash, 'invalid:phrase:' + method + ':codehash')
 
         if (isValue && isValidBase64) {
-          code = new Buffer(phrase[method].codehash, 'base64').toString('utf8');
+          code = new Buffer(phrase[method].codehash, 'base64').toString('utf8')
         }
       }
 
-      errorAccumulator(vUtils.isValue, phrase[method].doc, 'undefined:phrase:' + method + ':doc');
+      errorAccumulator(vUtils.isValue, phrase[method].doc, 'undefined:phrase:' + method + ':doc')
 
       try {
-        var funct = new Function('req', 'res', 'next', 'corbelDriver', code); //jshint ignore:line
-        var error = check(funct);
+        var funct = new Function('req', 'res', 'next', 'corbelDriver', code) // eslint-disable-line
+        var error = check(funct)
         if (error) {
-          errors.push('error:phrase:syntax');
+          errors.push('error:phrase:syntax')
         }
       } catch (e) {
-        errors.push('error:phrase:syntax:' + e);
+        errors.push('error:phrase:syntax:' + e)
       }
 
       try {
-        var tmpScript = new vm.Script(code); //jshint ignore:line
+        var tmpScript = new vm.Script(code) // eslint-disable-line
       } catch (e) {
-        errors.push('error:phrase:syntax:' + e);
+        errors.push('error:phrase:syntax:' + e)
       }
 
-      methodPresent = true;
+      methodPresent = true
     }
-  });
+  })
 
   if (!methodPresent) {
-    errors.push('undefined:phrase:http_method');
+    errors.push('undefined:phrase:http_method')
   }
-  
+
   ramlCompiler.compile([phrase])
-    .then(function(){
-      if(errors.length > 0){
-        dfd.reject(errors);
-      }else{
-        dfd.resolve(phrase);
+    .then(function () {
+      if (errors.length > 0) {
+        dfd.reject(errors)
+      } else {
+        dfd.resolve(phrase)
       }
     })
-    .catch(function(){
-      errors.push('error:not-raml-compilant');
-      dfd.reject(errors);
-    });
+    .catch(function () {
+      errors.push('error:not-raml-compilant')
+      dfd.reject(errors)
+    })
 
-
-  return dfd.promise;
+  return dfd.promise
 }
 
-module.exports = validate;
+module.exports = validate

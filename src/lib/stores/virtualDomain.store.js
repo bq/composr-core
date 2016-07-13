@@ -1,11 +1,11 @@
-'use strict';
+'use strict'
 
-var BaseStore = require('./BaseStore');
+var BaseStore = require('./BaseStore')
 
-var VirtualDomainStore = function() {};
+var VirtualDomainStore = function () {}
 
-VirtualDomainStore.prototype = new BaseStore();
+VirtualDomainStore.prototype = new BaseStore()
 
-var singletonVirtualDomainStore = new VirtualDomainStore();
+var singletonVirtualDomainStore = new VirtualDomainStore()
 
-module.exports = singletonVirtualDomainStore;
+module.exports = singletonVirtualDomainStore

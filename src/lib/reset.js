@@ -1,13 +1,12 @@
-'use strict';
+'use strict'
 
-var driverStore = require('./stores/corbelDriver.store');
+var driverStore = require('./stores/corbelDriver.store')
 
-function reset() {
-  /*jshint validthis:true */
-  this.config = null;
+function reset () {
+  this.config = null
 
-  //reset driver
-  driverStore.setDriver(null);
+  // reset driver
+  driverStore.setDriver(null)
 }
 
-module.exports = reset;
+module.exports = reset

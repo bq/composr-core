@@ -51,6 +51,27 @@ describe('Phrase validator', function() {
           done('Error');
         });
     });
+
+    it('should reject the validation if the path has duplicated names', function (done) {
+      var phrase = {
+        'url': 'my/phrase/:id/:id/:id',
+        'version': '23.4.2',
+        'get': {
+          'code': 'console.log("a");',
+          'doc': {
+
+          }
+        }
+      };
+
+      validator(phrase)
+        .should.be.rejected
+        .then(function(result){
+          expect(result.length).to.equals(1);
+          expect(result[0]).to.equals('error:phrase:url:syntax');
+          done();
+        });
+    });
   });
 
   describe('Malicious phrases', function() {
