@@ -1,0 +1,36 @@
+{
+    "url": "cache/test",
+    "version": "2.3.5",
+    "get": {
+        "code": "res.status(200).send(Date.now())",
+        "cache": {
+            "type" : "user",
+            "duration": "1m"
+        },
+        "middlewares": [
+          "cache",
+          "auth",
+          "mock"
+        ],
+        "doc": {
+            "description": "Phrase for testing purposes",
+            "body": {}
+        }
+    },
+    "post": {
+        "code": "res.status(200).send('OK')",
+        "cache": {
+            "invalidate" : [
+                "cache/test",
+                "user/me"
+            ]
+        },
+        "middlewares": [
+          "cache"
+        ],
+        "doc": {
+            "description": "Phrase for testing purposes",
+            "body": {}
+        }
+    }
+}

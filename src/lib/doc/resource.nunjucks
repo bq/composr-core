@@ -33,6 +33,12 @@
               <div class="method_description">
                 {% markdown %}{{ method.description}}{% endmarkdown %}
               </div>
+              <div class="hooks">
+                {% if resource.originalPhrase[method.method].middlewares %}
+                  <h3>Hooks</h3>
+                  {{  resource.originalPhrase[method.method].middlewares }}
+                {% endif %}
+              </div>
               <div class="clearfix"></div>
             </div>
           {% endfor %}
