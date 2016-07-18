@@ -93,14 +93,13 @@ function documentation (phrases, snippets, domain, version, basePathDoc) {
       // Find and replace the $ref parameters.
       ramlObj = ramljsonexpander.expandJsonSchemas(ramlObj)
 
-      //Add the original phrase reference to each parsed resource.
-      ramlObj.resources = ramlObj.resources.map(function(item){
-        item.originalPhrase = _.filter(phrasesToShow, function(phrase){
+      // Add the original phrase reference to each parsed resource.
+      ramlObj.resources = ramlObj.resources.map(function (item) {
+        item.originalPhrase = _.filter(phrasesToShow, function (phrase) {
           return ('/' + phrase.url) === item.relativeUri
         })[0]
         return item
       })
-
 
       ramlObj.versions = versionsData
 
@@ -111,7 +110,6 @@ function documentation (phrases, snippets, domain, version, basePathDoc) {
 
       ramlObj.basePathDoc = basePathDoc || ''
 
-     
       // Render the main template using the raml object and fix the double quotes
       var html = env.render('./template.nunjucks', ramlObj)
       html = html.replace(/&quot;/g, '"')
