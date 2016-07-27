@@ -2,14 +2,14 @@
 
 var SNIPPETS_PREFIX = 'snippet-'
 
-var ALLOWED_LIBRARIES = {
-  'q': require('q'),
-  'http': require('http'),
-  'request': require('request'),
-  'async': require('async'),
-  'corbel-js': require('corbel-js'),
-  'lodash': require('lodash')
-}
+var ALLOWED_LIBRARIES = [
+  'q',
+  'http',
+  'request',
+  'async',
+  'corbel-js',
+  'lodash'
+]
 
 var LOCAL_LIBRARIES = {
   'ComposrError': './ComposrError',
@@ -50,10 +50,8 @@ Requirer.prototype.forDomain = function (domain, version, functionMode) {
       }
 
       return returnedResult
-    } else if (libName && Object.keys(ALLOWED_LIBRARIES).indexOf(libName) !== -1) {
-      var lib = require(libName)
-
-      return lib
+    } else if (libName && ALLOWED_LIBRARIES.indexOf(libName) !== -1) {
+      return require(libName)
     } else if (libName && Object.keys(LOCAL_LIBRARIES).indexOf(libName) !== -1) {
       var locallib = require(LOCAL_LIBRARIES[libName])
       return locallib

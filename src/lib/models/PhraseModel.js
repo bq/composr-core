@@ -144,10 +144,11 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
   // @TODO: enable VM if memory bug gets solved
   var url = this.getUrl()
 
-  setTimeout(function () {
+  var tm = setTimeout(function () {
     if (parameters.res.hasEnded() === false) {
       parameters.res.status(503).send(new ComposrError('error:phrase:timedout:' + url, 'The phrase endpoint is timing out', 503))
     }
+    clearTimeout(tm)
   }, timeout || 10000)
 
   if (file) {
@@ -163,15 +164,14 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
       parameters.metrics
     )
   } else {
-    this.compiled.codes[verb].fn.apply(null, [parameters.req,
+    this.compiled.codes[verb].fn.call(null, parameters.req,
       parameters.res,
       parameters.next,
       parameters.corbelDriver,
       parameters.domain,
       parameters.require,
       parameters.config,
-      parameters.metrics
-    ])
+      parameters.metrics)
   }
 }
 

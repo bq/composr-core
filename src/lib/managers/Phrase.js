@@ -115,15 +115,22 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox (sb, options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper, version) {
-  sb.console = console
-  sb.Promise = Promise
+function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper, version) {
+  // The object that will be inject on the phrase itself.
+  var sb = {
+    console: console,
+    Promise: Promise,
+    req: reqWrapper,
+    res: resWrapper,
+    next: nextWrapper.resolve,
+    domain: domain,
+    config: {
+      urlBase: urlBase
+    },
+    metrics: new MetricsFirer(domain)
+  }
 
-  sb.req = reqWrapper
-
-  sb.res = resWrapper
-
-  sb.next = nextWrapper.resolve
+  sb.require = options.browser ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
 
   if (!options.corbelDriver && reqWrapper.get('Authorization')) {
     sb.corbelDriver = corbel.getDriver({
@@ -137,15 +144,7 @@ function buildSandbox (sb, options, urlBase, domain, requirer, reqWrapper, resWr
     sb.corbelDriver = options.corbelDriver
   }
 
-  sb.domain = domain
-
-  sb.require = options.browser ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
-
-  sb.config = {}
-
-  sb.config.urlBase = urlBase
-
-  sb.metrics = new MetricsFirer(domain)
+  return sb
 }
 
 // Executes a phrase
@@ -161,10 +160,9 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
   var resWrapper = mockedServer.res(params.server, params.res)
   var reqWrapper = mockedServer.req(params.server, params.req, params)
   var nextWrapper = mockedServer.next(params.next)
-  var sandbox = {}
 
   // Fill the sandbox params
-  buildSandbox(sandbox, params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper, phrase.getVersion())
+  var sandbox = buildSandbox(params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper, phrase.getVersion())
 
   // trigger the execution
   try {
