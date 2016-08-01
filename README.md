@@ -5,8 +5,8 @@
 [![Build Status][travis-badge]][travis-url]
 [![Test Coverage][coverage-badge]][codeclimate-url]
 [![Code Climate][codeclimate-badge]][codeclimate-url]
-[![Dependency status](https://david-dm.org/corbel-platform/composr-core/status.png)](https://david-dm.org/corbel-platform/composr-core#info=dependencies&view=table)
-[![Dev Dependency Status](https://david-dm.org/corbel-platform/composr-core/dev-status.png)](https://david-dm.org/corbel-platform/composr-core#info=devDependencies&view=table)
+[![Dependency status](https://david-dm.org/bq/composr-core/status.png)](https://david-dm.org/bq/composr-core#info=dependencies&view=table)
+[![Dev Dependency Status](https://david-dm.org/bq/composr-core/dev-status.png)](https://david-dm.org/bq/composr-core#info=devDependencies&view=table)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -22,7 +22,7 @@ npm install --save composr-core
 
 ## Read:
 
-[What are Phrases or Snippets?](https://github.com/corbel-platform/composr-core/wiki/Phrases)
+[What are Phrases or Snippets?](https://github.com/bq/composr-core/wiki/Phrases)
 
 ## Setup for fetching remote data from Corbel
 
@@ -294,10 +294,10 @@ Later on, from your project, you can launch `node-inspector` debug and add breac
 [npm-badge]: https://badge.fury.io/js/composr-core.svg
 [npm-url]: https://www.npmjs.org/package/composr-core
 
-[travis-badge]: https://travis-ci.org/corbel-platform/composr-core.svg
-[travis-url]: https://travis-ci.org/corbel-platform/composr-core
+[travis-badge]: https://travis-ci.org/bq/composr-core.svg
+[travis-url]: https://travis-ci.org/bq/composr-core
 
-[codeclimate-badge]: https://codeclimate.com/github/corbel-platform/composr-core/badges/gpa.svg
-[codeclimate-url]: https://codeclimate.com/github/corbel-platform/composr-core
+[codeclimate-badge]: https://codeclimate.com/github/bq/composr-core/badges/gpa.svg
+[codeclimate-url]: https://codeclimate.com/github/bq/composr-core
 
-[coverage-badge]: https://codeclimate.com/github/corbel-platform/composr-core/badges/coverage.svg
+[coverage-badge]: https://codeclimate.com/github/bq/composr-core/badges/coverage.svg
