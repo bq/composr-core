@@ -12,7 +12,7 @@ notifications:
 
 addons:
   code_climate:
-    repo_token: 4db1d31b1d02b573dc56844161c97c9038d388574c5d4168e36f6d330121782a
+    repo_token: a7fef3826962cda37b31c0e97b93247967641bae95f7942f9d272aa143a901d9
 
 before_install:
   - npm install -g grunt-cli
