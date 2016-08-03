@@ -114,9 +114,12 @@ MockedResponse.prototype.setHeaders = function (headers) {
   return this
 }
 
-MockedResponse.prototype.send = function (data) {
+MockedResponse.prototype.send = function (status, data) {
   this._action = 'send'
   data = typeof (data) !== 'undefined' && data !== null ? data : ''
+
+  this.statusCode = status
+  
   var params = {
     status: this.statusCode,
     body: data,

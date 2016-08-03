@@ -12,7 +12,7 @@ var ComposrError = require('../ComposrError')
 var DEFAULT_PHRASE_PARAMETERS = [
   'req',
   'res',
-  'next',
+  //'next',
   'corbelDriver',
   'domain',
   'require',
@@ -145,8 +145,9 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
   var url = this.getUrl()
 
   var tm = setTimeout(function () {
-    if (parameters.res.hasEnded() === false) {
-      parameters.res.status(503).send(new ComposrError('error:phrase:timedout:' + url, 'The phrase endpoint is timing out', 503))
+    var hasEnded = typeof parameters.res.hasEnded === 'function' ? parameters.res.hasEnded() : parameters.res.finished
+    if (!hasEnded) {
+      parameters.res.send(503, new ComposrError('error:phrase:timedout:' + url, 'The phrase endpoint is timing out', 503))
     }
     clearTimeout(tm)
   }, timeout || 10000)
@@ -156,7 +157,7 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
     fn(
       parameters.req,
       parameters.res,
-      parameters.next,
+      //parameters.next,
       parameters.corbelDriver,
       parameters.domain,
       parameters.require,
@@ -164,9 +165,10 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
       parameters.metrics
     )
   } else {
-    this.compiled.codes[verb].fn.call(null, parameters.req,
+    this.compiled.codes[verb].fn.call(null, 
+      parameters.req,
       parameters.res,
-      parameters.next,
+      //parameters.next,
       parameters.corbelDriver,
       parameters.domain,
       parameters.require,

@@ -115,18 +115,19 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper, version) {
+function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, version) {
   // The object that will be inject on the phrase itself.
   var sb = {
     console: console,
     Promise: Promise,
     req: reqWrapper,
     res: resWrapper,
-    next: nextWrapper.resolve,
+    //next: nextWrapper.resolve,
     domain: domain,
     config: {
       urlBase: urlBase
     },
+    //metrics: new MetricsFirer(domain)
     metrics: new MetricsFirer(domain)
   }
 
@@ -147,8 +148,75 @@ function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrappe
   return sb
 }
 
-// Executes a phrase
-PhraseManager.prototype._run = function (phrase, verb, params, domain) {
+PhraseManager.prototype._run = function(phrase, verb, params, domain){
+  this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
+
+  if (!params) {
+    params = {}
+  }
+
+  var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
+
+  var resWrapper = params.res ? params.res : mockedServer.res(params.server, params.res)
+  var reqWrapper = mockedServer.req(params.server, params.req, params)
+
+  // Fill the sandbox params
+  var sandbox = buildSandbox(params, urlBase, domain, this.requirer, reqWrapper, resWrapper, phrase.getVersion())
+
+  //Chose how to return the promise
+  var returnedPromise
+
+  if(params.res){
+    returnedPromise = new Promise(function(resolve, reject){
+      params.res.on('end', function(){
+        if(params.res.toString().indexOf('2') === 0){
+          resolve({
+            status: params.res.statusCode,
+            body: params.res.body,
+            headers: params.res.getHeaders()
+          })
+        }else{
+          reject({
+            status: params.res.statusCode,
+            body: params.res.body,
+            headers: params.res.getHeaders()
+          })
+        }
+      })
+    })
+  }else{
+    returnedPromise = resWrapper.promise
+  }
+
+  //Execute the phrase
+  try {
+    if (params.browser) {
+      phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
+    } else {
+      phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
+    }
+  } catch (e) {
+    // @TODO this errors can be:
+    // - corbel errors
+    // - Any thrown error in phrase
+    // How do we handle it?
+    if (params.browser) {
+      // Function mode only throws an error when errored
+      this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl())
+
+      var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.getUrl())
+
+      resWrapper.send(error.status, error)
+    } else {
+      // vm throws an error when timedout
+      this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl())
+      resWrapper.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
+    }
+  }
+}
+
+//@Deprecated, old method
+PhraseManager.prototype._run2 = function (phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
 
   if (!params) {
