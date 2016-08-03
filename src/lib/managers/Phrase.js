@@ -115,7 +115,7 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, version) {
+/* function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, version) {
   // The object that will be inject on the phrase itself.
   var sb = {
     req: reqWrapper,
@@ -145,7 +145,7 @@ function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrappe
   }
 
   return sb
-}
+}*/
 
 PhraseManager.prototype._run = function (phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
@@ -196,8 +196,8 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     returnedPromise = new Promise(function (resolve, reject) {
       params.res.on('end', function () {
         console.log('hAs tm?', tm)
-        if(tm){
-          //Remove timeout of function mode
+        if (tm) {
+          // Remove timeout of function mode
           clearTimeout(tm)
         }
 
@@ -218,15 +218,15 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     })
   } else {
     returnedPromise = resWrapper.promise
-      .then(function(data){
-        if(tm){
-          //Remove timeout of function mode
+      .then(function (data) {
+        if (tm) {
+          // Remove timeout of function mode
           clearTimeout(tm)
         }
         return data
       })
-      .catch(function(err){
-        throw(err)
+      .catch(function (err) {
+        throw err
       })
   }
 
@@ -258,7 +258,6 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
 
   return returnedPromise
 }
-
 
 // Returns a list of elements matching the same regexp
 PhraseManager.prototype._filterByRegexp = function (domain, regexp) {
