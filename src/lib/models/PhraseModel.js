@@ -145,7 +145,7 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
   var url = this.getUrl()
 
   var tm = setTimeout(function () {
-    console.log('TIMEOUT', parameters.res.hasEnded())
+    console.log('TIMOEOUT firer')
     var hasEnded = typeof parameters.res.hasEnded === 'function' ? parameters.res.hasEnded() : parameters.res.finished
     if (!hasEnded) {
       parameters.res.send(503, new ComposrError('error:phrase:timedout:' + url, 'The phrase endpoint is timing out', 503))
@@ -176,6 +176,8 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
       parameters.config,
       parameters.metrics)
   }
+
+  return tm
 }
 
 module.exports = PhraseModel

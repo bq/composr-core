@@ -176,8 +176,6 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     }
   }
 
-  // sandbox.require = options.functionMode ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
-
   if (!params.corbelDriver && reqWrapper.get('Authorization')) {
     sandbox.corbelDriver = corbel.getDriver({
       urlBase: urlBase,
@@ -192,10 +190,17 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
 
   // Chose how to return the promise
   var returnedPromise
+  var tm
 
   if (params.res) {
     returnedPromise = new Promise(function (resolve, reject) {
       params.res.on('end', function () {
+        console.log('hAs tm?', tm)
+        if(tm){
+          //Remove timeout of function mode
+          clearTimeout(tm)
+        }
+
         if (params.res.statusCode.toString().indexOf('2') === 0) {
           resolve({
             status: params.res.statusCode,
@@ -213,12 +218,22 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     })
   } else {
     returnedPromise = resWrapper.promise
+      .then(function(data){
+        if(tm){
+          //Remove timeout of function mode
+          clearTimeout(tm)
+        }
+        return data
+      })
+      .catch(function(err){
+        throw(err)
+      })
   }
 
   // Execute the phrase
   try {
     if (params.functionMode) {
-      phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
+      tm = phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
     }
@@ -244,52 +259,6 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
   return returnedPromise
 }
 
-// @Deprecated, old method
-PhraseManager.prototype._run2 = function (phrase, verb, params, domain) {
-  this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
-
-  if (!params) {
-    params = {}
-  }
-
-  var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
-
-  var resWrapper = mockedServer.res(params.server, params.res)
-  var reqWrapper = mockedServer.req(params.server, params.req, params)
-  var nextWrapper = mockedServer.next(params.next)
-
-  // Fill the sandbox params
-  var sandbox = buildSandbox(params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper, phrase.getVersion())
-
-  // trigger the execution
-  try {
-    if (params.functionMode) {
-      phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
-    } else {
-      phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
-    }
-  } catch (e) {
-    // @TODO this errors can be:
-    // - corbel errors
-    // - Any thrown error in phrase
-    // How do we handle it?
-    if (params.functionMode) {
-      // Function mode only throws an error when errored
-      this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl())
-
-      var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.getUrl())
-
-      resWrapper.status(error.status).send(error)
-    } else {
-      // vm throws an error when timedout
-      this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl())
-      resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
-    }
-  }
-
-  // Resolve on any promise resolution or rejection, either res or next
-  return Promise.race([resWrapper.promise, nextWrapper.promise])
-}
 
 // Returns a list of elements matching the same regexp
 PhraseManager.prototype._filterByRegexp = function (domain, regexp) {
