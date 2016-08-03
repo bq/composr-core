@@ -4,7 +4,7 @@ var events = require('./lib/events')
 var PhraseManager = require('./lib/managers/Phrase')
 var SnippetsManager = require('./lib/managers/Snippet')
 var VirtualDomainManager = require('./lib/managers/VirtualDomain')
-var Requirer = require('./lib/requirer')
+var requirer = require('./lib/requirer')
 
 function CompoSR () {
   this.reset()
@@ -31,18 +31,14 @@ var Snippets = new SnippetsManager({
   events: events
 })
 
-var requirer = new Requirer({
-  events: events,
-  Snippet: Snippets
-})
-
-CompoSR.prototype.requirer = requirer
+var requireFn = requirer(Snippets)
+CompoSR.prototype.requirer = requireFn
 
 CompoSR.prototype.Snippet = Snippets
 
 var Phrases = new PhraseManager({
   events: events,
-  requirer: requirer
+  requirer: requireFn
 })
 
 CompoSR.prototype.Phrase = Phrases

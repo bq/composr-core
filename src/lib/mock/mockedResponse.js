@@ -3,11 +3,10 @@
 var _ = require('lodash')
 var DEFAULT_STATUS_CODE = 200
 
-function MockedResponse (serverType, res) {
+function MockedResponse (res) {
   var module = this
   this.res = res
   this.sent = false
-  this.serverType = serverType === 'express' ? 'express' : 'restify'
 
   this.cookies = {}
   this.headers = {}
@@ -36,16 +35,8 @@ MockedResponse.prototype.hasEnded = function () {
 
 MockedResponse.prototype.respond = function (response) {
   this.sent = true
-  if (this.serverType === 'express') {
-    this.expressResponse(response)
-  } else {
-    this.restifyResponse(response)
-  }
-}
 
-MockedResponse.prototype.expressResponse = function (response) {
-  this.res.headers = response.headers
-  this.res.status(response.status)[this._action](response.body)
+  this.restifyResponse(response)
 }
 
 MockedResponse.prototype.restifyResponse = function (response) {
@@ -64,14 +55,8 @@ MockedResponse.prototype.status = function (statusCode) {
 }
 
 MockedResponse.prototype.cookie = function (name, value, options) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.cookie) === 'function') {
-      this.res.cookie(name, value, options)
-    }
-  } else {
-    if (this.res && typeof (this.res.setCookie) === 'function') {
-      this.res.setCookie(name, value, options)
-    }
+  if (this.res && typeof (this.res.setCookie) === 'function') {
+    this.res.setCookie(name, value, options)
   }
 
   this.cookies[name] = value
@@ -80,14 +65,8 @@ MockedResponse.prototype.cookie = function (name, value, options) {
 }
 
 MockedResponse.prototype.setHeader = function (name, value) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.set) === 'function') {
-      this.res.set(name, value)
-    }
-  } else {
-    if (this.res && typeof (this.res.header) === 'function') {
-      this.res.header(name, value)
-    }
+  if (this.res && typeof (this.res.header) === 'function') {
+    this.res.header(name, value)
   }
 
   this.headers[name] = value
@@ -96,17 +75,11 @@ MockedResponse.prototype.setHeader = function (name, value) {
 }
 
 MockedResponse.prototype.setHeaders = function (headers) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.set) === 'function') {
-      this.res.set(headers)
-    }
-  } else {
-    if (this.res && typeof (this.res.header) === 'function') {
-      var that = this
-      _.forIn(headers, function (value, key) {
-        that.res.header(key, value)
-      })
-    }
+  if (this.res && typeof (this.res.header) === 'function') {
+    var that = this
+    _.forIn(headers, function (value, key) {
+      that.res.header(key, value)
+    })
   }
 
   this.headers = headers
@@ -114,12 +87,22 @@ MockedResponse.prototype.setHeaders = function (headers) {
   return this
 }
 
-MockedResponse.prototype.send = function (status, data) {
+MockedResponse.prototype.send = function (maybeCode, maybeBody) {
+  var status = this.statusCode || 200
+  var data
+
+  if (typeof maybeCode === 'number') {
+    status = maybeCode
+    data = maybeBody
+  } else {
+    data = maybeCode
+  }
+
   this._action = 'send'
   data = typeof (data) !== 'undefined' && data !== null ? data : ''
 
   this.statusCode = status
-  
+
   var params = {
     status: this.statusCode,
     body: data,
@@ -159,6 +142,6 @@ MockedResponse.prototype.json = function (data) {
   return this.promise
 }
 
-module.exports = function (serverType, res) {
-  return new MockedResponse(serverType, res)
+module.exports = function (res) {
+  return new MockedResponse(res)
 }

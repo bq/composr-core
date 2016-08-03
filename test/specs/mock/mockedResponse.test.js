@@ -170,7 +170,7 @@ describe('Mocked Response', function() {
   it('should resolve on send call with 0 and contain Content-Length header with 1', function(done) {
     var res = mockedResponse();
 
-    res.send(0)
+    res.send(200, 0)
       .should.be.fulfilled
       .then(function(response) {
         expect(response).to.include.keys('headers');
@@ -257,25 +257,12 @@ describe('Mocked Response', function() {
       .should.notify(done);
   });
 
-  it('should invoke the cookie method on the original response object', function(){
-    var originalRes = {
-      cookie : sinon.stub()
-    };
-
-    var res = mockedResponse('express', originalRes);
-
-    res.cookie('yes', 'no', 'maybe');
-
-    expect(originalRes.cookie.calledOnce).to.equals(true);
-    expect(originalRes.cookie.calledWith('yes', 'no', 'maybe')).to.equals(true);
-  });
-
   it('should invoke the cookie method on the original response object, restify', function(){
     var originalRes = {
       setCookie : sinon.stub()
     };
 
-    var res = mockedResponse(null, originalRes);
+    var res = mockedResponse(originalRes);
 
     res.cookie('yes', 'no', 'maybe');
 
@@ -283,48 +270,17 @@ describe('Mocked Response', function() {
     expect(originalRes.setCookie.calledWith('yes', 'no', 'maybe')).to.equals(true);
   });
 
-  it('should invoke the setHeader method on the original response object', function(){
-    var originalRes = {
-      set : sinon.stub()
-    };
-
-    var res = mockedResponse('express', originalRes);
-
-    res.setHeader('Content-Length', 7);
-
-    expect(originalRes.set.calledOnce).to.equals(true);
-    expect(originalRes.set.calledWith('Content-Length', 7)).to.equals(true);
-  });
-
   it('should invoke the setHeader method on the original response object, restify', function(){
     var originalRes = {
       header : sinon.stub()
     };
 
-    var res = mockedResponse(null, originalRes);
+    var res = mockedResponse(originalRes);
 
     res.setHeader('Content-Length', 7);
 
     expect(originalRes.header.calledOnce).to.equals(true);
     expect(originalRes.header.calledWith('Content-Length', 7)).to.equals(true);
-  });
-
-  it('should invoke the setHeaders method on the original response object', function(){
-    var originalRes = {
-      set : sinon.stub()
-    };
-
-    var headers = {
-        'Content-Length': 7,
-        'Test-Header': 'foo'
-    };
-
-    var res = mockedResponse('express', originalRes);
-
-    res.setHeaders(headers);
-
-    expect(originalRes.set.calledOnce).to.equals(true);
-    expect(originalRes.set.calledWith(headers)).to.equals(true);
   });
 
   it('should invoke the setHeaders method on the original response object, restify', function(){
@@ -337,7 +293,7 @@ describe('Mocked Response', function() {
         'Test-Header': 'foo'
     };
 
-    var res = mockedResponse(null, originalRes);
+    var res = mockedResponse(originalRes);
 
     res.setHeaders(headers);
 
@@ -347,7 +303,7 @@ describe('Mocked Response', function() {
   it('doesnt break if the original response object has no cookie function', function(){
     var originalRes = {};
 
-    var res = mockedResponse(null, originalRes);
+    var res = mockedResponse(originalRes);
 
     var fn = function(){
       res.cookie('yes', 'no', 'maybe');

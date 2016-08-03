@@ -3,7 +3,7 @@
   "version": "2.3.5",
   "middlewares": ["mock", "validate"],
   "post": {
-    "code": "var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.status(200).send('test');",
+    "code": "var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.send(200, 'test');",
     "doc": {
       "description": "Phrase for testing purposes",
       "body": {

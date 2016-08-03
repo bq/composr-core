@@ -9,8 +9,6 @@ function init (options, fetch) {
 
   this.Phrase.configure(this.config)
 
-  this.requirer.configure(this.config)
-
   if (!fetch) {
     return Promise.resolve()
   }

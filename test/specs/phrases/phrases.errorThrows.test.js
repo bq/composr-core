@@ -81,11 +81,11 @@ describe('Phrases runner', function() {
   });
 
 
-  describe('Error handlers in browser mode', function() {
+  describe('Error handlers in function mode', function() {
 
     it('Throwns a custom error', function(done) {
       var result = Phrases.runByPath(domain, 'error/506', 'get', {
-        browser : true
+        functionMode : true
       });
 
       expect(result).to.exist;
@@ -110,7 +110,7 @@ describe('Phrases runner', function() {
 
     it('Handles an error sended correctly', function(done) {
       var result = Phrases.runByPath(domain, 'senderror/507', 'get', {
-        browser : true
+        functionMode : true
       });
 
       expect(result).to.exist;
@@ -135,7 +135,7 @@ describe('Phrases runner', function() {
 
     it('Handles a string error', function(done) {
       var result = Phrases.runByPath(domain, 'texterror', 'get', {
-        browser : true
+        functionMode : true
       });
 
       expect(result).to.exist;
@@ -161,7 +161,7 @@ describe('Phrases runner', function() {
     it('Returns phrase cant be runned if missing', function(done) {
       //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status
       var result = Phrases.runByPath(domain, 'missingendpoint', 'get', {
-        browser : true
+        functionMode : true
       });
 
       expect(result).to.exist;

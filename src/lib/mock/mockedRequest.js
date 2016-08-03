@@ -6,9 +6,7 @@ var capitalizeParam = function (param) {
   }).join('-')
 }
 
-function MockedRequest (serverType, req, options) {
-  this.serverType = serverType === 'express' ? 'express' : 'restify'
-
+function MockedRequest (req, options) {
   if (!options) {
     options = {}
   }
@@ -40,6 +38,6 @@ MockedRequest.prototype.capitalizeHeaders = function () {
   this.headers = newHeaders
 }
 
-module.exports = function (serverType, req, options) {
-  return new MockedRequest(serverType, req, options)
+module.exports = function (req, options) {
+  return new MockedRequest(req, options)
 }

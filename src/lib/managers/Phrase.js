@@ -5,7 +5,7 @@ var phraseDao = require('../daos/phraseDao')
 var BaseManager = require('./base.manager')
 var queryString = require('query-string')
 var ComposrError = require('../ComposrError')
-var MetricsFirer = require('../MetricsFirer')
+// var MetricsFirer = require('../MetricsFirer')
 var phrasesStore = require('../stores/phrases.store')
 var parseToComposrError = require('../parseToComposrError')
 var mockedServer = require('../mock')
@@ -118,20 +118,19 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
 function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, version) {
   // The object that will be inject on the phrase itself.
   var sb = {
-    console: console,
-    Promise: Promise,
     req: reqWrapper,
     res: resWrapper,
-    //next: nextWrapper.resolve,
+    // next: nextWrapper.resolve,
     domain: domain,
     config: {
       urlBase: urlBase
     },
-    //metrics: new MetricsFirer(domain)
-    metrics: new MetricsFirer(domain)
+    // metrics: new MetricsFirer(domain)
+    metrics: null
   }
 
-  sb.require = options.browser ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
+  // sb.require = options.functionMode ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
+  // sb.require = requirer(domain, version, options.functionMode)
 
   if (!options.corbelDriver && reqWrapper.get('Authorization')) {
     sb.corbelDriver = corbel.getDriver({
@@ -148,34 +147,62 @@ function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrappe
   return sb
 }
 
-PhraseManager.prototype._run = function(phrase, verb, params, domain){
+PhraseManager.prototype._run = function (phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
 
   if (!params) {
     params = {}
   }
 
+  // Function mode is the way to go.
+  if (typeof params.functionMode === 'undefined') {
+    params.functionMode = true
+  }
+
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
 
-  var resWrapper = params.res ? params.res : mockedServer.res(params.server, params.res)
-  var reqWrapper = mockedServer.req(params.server, params.req, params)
+  var resWrapper = params.res ? params.res : mockedServer.res(params.res)
+  var reqWrapper = mockedServer.req(params.req, params)
 
   // Fill the sandbox params
-  var sandbox = buildSandbox(params, urlBase, domain, this.requirer, reqWrapper, resWrapper, phrase.getVersion())
+  var sandbox = {
+    req: reqWrapper,
+    res: resWrapper,
+    // next: nextWrapper.resolve,
+    require: this.requirer(domain, phrase.getVersion(), params.functionMode),
+    domain: domain,
+    config: {
+      urlBase: urlBase
+    }
+  }
 
-  //Chose how to return the promise
+  // sandbox.require = options.functionMode ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
+
+  if (!params.corbelDriver && reqWrapper.get('Authorization')) {
+    sandbox.corbelDriver = corbel.getDriver({
+      urlBase: urlBase,
+      iamToken: {
+        accessToken: reqWrapper.get('Authorization')
+      },
+      domain: domain
+    })
+  } else {
+    sandbox.corbelDriver = params.corbelDriver
+  }
+
+  // Chose how to return the promise
   var returnedPromise
 
-  if(params.res){
-    returnedPromise = new Promise(function(resolve, reject){
-      params.res.on('end', function(){
-        if(params.res.toString().indexOf('2') === 0){
+  if (params.res) {
+    returnedPromise = new Promise(function (resolve, reject) {
+      params.res.on('end', function () {
+        if (params.res.statusCode.toString().indexOf('2') === 0) {
           resolve({
             status: params.res.statusCode,
             body: params.res.body,
             headers: params.res.getHeaders()
           })
-        }else{
+        } else {
           reject({
             status: params.res.statusCode,
             body: params.res.body,
@@ -184,13 +211,13 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain){
         }
       })
     })
-  }else{
+  } else {
     returnedPromise = resWrapper.promise
   }
 
-  //Execute the phrase
+  // Execute the phrase
   try {
-    if (params.browser) {
+    if (params.functionMode) {
       phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
@@ -200,7 +227,7 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain){
     // - corbel errors
     // - Any thrown error in phrase
     // How do we handle it?
-    if (params.browser) {
+    if (params.functionMode) {
       // Function mode only throws an error when errored
       this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl())
 
@@ -213,9 +240,11 @@ PhraseManager.prototype._run = function(phrase, verb, params, domain){
       resWrapper.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
     }
   }
+
+  return returnedPromise
 }
 
-//@Deprecated, old method
+// @Deprecated, old method
 PhraseManager.prototype._run2 = function (phrase, verb, params, domain) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
 
@@ -234,7 +263,7 @@ PhraseManager.prototype._run2 = function (phrase, verb, params, domain) {
 
   // trigger the execution
   try {
-    if (params.browser) {
+    if (params.functionMode) {
       phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
@@ -244,7 +273,7 @@ PhraseManager.prototype._run2 = function (phrase, verb, params, domain) {
     // - corbel errors
     // - Any thrown error in phrase
     // How do we handle it?
-    if (params.browser) {
+    if (params.functionMode) {
       // Function mode only throws an error when errored
       this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl())
 
