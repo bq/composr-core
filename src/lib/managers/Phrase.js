@@ -169,7 +169,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     req: reqWrapper,
     res: resWrapper,
     // next: nextWrapper.resolve,
-    require: this.requirer(domain, phrase.getVersion(), params.functionMode),
+    //require: this.requirer(domain, phrase.getVersion(), params.functionMode),
     domain: domain,
     config: {
       urlBase: urlBase
