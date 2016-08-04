@@ -61,25 +61,29 @@ PhraseManager.prototype._compile = function (domain, phrase) {
 }
 
 // Executes a phrase by id
-PhraseManager.prototype.runById = function (id, verb, params) {
+PhraseManager.prototype.runById = function (id, verb, params, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
+  }
+
+  if (!params) {
+    params = {}
   }
 
   var phrase = this.getById(id)
 
   if (phrase && phrase.canRun(verb)) {
     var domain = this._extractDomainFromId(id)
-    return this._run(phrase, verb, params, domain)
+    this._run(phrase, verb, params, domain, cb)
   } else {
     // @TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
-    return Promise.reject('phrase:cant:be:runned')
+    cb('phrase:cant:be:runned')
   }
 }
 
 // Executes a phrase matching a path
 // TODO: add support for various versions at the same time
-PhraseManager.prototype.runByPath = function (domain, path, verb, params, version) {
+PhraseManager.prototype.runByPath = function (domain, path, verb, params, version, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
   }
@@ -105,10 +109,9 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
       var sanitizedPath = path.replace(queryParamsString, '')
       params.params = phrase.extractParamsFromPath(sanitizedPath)
     }
-    return this._run(phrase, verb, params, domain)
+    this._run(phrase, verb, params, domain, cb)
   } else {
-    // @TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
-    return Promise.reject('phrase:cant:be:runned')
+    cb('phrase:cant:be:runned')
   }
 }
 
@@ -147,12 +150,8 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
   return sb
 }*/
 
-PhraseManager.prototype._run = function (phrase, verb, params, domain) {
+PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
-
-  if (!params) {
-    params = {}
-  }
 
   // Function mode is the way to go.
   if (typeof params.functionMode === 'undefined') {
@@ -169,7 +168,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     req: reqWrapper,
     res: resWrapper,
     // next: nextWrapper.resolve,
-    //require: this.requirer(domain, phrase.getVersion(), params.functionMode),
+    require: this.requirer(domain, phrase.getVersion(), params.functionMode),
     domain: domain,
     config: {
       urlBase: urlBase
@@ -188,47 +187,20 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
     sandbox.corbelDriver = params.corbelDriver
   }
 
-  // Chose how to return the promise
-  var returnedPromise
   var tm
 
-  if (params.res) {
-    returnedPromise = new Promise(function (resolve, reject) {
-      params.res.on('end', function () {
-        console.log('hAs tm?', tm)
-        if (tm) {
-          // Remove timeout of function mode
-          clearTimeout(tm)
-        }
+  sandbox.res.on('end', function () {
+    if (tm) {
+      // Remove timeout of function mode
+      clearTimeout(tm)
+    }
 
-        if (params.res.statusCode.toString().indexOf('2') === 0) {
-          resolve({
-            status: params.res.statusCode,
-            body: params.res.body,
-            headers: params.res.getHeaders()
-          })
-        } else {
-          reject({
-            status: params.res.statusCode,
-            body: params.res.body,
-            headers: params.res.getHeaders()
-          })
-        }
-      })
-    })
-  } else {
-    returnedPromise = resWrapper.promise
-      .then(function (data) {
-        if (tm) {
-          // Remove timeout of function mode
-          clearTimeout(tm)
-        }
-        return data
-      })
-      .catch(function (err) {
-        throw err
-      })
-  }
+    cb(null, {
+      status: params.res.statusCode,
+      body: params.res.body,
+      headers: params.res.getHeaders()
+    });
+  })
 
   // Execute the phrase
   try {
@@ -238,6 +210,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
     }
   } catch (e) {
+    console.log(e)
     // @TODO this errors can be:
     // - corbel errors
     // - Any thrown error in phrase
@@ -248,15 +221,13 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain) {
 
       var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.getUrl())
 
-      resWrapper.send(error.status, error)
+      sandbox.res.send(error.status, error)
     } else {
       // vm throws an error when timedout
       this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl())
-      resWrapper.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
+      sandbox.res.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
     }
   }
-
-  return returnedPromise
 }
 
 // Returns a list of elements matching the same regexp
