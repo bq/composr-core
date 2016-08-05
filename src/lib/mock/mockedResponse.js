@@ -3,11 +3,11 @@
 var _ = require('lodash')
 var DEFAULT_STATUS_CODE = 200
 
-function MockedResponse (stream) {
-  var module = this
-  this.stream = stream
+function MockedResponse (res) {
+  this.res = res
   this.cookies = {}
   this.headers = {}
+  this.finished = false
   this.statusCode = DEFAULT_STATUS_CODE
 }
 
@@ -17,11 +17,6 @@ MockedResponse.prototype.callbacks = {
 
 MockedResponse.prototype.on = function(event, cb){
   this.callbacks[event] = cb
-}
-
-MockedResponse.prototype.restifyResponse = function (response) {
-  this.res.headers = response.headers
-  this.res.send(response.status, response.body)
 }
 
 MockedResponse.prototype.status = function (statusCode) {
@@ -37,11 +32,15 @@ MockedResponse.prototype.status = function (statusCode) {
 MockedResponse.prototype.cookie = function (name, value, options) {
   this.cookies[name] = value
 
+  if (this.res && typeof (this.res.setCookie) === 'function') {
+    this.res.setCookie(name, value, options)
+  }
+
   return this
 }
 
 MockedResponse.prototype.setHeader = function (name, value) {
-  if (this.res && typeof (this.res.header) === 'function') {
+  if (this.res) {
     this.res.header(name, value)
   }
 
@@ -69,30 +68,26 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
 
   data = typeof (data) !== 'undefined' && data !== null ? data : ''
 
-  this.statusCode = status
+  
+  console.log('ENVIAMOS', status)
 
-  var params = {
-    statusCode: this.statusCode,
-    body: data,
-    headers: this.headers,
-  }
-
-  if (!params.headers['Content-Length'] && data.toString) {
+  if (data.toString) {
     // Check if the object passed has the "toString" method, if not, don't use it
     this.setHeader('Content-Length', data.toString().length)
   }
 
-  if (!(this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0)) {
-    params.cookies = this.cookies
+  this.finished = true
+
+  if(this.res){
+    this.res.send(status, data)
   }
 
-  if(this.stream){
-    this.stream.pipe(params)
+  var params = {
+    statusCode: status,
+    body: data
   }
 
   this.callbacks.end(params)
 }
 
-module.exports = function (res) {
-  return new MockedResponse(res)
-}
+module.exports = MockedResponse

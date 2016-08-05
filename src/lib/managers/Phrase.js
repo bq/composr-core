@@ -160,14 +160,14 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
 
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
 
-  var resWrapper = params.res ? params.res : mockedServer.res(params.res)
+  var resWrapper = new mockedServer.res(params.res)
   var reqWrapper = mockedServer.req(params.req, params)
 
   // Fill the sandbox params
   var sandbox = {
     req: reqWrapper,
     res: resWrapper,
-    // next: nextWrapper.resolve,
+    //next: params.next,
     require: this.requirer(domain, phrase.getVersion(), params.functionMode),
     domain: domain,
     config: {
@@ -189,17 +189,17 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
 
   var tm
 
-  sandbox.res.on('end', function () {
+  sandbox.res.on('end', function (resp) {
+    console.log('callbakc')
     if (tm) {
       // Remove timeout of function mode
       clearTimeout(tm)
     }
 
     cb(null, {
-      status: params.res.statusCode,
-      body: params.res.body,
-      headers: params.res.getHeaders()
-    });
+      status: resp.statusCode,
+      body: resp.body
+    })
   })
 
   // Execute the phrase
