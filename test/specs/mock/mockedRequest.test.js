@@ -1,4 +1,4 @@
-var mockedRequest = require('../../../src/lib/mock/mockedRequest'),
+var MockedRequest = require('../../../src/lib/mock/mockedRequest'),
   chai = require('chai'),
   sinon = require('sinon'),
   expect = chai.expect,
@@ -7,7 +7,8 @@ var mockedRequest = require('../../../src/lib/mock/mockedRequest'),
 describe('MockedRequest', function() {
 
   it('should have the req properties', function() {
-    expect(mockedRequest()).to.include.keys(
+    var req = new MockedRequest()
+    expect(req).to.include.keys(
       'params',
       'query',
       'headers',
@@ -17,13 +18,13 @@ describe('MockedRequest', function() {
   });
 
   it('should expose the req API', function() {
-    var req = mockedRequest();
+    var req = new MockedRequest();
 
     expect(req).to.respondTo('get');
   });
 
   it('should pass the params', function() {
-    var req = mockedRequest(null, {
+    var req = new MockedRequest(null, {
       params: {
         userId: 1,
         name: 'test'
@@ -40,7 +41,7 @@ describe('MockedRequest', function() {
   });
 
   it('should pass the query parameters', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       query: {
         userId: 1,
         name: 'test'
@@ -57,7 +58,7 @@ describe('MockedRequest', function() {
   });
 
   it('should receive the headers', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       headers: {
         UserId: 1,
         Name: 'test',
@@ -71,7 +72,7 @@ describe('MockedRequest', function() {
   });
 
   it('should capitalize the headers', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       headers: {
         userId: 1,
         name: 'test',
@@ -83,7 +84,7 @@ describe('MockedRequest', function() {
   });
 
   it('should capitalize the get header param', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       headers: {
         TestHeader: 'fake'
       }
@@ -93,7 +94,7 @@ describe('MockedRequest', function() {
   });
 
   it('should capitalize the get compund header param', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       headers: {
         'Content-Type': 'test'
       }
@@ -103,7 +104,7 @@ describe('MockedRequest', function() {
   });
 
   it('should receive the body', function() {
-    var req = mockedRequest( null, {
+    var req = new MockedRequest( null, {
       body: {
         userId: 1,
         name: 'test'

@@ -198,38 +198,27 @@ describe('Phrases runner', function() {
   });
 
   it('Should be able to run a registered phrase', function(done) {
-    var result = Phrases.runById(domain + '!test-1.2.2');
-
-    expect(result).to.exist;
-
-    result
-      .then(function(response) {
-        expect(spyRun.callCount).to.equals(1);
-        expect(response).to.be.an('object');
-        expect(response).to.include.keys(
-          'status',
-          'body'
-        );
-        expect(response.body).to.equals('testValue');
-        expect(response.status).to.equals(200);
-      })
-      .should.notify(done);
+    Phrases.runById(domain + '!test-1.2.2', null, null, function(err, response){
+      expect(spyRun.callCount).to.equals(1);
+      expect(response).to.be.an('object');
+      expect(response).to.include.keys(
+        'status',
+        'body'
+      );
+      expect(response.body).to.equals('testValue');
+      expect(response.status).to.equals(200);
+      done(err);
+    });
   });
 
   it('Should be able to receive a req object', function(done) {
-    var result = Phrases.runById(domain + '!user!:name-1.2.2', 'get', {
+    Phrases.runById(domain + '!user!:name-1.2.2', 'get', {
       req: {
         params: {
           name: 'Pepito the user'
         }
       }
-    });
-
-    expect(result).to.exist;
-
-    result
-      .should.be.fulfilled
-      .then(function(response) {
+    }, function(err, response){
         expect(spyRun.callCount).to.equals(1);
         expect(response).to.be.an('object');
         expect(response).to.include.keys(
@@ -240,50 +229,41 @@ describe('Phrases runner', function() {
         expect(response.body).to.be.an('object');
         expect(response.body.name).to.exist;
         expect(response.body.name).to.equals('Pepito the user');
-      })
-      .should.notify(done);
+        done(err);
+    });
   });
 
   it('Can change the status', function(done) {
-    var result = Phrases.runById(domain + '!changestatus-1.2.2');
-    result
-      .should.be.rejected
-      .then(function(response) {
-        expect(spyRun.callCount).to.equals(1);
-        expect(response).to.be.an('object');
-        expect(response).to.include.keys(
-          'status',
-          'body'
-        );
-        expect(response.status).to.equals(401);
-      })
-      .should.notify(done);
+    Phrases.runById(domain + '!changestatus-1.2.2', null, null, function(err, response){
+      expect(spyRun.callCount).to.equals(1);
+      expect(response).to.be.an('object');
+      expect(response).to.include.keys(
+        'status',
+        'body'
+      );
+      expect(response.status).to.equals(401);
+
+      done(err);
+    });
   });
 
   it('receives a config object', function(done) {
-    var result = Phrases.runById(domain + '!config-1.2.2');
-    result
-      .should.be.fulfilled
-      .then(function(response) {
-        expect(spyRun.callCount).to.equals(1);
-        expect(response).to.be.an('object');
-        expect(response.body).to.include.keys(
-          'urlBase'
-        );
-        expect(response.status).to.equals(200);
-        expect(response.body.urlBase).to.equals('demo');
-      })
-      .should.notify(done);
+    Phrases.runById(domain + '!config-1.2.2', null, null, function(err, response){
+      expect(spyRun.callCount).to.equals(1);
+      expect(response).to.be.an('object');
+      expect(response.body).to.include.keys(
+        'urlBase'
+      );
+      expect(response.status).to.equals(200);
+      expect(response.body.urlBase).to.equals('demo');
+      done(err);
+    });
   });
 
   it('receives a config object, function mode', function(done) {
-    var result = Phrases.runById(domain + '!config-1.2.2', null, {
+    Phrases.runById(domain + '!config-1.2.2', null, {
       functionMode: true
-    });
-
-    result
-      .should.be.fulfilled
-      .then(function(response) {
+    }, function(err, response){
         expect(spyRun.callCount).to.equals(1);
         expect(response).to.be.an('object');
         expect(response.body).to.include.keys(
@@ -291,8 +271,8 @@ describe('Phrases runner', function() {
         );
         expect(response.status).to.equals(200);
         expect(response.body.urlBase).to.equals('demo');
-      })
-      .should.notify(done);
+        done(err)
+    });
   });
 
   it.skip('Calls the metrics', function(done) {
@@ -315,48 +295,20 @@ describe('Phrases runner', function() {
 
   describe('Path params', function() {
 
-    it('Automatically extracts the path params with the runByPath', function(done) {
-      var result = Phrases.runByPath(domain, 'user/sanfrancisco', 'get');
-
-      expect(result).to.exist;
-
-      result
-        .should.be.fulfilled
-        .then(function(response) {
-          expect(spyRun.callCount).to.equals(1);
-          expect(response).to.be.an('object');
-          expect(response).to.include.keys(
-            'status',
-            'body'
-          );
-          expect(response.status).to.equals(200);
-          expect(response.body).to.be.an('object');
-          expect(response.body.name).to.exist;
-          expect(response.body.name).to.equals('sanfrancisco');
-        })
-        .should.notify(done);
-    });
-
-    it('Automatically extracts the path params with spaces and tilde', function(done) {
-      var result = Phrases.runByPath(domain, 'user/Grupo Planeta - México', 'get');
-
-      expect(result).to.exist;
-
-      result
-        .should.be.fulfilled
-        .then(function(response) {
-          expect(spyRun.callCount).to.equals(1);
-          expect(response).to.be.an('object');
-          expect(response).to.include.keys(
-            'status',
-            'body'
-          );
-          expect(response.status).to.equals(200);
-          expect(response.body).to.be.an('object');
-          expect(response.body.name).to.exist;
-          expect(response.body.name).to.equals('Grupo Planeta - México');
-        })
-        .should.notify(done);
+    it.only('Automatically extracts the path params with the runByPath', function(done) {
+      Phrases.runByPath(domain, 'user/sanfrancisco', 'get', null, null, function(err, response){
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+        expect(response.status).to.equals(200);
+        expect(response.body).to.be.an('object');
+        expect(response.body.name).to.exist;
+        expect(response.body.name).to.equals('sanfrancisco');
+        done(err);
+      });
     });
     
     it('Prefers to use params if provided', function(done) {

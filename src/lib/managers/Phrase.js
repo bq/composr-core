@@ -8,7 +8,8 @@ var ComposrError = require('../ComposrError')
 // var MetricsFirer = require('../MetricsFirer')
 var phrasesStore = require('../stores/phrases.store')
 var parseToComposrError = require('../parseToComposrError')
-var mockedServer = require('../mock')
+var WrappedResponse = require('../mock').res
+var WrappedRequest = require('../mock').req
 var corbel = require('corbel-js')
 var utils = require('../utils')
 
@@ -160,14 +161,14 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
 
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
 
-  var resWrapper = new mockedServer.res(params.res)
-  var reqWrapper = mockedServer.req(params.req, params)
+  var resWrapper = new WrappedResponse(params.res)
+  var reqWrapper = new WrappedRequest(params.req, params)
 
   // Fill the sandbox params
   var sandbox = {
     req: reqWrapper,
     res: resWrapper,
-    //next: params.next,
+    // next: params.next,
     require: this.requirer(domain, phrase.getVersion(), params.functionMode),
     domain: domain,
     config: {
@@ -197,7 +198,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
     }
 
     cb(null, {
-      status: resp.statusCode,
+      status: resp.status,
       body: resp.body
     })
   })

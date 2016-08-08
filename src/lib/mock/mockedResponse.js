@@ -1,6 +1,5 @@
 'use strict'
 
-var _ = require('lodash')
 var DEFAULT_STATUS_CODE = 200
 
 function MockedResponse (res) {
@@ -12,19 +11,15 @@ function MockedResponse (res) {
 }
 
 MockedResponse.prototype.callbacks = {
-  end: function() {}
+  end: function () {}
 }
 
-MockedResponse.prototype.on = function(event, cb){
+MockedResponse.prototype.on = function (event, cb) {
   this.callbacks[event] = cb
 }
 
 MockedResponse.prototype.status = function (statusCode) {
   this.statusCode = parseInt(statusCode, 10)
-
-  if (!_.isInteger(this.statusCode)) {
-    this.statusCode = DEFAULT_STATUS_CODE
-  }
 
   return this
 }
@@ -52,6 +47,13 @@ MockedResponse.prototype.setHeader = function (name, value) {
 MockedResponse.prototype.setHeaders = function (headers) {
   this.headers = headers
 
+  if (this.res && typeof (this.res.header) === 'function') {
+    var that = this
+    Object.keys(headers).forEach(function (header) {
+      that.res.header(header, headers[header])
+    })
+  }
+
   return this
 }
 
@@ -68,7 +70,6 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
 
   data = typeof (data) !== 'undefined' && data !== null ? data : ''
 
-  
   console.log('ENVIAMOS', status)
 
   if (data.toString) {
@@ -78,13 +79,14 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
 
   this.finished = true
 
-  if(this.res){
+  if (this.res) {
     this.res.send(status, data)
   }
 
   var params = {
-    statusCode: status,
-    body: data
+    status: status,
+    body: data,
+    headers: this.headers
   }
 
   this.callbacks.end(params)

@@ -38,6 +38,4 @@ MockedRequest.prototype.capitalizeHeaders = function () {
   this.headers = newHeaders
 }
 
-module.exports = function (req, options) {
-  return new MockedRequest(req, options)
-}
+module.exports = MockedRequest
