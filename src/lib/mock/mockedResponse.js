@@ -58,38 +58,38 @@ MockedResponse.prototype.setHeaders = function (headers) {
 }
 
 MockedResponse.prototype.send = function (maybeCode, maybeBody) {
-  var status = this.statusCode || 200
-  var data
+  if (!this.finished) {
+    var status = this.statusCode || 200
+    var data
 
-  if (typeof maybeCode === 'number') {
-    status = maybeCode
-    data = maybeBody
-  } else {
-    data = maybeCode
+    if (typeof maybeCode === 'number') {
+      status = maybeCode
+      data = maybeBody
+    } else {
+      data = maybeCode
+    }
+
+    data = typeof (data) !== 'undefined' && data !== null ? data : ''
+
+    if (data.toString) {
+      // Check if the object passed has the "toString" method, if not, don't use it
+      this.setHeader('Content-Length', data.toString().length)
+    }
+
+    this.finished = true
+
+    if (this.res) {
+      this.res.send(status, data)
+    }
+
+    var params = {
+      status: status,
+      body: data,
+      headers: this.headers
+    }
+
+    this.callbacks.end(params)
   }
-
-  data = typeof (data) !== 'undefined' && data !== null ? data : ''
-
-  console.log('ENVIAMOS', status)
-
-  if (data.toString) {
-    // Check if the object passed has the "toString" method, if not, don't use it
-    this.setHeader('Content-Length', data.toString().length)
-  }
-
-  this.finished = true
-
-  if (this.res) {
-    this.res.send(status, data)
-  }
-
-  var params = {
-    status: status,
-    body: data,
-    headers: this.headers
-  }
-
-  this.callbacks.end(params)
 }
 
 module.exports = MockedResponse

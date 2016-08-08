@@ -191,7 +191,6 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
   var tm
 
   sandbox.res.on('end', function (resp) {
-    console.log('callbakc')
     if (tm) {
       // Remove timeout of function mode
       clearTimeout(tm)
@@ -211,7 +210,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
     }
   } catch (e) {
-    console.log(e)
+    // console.log(e)
     // @TODO this errors can be:
     // - corbel errors
     // - Any thrown error in phrase

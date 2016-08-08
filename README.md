@@ -88,7 +88,7 @@ composr.events.on('warn', 'myProject', function(){
 
 # Phrases execution 
 
-## Non "express-js" server or script
+## Standalone execution
 
 It will use internal "mocked" req, res, next objects 
 
@@ -99,10 +99,13 @@ var params = {
   timeout: 10000
 };
 
-var executionPromise = composr.Phrase.runByPath(domain, url, method, params);
+composr.Phrase.runByPath(domain, url, method, params, function(err, response){
+   //if err, phrase missing
+   //response.status, response.body
+  });
 ```
 
-## Tunneling "express-js" req, res, next
+## Tunneling "restify" req, res, next
 
 ```javascript
 var path = '/user/1231/test';
@@ -110,11 +113,13 @@ var method = 'get'; //get, post, put, delete
 var params = {
   req: req,
   res: res,
-  next: next,
   timeout: 10000
 };
 
-var executionPromise = composr.Phrase.runByPath(domain, url, method, params);
+composr.Phrase.runByPath(domain, url, method, params, function(err, response){
+   //if err, phrase missing
+   //response.status, response.body
+  });
 ```
 
 
@@ -150,39 +155,22 @@ var params = {
 }
 ```
 
-## Using express handlers 
+## Using restify handlers 
 Whoa, just execute your dinamics endpoints. 
 
-*Disable express-js e-tag generation in order to avoid cache problems*
-
 ```javascript
 var params = {
   req,
   res,
-  next,
-  server : 'express'
+  next
 }
 ```
-
-## Using restify handlers 
-
-**Use restify `queryParser` module** in order to have access to the query parameters.
-
-```javascript
-var params = {
-  req,
-  res,
-  next,
-  server : 'restify'
-}
-```
-
 
 ## Injecting a custom corbel-js driver instance
 
 ```javascript
 var params = {
-  corbelDriver,
+  corbelDriver
 }
 ```
 
@@ -200,42 +188,29 @@ var params = {
 ```javascript
 var params = {
   domain,
-  browser : true, //In case you are using the browserified bundle and want to debug the phrases in the browser (requires small hack)
+  functionMode : false, //In case you want to execute phrases inside vm contexts (memory intensive)
 }
 ```
 
 
-# Express-js example
+# Restify example
 
 ```javascript
-router.all('*', function(req, res, next) {
-  executePhrase(req.path, req, res, next);
-});
-
-function executePhrase(endpointPath, req, res, next) {
-  var path = endpointPath.slice(1).split('/'),
-    domain = path[0],
-    phrasePath = path.slice(1).join('/');
-
-  if (!domain || !phrasePath) {
-    return next();
-  }
-
-  var method = req.method.toLowerCase();
-
+router.get('/user/me', function(req, res, next) {
   var params = {
     req: req,
     res: res,
     next: next,
-    server : 'express',
     timeout: 10000 
   };
 
-  composr.Phrase.runByPath(domain, phrasePath, method, params)
-    .catch(function(err){
-      res.status(404).send(new ComposrError('endpoint:not:found', 'Not found', 404));
+  var uid = req.get('User-ID')//for example
+
+  composr.Phrase.runByPath(domain, 'userdetail/' + uid, 'get', params, 
+    function(err, response){
+      //Executed and already sent to client.
     });
-}
+});
 ```
 
 
