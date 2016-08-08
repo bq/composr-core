@@ -5,10 +5,11 @@ var phraseDao = require('../daos/phraseDao')
 var BaseManager = require('./base.manager')
 var queryString = require('query-string')
 var ComposrError = require('../ComposrError')
-var MetricsFirer = require('../MetricsFirer')
+// var MetricsFirer = require('../MetricsFirer')
 var phrasesStore = require('../stores/phrases.store')
 var parseToComposrError = require('../parseToComposrError')
-var mockedServer = require('../mock')
+var WrappedResponse = require('../mock').res
+var WrappedRequest = require('../mock').req
 var corbel = require('corbel-js')
 var utils = require('../utils')
 
@@ -61,25 +62,29 @@ PhraseManager.prototype._compile = function (domain, phrase) {
 }
 
 // Executes a phrase by id
-PhraseManager.prototype.runById = function (id, verb, params) {
+PhraseManager.prototype.runById = function (id, verb, params, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
+  }
+
+  if (!params) {
+    params = {}
   }
 
   var phrase = this.getById(id)
 
   if (phrase && phrase.canRun(verb)) {
     var domain = this._extractDomainFromId(id)
-    return this._run(phrase, verb, params, domain)
+    this._run(phrase, verb, params, domain, cb)
   } else {
     // @TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
-    return Promise.reject('phrase:cant:be:runned')
+    cb('phrase:cant:be:runned')
   }
 }
 
 // Executes a phrase matching a path
 // TODO: add support for various versions at the same time
-PhraseManager.prototype.runByPath = function (domain, path, verb, params, version) {
+PhraseManager.prototype.runByPath = function (domain, path, verb, params, version, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
   }
@@ -105,32 +110,31 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
       var sanitizedPath = path.replace(queryParamsString, '')
       params.params = phrase.extractParamsFromPath(sanitizedPath)
     }
-    return this._run(phrase, verb, params, domain)
+    this._run(phrase, verb, params, domain, cb)
   } else {
-    // @TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
-    return Promise.reject('phrase:cant:be:runned')
+    cb('phrase:cant:be:runned')
   }
 }
 
 /*
   Fills the sandbox with parameters
  */
-function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, nextWrapper, version) {
+/* function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrapper, version) {
   // The object that will be inject on the phrase itself.
   var sb = {
-    console: console,
-    Promise: Promise,
     req: reqWrapper,
     res: resWrapper,
-    next: nextWrapper.resolve,
+    // next: nextWrapper.resolve,
     domain: domain,
     config: {
       urlBase: urlBase
     },
-    metrics: new MetricsFirer(domain)
+    // metrics: new MetricsFirer(domain)
+    metrics: null
   }
 
-  sb.require = options.browser ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
+  // sb.require = options.functionMode ? requirer.forDomain(domain, version, true) : requirer.forDomain(domain, version)
+  // sb.require = requirer(domain, version, options.functionMode)
 
   if (!options.corbelDriver && reqWrapper.get('Authorization')) {
     sb.corbelDriver = corbel.getDriver({
@@ -145,53 +149,85 @@ function buildSandbox (options, urlBase, domain, requirer, reqWrapper, resWrappe
   }
 
   return sb
-}
+}*/
 
-// Executes a phrase
-PhraseManager.prototype._run = function (phrase, verb, params, domain) {
+PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
 
-  if (!params) {
-    params = {}
+  // Function mode is the way to go.
+  if (typeof params.functionMode === 'undefined') {
+    params.functionMode = true
   }
 
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
 
-  var resWrapper = mockedServer.res(params.server, params.res)
-  var reqWrapper = mockedServer.req(params.server, params.req, params)
-  var nextWrapper = mockedServer.next(params.next)
+  var resWrapper = new WrappedResponse(params.res)
+  var reqWrapper = new WrappedRequest(params.req, params)
 
   // Fill the sandbox params
-  var sandbox = buildSandbox(params, urlBase, domain, this.requirer, reqWrapper, resWrapper, nextWrapper, phrase.getVersion())
+  var sandbox = {
+    req: reqWrapper,
+    res: resWrapper,
+    // next: params.next,
+    require: this.requirer(domain, phrase.getVersion(), params.functionMode),
+    domain: domain,
+    config: {
+      urlBase: urlBase
+    }
+  }
 
-  // trigger the execution
+  if (!params.corbelDriver && reqWrapper.get('Authorization')) {
+    sandbox.corbelDriver = corbel.getDriver({
+      urlBase: urlBase,
+      iamToken: {
+        accessToken: reqWrapper.get('Authorization')
+      },
+      domain: domain
+    })
+  } else {
+    sandbox.corbelDriver = params.corbelDriver
+  }
+
+  var tm
+
+  sandbox.res.on('end', function (resp) {
+    if (tm) {
+      // Remove timeout of function mode
+      clearTimeout(tm)
+    }
+
+    cb(null, {
+      status: resp.status,
+      body: resp.body
+    })
+  })
+
+  // Execute the phrase
   try {
-    if (params.browser) {
-      phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
+    if (params.functionMode) {
+      tm = phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
     } else {
       phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
     }
   } catch (e) {
+    // console.log(e)
     // @TODO this errors can be:
     // - corbel errors
     // - Any thrown error in phrase
     // How do we handle it?
-    if (params.browser) {
+    if (params.functionMode) {
       // Function mode only throws an error when errored
       this.events.emit('warn', 'phrase:internal:error', e, phrase.getUrl())
 
       var error = parseToComposrError(e, 'error:phrase:exception:' + phrase.getUrl())
 
-      resWrapper.status(error.status).send(error)
+      sandbox.res.send(error.status, error)
     } else {
       // vm throws an error when timedout
       this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl())
-      resWrapper.status(503).send(new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
+      sandbox.res.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
     }
   }
-
-  // Resolve on any promise resolution or rejection, either res or next
-  return Promise.race([resWrapper.promise, nextWrapper.promise])
 }
 
 // Returns a list of elements matching the same regexp

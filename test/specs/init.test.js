@@ -8,7 +8,7 @@ var utilsPromises = require('../utils/promises');
 describe('Config initialization', function() {
 
   var stubLogClient, stubRegisterDomains, stubInitCorbelDriver, 
-    stubLoadVirtualDomains, spyRequirerConfigure, spyPhrasesConfigure;
+    stubLoadVirtualDomains, spyPhrasesConfigure;
 
   var sandbox = sinon.sandbox.create();
 
@@ -16,7 +16,6 @@ describe('Config initialization', function() {
     beforeEach(function() {
       stubInitCorbelDriver = sandbox.stub(composr, 'initCorbelDriver', utilsPromises.resolvedPromise);
       stubLogClient = sandbox.stub(composr, 'clientLogin', utilsPromises.resolvedPromise);
-      spyRequirerConfigure = sandbox.spy(composr.requirer, 'configure');
       spyPhrasesConfigure = sandbox.spy(composr.Phrase, 'configure');
       sandbox.stub(composr.virtualDomainDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
       sandbox.stub(composr.phraseDao, 'loadAll', utilsPromises.resolvedCurriedPromise([]));
@@ -36,7 +35,6 @@ describe('Config initialization', function() {
           expect(composr.config).to.have.property('credentials');
           expect(composr.config).to.have.property('timeout');
           expect(composr.config).to.have.property('urlBase');
-          expect(spyRequirerConfigure.callCount).to.equals(1);
           expect(spyPhrasesConfigure.callCount).to.equals(1);
           expect(stubInitCorbelDriver.callCount).to.equals(0);
           done();

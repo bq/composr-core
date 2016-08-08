@@ -2,7 +2,7 @@
   "id": "client:demo!loginclient",
   "url": "loginclient",
   "post": {
-    "code": "var x = 0;var arr = [];while(true){x = x + 1;arr.push(x);} var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.status(200).send('test');",
+    "code": "var x = 0;var arr = [];while(true){x = x + 1;arr.push(x);} var corbelDriver=corbel.generateDriver({clientsId:req.body.clientId,clientSecret:req.body.clientSecret,scopes:req.body.scopes}); res.send(200, 'test');",
     "doc": {
       "description": "Phrase for testing purposes",
       "body": {

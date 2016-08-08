@@ -1,93 +1,42 @@
 'use strict'
 
-var _ = require('lodash')
 var DEFAULT_STATUS_CODE = 200
 
-function MockedResponse (serverType, res) {
-  var module = this
+function MockedResponse (res) {
   this.res = res
-  this.sent = false
-  this.serverType = serverType === 'express' ? 'express' : 'restify'
-
   this.cookies = {}
   this.headers = {}
+  this.finished = false
   this.statusCode = DEFAULT_STATUS_CODE
-  this.promise = new Promise(function (resolve, reject) {
-    module.resolve = function (response) {
-      if (module.res) {
-        module.respond(response)
-      }
-      resolve(response)
-    }
-    module.reject = function (response) {
-      if (module.res) {
-        module.respond(response)
-      }
-      reject(response)
-    }
-  })
-
-  this._action = null
 }
 
-MockedResponse.prototype.hasEnded = function () {
-  return this.sent
+MockedResponse.prototype.callbacks = {
+  end: function () {}
 }
 
-MockedResponse.prototype.respond = function (response) {
-  this.sent = true
-  if (this.serverType === 'express') {
-    this.expressResponse(response)
-  } else {
-    this.restifyResponse(response)
-  }
-}
-
-MockedResponse.prototype.expressResponse = function (response) {
-  this.res.headers = response.headers
-  this.res.status(response.status)[this._action](response.body)
-}
-
-MockedResponse.prototype.restifyResponse = function (response) {
-  this.res.headers = response.headers
-  this.res.send(response.status, response.body)
+MockedResponse.prototype.on = function (event, cb) {
+  this.callbacks[event] = cb
 }
 
 MockedResponse.prototype.status = function (statusCode) {
   this.statusCode = parseInt(statusCode, 10)
 
-  if (!_.isInteger(this.statusCode)) {
-    this.statusCode = DEFAULT_STATUS_CODE
-  }
-
   return this
 }
 
 MockedResponse.prototype.cookie = function (name, value, options) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.cookie) === 'function') {
-      this.res.cookie(name, value, options)
-    }
-  } else {
-    if (this.res && typeof (this.res.setCookie) === 'function') {
-      this.res.setCookie(name, value, options)
-    }
-  }
-
   this.cookies[name] = value
+
+  if (this.res && typeof (this.res.setCookie) === 'function') {
+    this.res.setCookie(name, value, options)
+  }
 
   return this
 }
 
 MockedResponse.prototype.setHeader = function (name, value) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.set) === 'function') {
-      this.res.set(name, value)
-    }
-  } else {
-    if (this.res && typeof (this.res.header) === 'function') {
-      this.res.header(name, value)
-    }
+  if (this.res) {
+    this.res.header(name, value)
   }
 
   this.headers[name] = value
@@ -96,66 +45,51 @@ MockedResponse.prototype.setHeader = function (name, value) {
 }
 
 MockedResponse.prototype.setHeaders = function (headers) {
-  if (this.serverType === 'express') {
-    if (this.res && typeof (this.res.set) === 'function') {
-      this.res.set(headers)
-    }
-  } else {
-    if (this.res && typeof (this.res.header) === 'function') {
-      var that = this
-      _.forIn(headers, function (value, key) {
-        that.res.header(key, value)
-      })
-    }
-  }
-
   this.headers = headers
+
+  if (this.res && typeof (this.res.header) === 'function') {
+    var that = this
+    Object.keys(headers).forEach(function (header) {
+      that.res.header(header, headers[header])
+    })
+  }
 
   return this
 }
 
-MockedResponse.prototype.send = function (data) {
-  this._action = 'send'
-  data = typeof (data) !== 'undefined' && data !== null ? data : ''
-  var params = {
-    status: this.statusCode,
-    body: data,
-    headers: this.headers
-  }
+MockedResponse.prototype.send = function (maybeCode, maybeBody) {
+  if (!this.finished) {
+    var status = this.statusCode || 200
+    var data
 
-  if (!params.headers['Content-Length'] && data.toString) {
-    // Check if the object passed has the "toString" method, if not, don't use it
-    this.setHeader('Content-Length', data.toString().length)
-  }
+    if (typeof maybeCode === 'number') {
+      status = maybeCode
+      data = maybeBody
+    } else {
+      data = maybeCode
+    }
 
-  if (this.statusCode.toString().indexOf('4') === 0 || this.statusCode.toString().indexOf('5') === 0) {
-    this.reject(params)
-  } else {
-    params.cookies = this.cookies
-    this.resolve(params)
-  }
+    data = typeof (data) !== 'undefined' && data !== null ? data : ''
 
-  return this.promise
+    if (data.toString) {
+      // Check if the object passed has the "toString" method, if not, don't use it
+      this.setHeader('Content-Length', data.toString().length)
+    }
+
+    this.finished = true
+
+    if (this.res) {
+      this.res.send(status, data)
+    }
+
+    var params = {
+      status: status,
+      body: data,
+      headers: this.headers
+    }
+
+    this.callbacks.end(params)
+  }
 }
 
-MockedResponse.prototype.json = function (data) {
-  this._action = 'json'
-  data = typeof (data) !== 'undefined' && data !== null ? data : ''
-  var params = {
-    status: this.statusCode,
-    body: data,
-    headers: this.headers,
-    cookies: this.cookies
-  }
-
-  if (!params.headers['Content-Length']) {
-    this.setHeader('Content-Length', data.toString().length)
-  }
-
-  this.resolve(params)
-  return this.promise
-}
-
-module.exports = function (serverType, res) {
-  return new MockedResponse(serverType, res)
-}
+module.exports = MockedResponse

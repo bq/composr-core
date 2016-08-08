@@ -68,12 +68,7 @@ describe('Phrases runner', function() {
       }
     });
 
-    Phrases.requirer = new Requirer({
-      events: {
-        emit: sinon.stub()
-      },
-      Snippets: Snippets
-    });
+    Phrases.requirer = Requirer(Snippets);
 
 
     Phrases.register(domain, phrasesToRegister)
@@ -81,18 +76,12 @@ describe('Phrases runner', function() {
   });
 
 
-  describe('Error handlers in browser mode', function() {
+  describe('Error handlers in function mode', function() {
 
     it('Throwns a custom error', function(done) {
-      var result = Phrases.runByPath(domain, 'error/506', 'get', {
-        browser : true
-      });
-
-      expect(result).to.exist;
-
-      result
-        .should.be.rejected
-        .then(function(response) {
+      Phrases.runByPath(domain, 'error/506', 'get', {
+        functionMode : true
+      }, null, function(err, response){
           expect(spyRun.callCount).to.equals(1);
           expect(response).to.be.an('object');
           expect(response).to.include.keys(
@@ -103,78 +92,55 @@ describe('Phrases runner', function() {
           expect(typeof response.body).to.equals('object');
           expect(response.body.error).to.equals('error');
           expect(response.body.errorDescription).to.equals('description');
-          
-        })
-        .should.notify(done);
+          done(err);
+      });
     });
 
     it('Handles an error sended correctly', function(done) {
-      var result = Phrases.runByPath(domain, 'senderror/507', 'get', {
-        browser : true
+      Phrases.runByPath(domain, 'senderror/507', 'get', {
+        functionMode : true
+      }, null, function(err, response){
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+        expect(response.status).to.equals(507);
+        expect(typeof response.body).to.equals('object');
+        expect(response.body.error).to.equals('error');
+        expect(response.body.errorDescription).to.equals('description');
+        done(err);
       });
-
-      expect(result).to.exist;
-
-      result
-        .should.be.rejected
-        .then(function(response) {
-          expect(spyRun.callCount).to.equals(1);
-          expect(response).to.be.an('object');
-          expect(response).to.include.keys(
-            'status',
-            'body'
-          );
-          expect(response.status).to.equals(507);
-          expect(typeof response.body).to.equals('object');
-          expect(response.body.error).to.equals('error');
-          expect(response.body.errorDescription).to.equals('description');
-          
-        })
-        .should.notify(done);
     });
 
     it('Handles a string error', function(done) {
-      var result = Phrases.runByPath(domain, 'texterror', 'get', {
-        browser : true
+      Phrases.runByPath(domain, 'texterror', 'get', {
+        functionMode : true
+      }, null, function(err, response){
+        expect(spyRun.callCount).to.equals(1);
+        expect(response).to.be.an('object');
+        expect(response).to.include.keys(
+          'status',
+          'body'
+        );
+        expect(response.status).to.equals(500);
+        expect(typeof response.body).to.equals('object');
+        expect(response.body.error).to.equals('error:phrase:exception:texterror');
+        expect(response.body.errorDescription).to.equals('hola');
+        
+        done(err);
       });
-
-      expect(result).to.exist;
-
-      result
-        .should.be.rejected
-        .then(function(response) {
-          expect(spyRun.callCount).to.equals(1);
-          expect(response).to.be.an('object');
-          expect(response).to.include.keys(
-            'status',
-            'body'
-          );
-          expect(response.status).to.equals(500);
-          expect(typeof response.body).to.equals('object');
-          expect(response.body.error).to.equals('error:phrase:exception:texterror');
-          expect(response.body.errorDescription).to.equals('hola');
-          
-        })
-        .should.notify(done);
     });
 
     it('Returns phrase cant be runned if missing', function(done) {
       //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status
-      var result = Phrases.runByPath(domain, 'missingendpoint', 'get', {
-        browser : true
+      Phrases.runByPath(domain, 'missingendpoint', 'get', {
+        functionMode : true
+      }, null, function(err, response){
+        expect(err).to.equals('phrase:cant:be:runned');
+        done();
       });
-
-      expect(result).to.exist;
-
-      result
-        .should.be.rejected
-        .then(function(response) {
-          expect(response).to.equals('phrase:cant:be:runned');
-        })
-        .should.notify(done);
     });
-    
   });
-
-
 });
