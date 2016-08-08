@@ -85,7 +85,8 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
     var params = {
       status: status,
       body: data,
-      headers: this.headers
+      headers: this.headers,
+      cookies: this.cookies
     }
 
     this.callbacks.end(params)
