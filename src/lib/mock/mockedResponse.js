@@ -85,8 +85,12 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
     var params = {
       status: status,
       body: data,
-      headers: this.headers,
-      cookies: this.cookies
+      headers: this.headers
+    }
+
+    // Only set cookies if status distinct than 40x or 50x
+    if (status.toString().indexOf('4') !== 0 && status.toString().indexOf('5') !== 0) {
+      params.cookies = this.cookies
     }
 
     this.callbacks.end(params)
