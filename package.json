@@ -1,6 +1,6 @@
 {
   "name": "composr-core",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "CompoSR core functions",
   "main": "src/composr-core.js",
   "directories": {
