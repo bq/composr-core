@@ -196,10 +196,7 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
       clearTimeout(tm)
     }
 
-    cb(null, {
-      status: resp.status,
-      body: resp.body
-    })
+    cb(null, Object.assign({}, resp))
   })
 
   // Execute the phrase
