@@ -81,11 +81,11 @@ PhraseModel.prototype.matchesPath = function (path) {
 /*
  Asume that the path is sanitized without query params.
  */
-PhraseModel.prototype.extractParamsFromPath = function (path) {
+PhraseModel.prototype.extractParamsFromPath = function extractParamsFromPath(path) {
   return paramsExtractor.extract(path, this.getRegexpReference())
 }
 
-PhraseModel.prototype.compile = function (events) {
+PhraseModel.prototype.compile = function compile(events) {
   var model = this
 
   this.compiled.codes = {}
@@ -125,7 +125,7 @@ PhraseModel.prototype.compile = function (events) {
 }
 
 // Runs VM script mode
-PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout, file, events) {
+PhraseModel.prototype.__executeScriptMode = function __executeScriptMode(verb, parameters, timeout, file, events) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
@@ -148,8 +148,8 @@ PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout,
   }
 }
 
-// Runs function mode (DEPRECATED)
-PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeout, file) {
+// Runs function mode
+PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode(verb, parameters, timeout, file) {
   // @TODO: configure timeout
   // @TODO: enable VM if memory bug gets solved
   var url = this.getUrl()

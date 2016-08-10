@@ -1,6 +1,6 @@
 'use strict'
 
-var capitalizeParam = function (param) {
+function capitalizeParam(param) {
   return param.split('-').map(function (item) {
     return item.charAt(0).toUpperCase() + item.slice(1)
   }).join('-')
@@ -21,12 +21,12 @@ function MockedRequest (req, options) {
   }
 }
 
-MockedRequest.prototype.get = function (headerName) {
+MockedRequest.prototype.get = function get(headerName) {
   headerName = capitalizeParam(headerName)
   return this.headers[headerName]
 }
 
-MockedRequest.prototype.capitalizeHeaders = function () {
+MockedRequest.prototype.capitalizeHeaders = function capitalizeHeaders() {
   var newHeaders = {}
   var module = this
 
