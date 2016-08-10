@@ -389,7 +389,6 @@ describe('Phrases runner', function() {
             'body'
           );
 
-          console.log(JSON.stringify(response.body), null, 2);
           expect(response.status).to.equals(200);
           expect(response.body).to.be.an('object');
           expect(response.body.query.name).to.equals('Pepito manolo');

@@ -3,11 +3,11 @@ var driverStore = require('../stores/corbelDriver.store')
 var utils = require('../utils')
 var parseToComposrError = require('../parseToComposrError')
 
-var BaseDao = function (options) {
+var BaseDao = function BaseDao (options) {
   this.COLLECTION = options.collection
 }
 
-BaseDao.prototype.load = function (id) {
+BaseDao.prototype.load = function load (id) {
   if (!id) {
     return Promise.reject('missing:id')
   }
@@ -31,7 +31,7 @@ BaseDao.prototype.load = function (id) {
   }
 }
 
-BaseDao.prototype.loadSome = function (ids) {
+BaseDao.prototype.loadSome = function loadSome (ids) {
   var that = this
 
   if (!ids || !Array.isArray(ids)) {
@@ -66,7 +66,7 @@ BaseDao.prototype.loadSome = function (ids) {
   }
 }
 
-BaseDao.prototype.loadAll = function () {
+BaseDao.prototype.loadAll = function loadAll () {
   var that = this
   var caller = function (pageNumber, pageSize) {
     return driverStore.getDriver()
@@ -87,7 +87,7 @@ BaseDao.prototype.loadAll = function () {
     })
 }
 
-BaseDao.prototype.save = function (item, driver) {
+BaseDao.prototype.save = function save (item, driver) {
   if (!driverStore.getDriver() && !driver) {
     return Promise.reject('missing:driver')
   }
@@ -106,7 +106,7 @@ BaseDao.prototype.save = function (item, driver) {
     })
 }
 
-BaseDao.prototype.delete = function (id, driver) {
+BaseDao.prototype.delete = function _delete (id, driver) {
   if (!driverStore.getDriver() && !driver) {
     return Promise.reject('missing:driver')
   }

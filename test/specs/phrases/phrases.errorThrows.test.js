@@ -1,5 +1,6 @@
 var PhraseManager = require('../../../src/lib/managers/Phrase'),
   SnippetsManager = require('../../../src/lib/managers/Snippet'),
+  ComposrError = require('../../../src/lib/ComposrError'),
   Requirer = require('../../../src/lib/requirer'),
   events = require('../../../src/lib/events'),
   _ = require('lodash'),
@@ -78,22 +79,15 @@ describe('Phrases runner', function() {
 
   describe('Error handlers in function mode', function() {
 
-    it('Throwns a custom error', function(done) {
-      Phrases.runByPath(domain, 'error/506', 'get', {
-        functionMode : true
-      }, null, function(err, response){
-          expect(spyRun.callCount).to.equals(1);
-          expect(response).to.be.an('object');
-          expect(response).to.include.keys(
-            'status',
-            'body'
-          );
-          expect(response.status).to.equals(506);
-          expect(typeof response.body).to.equals('object');
-          expect(response.body.error).to.equals('error');
-          expect(response.body.errorDescription).to.equals('description');
-          done(err);
-      });
+    it('Throwns a custom error', function() {
+      var fn = function(){
+        Phrases.runByPath(domain, 'error/506', 'get', {
+          functionMode : true
+        }, null, function(){})
+      };
+
+      expect(fn).to.throw(Error)
+      expect(fn).to.throw(ComposrError)
     });
 
     it('Handles an error sended correctly', function(done) {
@@ -114,9 +108,43 @@ describe('Phrases runner', function() {
       });
     });
 
-    it('Handles a string error', function(done) {
-      Phrases.runByPath(domain, 'texterror', 'get', {
+    it('Crashes on unhandled error', function() {
+      var fn = function(){
+        Phrases.runByPath(domain, 'texterror', 'get', {
+          functionMode : true
+        }, null, function(){})
+      };
+
+      expect(fn).to.throw('hola')
+    });
+
+    it('Returns phrase cant be runned if missing', function(done) {
+      //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status
+      Phrases.runByPath(domain, 'missingendpoint', 'get', {
         functionMode : true
+      }, null, function(err, response){
+        expect(err).to.equals('phrase:cant:be:runned');
+        done();
+      });
+    });
+  });
+
+  describe('Error handlers in VM mode', function() {
+
+    it('Throwns a custom error', function() {
+      var fn = function(){
+        Phrases.runByPath(domain, 'error/506', 'get', {
+          functionMode : false
+        }, null, function(){})
+      };
+
+      expect(fn).to.throw(Error)
+      expect(fn).to.throw(ComposrError)
+    });
+
+    it('Handles an error sended correctly', function(done) {
+      Phrases.runByPath(domain, 'senderror/507', 'get', {
+        functionMode : false
       }, null, function(err, response){
         expect(spyRun.callCount).to.equals(1);
         expect(response).to.be.an('object');
@@ -124,19 +152,28 @@ describe('Phrases runner', function() {
           'status',
           'body'
         );
-        expect(response.status).to.equals(500);
+        expect(response.status).to.equals(507);
         expect(typeof response.body).to.equals('object');
-        expect(response.body.error).to.equals('error:phrase:exception:texterror');
-        expect(response.body.errorDescription).to.equals('hola');
-        
+        expect(response.body.error).to.equals('error');
+        expect(response.body.errorDescription).to.equals('description');
         done(err);
       });
+    });
+
+    it('Crashes on unhandled error', function() {
+      var fn = function(){
+        Phrases.runByPath(domain, 'texterror', 'get', {
+          functionMode : false
+        }, null, function(){})
+      };
+
+      expect(fn).to.throw('hola')
     });
 
     it('Returns phrase cant be runned if missing', function(done) {
       //@TODO: See if we want to return that error directly or a wrappedResponse with 404 status
       Phrases.runByPath(domain, 'missingendpoint', 'get', {
-        functionMode : true
+        functionMode : false
       }, null, function(err, response){
         expect(err).to.equals('phrase:cant:be:runned');
         done();

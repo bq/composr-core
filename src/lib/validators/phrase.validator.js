@@ -2,15 +2,12 @@
 
 var check = require('syntax-error')
 var ramlCompiler = require('../compilers/raml.compiler')
-var q = require('q')
 var utils = require('../utils')
 var vm = require('vm')
 var semver = require('semver')
 var vUtils = utils.values
 
 function validate (phrase) {
-  var dfd = q.defer()
-
   var errors = []
 
   var errorAccumulator = utils.errorAccumulator(errors)
@@ -69,20 +66,20 @@ function validate (phrase) {
     errors.push('undefined:phrase:http_method')
   }
 
-  ramlCompiler.compile([phrase])
-    .then(function () {
-      if (errors.length > 0) {
-        dfd.reject(errors)
-      } else {
-        dfd.resolve(phrase)
-      }
-    })
-    .catch(function () {
-      errors.push('error:not-raml-compilant')
-      dfd.reject(errors)
-    })
-
-  return dfd.promise
+  return new Promise(function (resolve, reject) {
+    ramlCompiler.compile([phrase])
+      .then(function () {
+        if (errors.length > 0) {
+          reject(errors)
+        } else {
+          resolve(phrase)
+        }
+      })
+      .catch(function () {
+        errors.push('error:not-raml-compilant')
+        reject(errors)
+      })
+  })
 }
 
 module.exports = validate

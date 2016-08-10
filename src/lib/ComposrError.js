@@ -1,7 +1,7 @@
 'use strict'
 
 // custom error
-var ComposrError = function (error, description, status) {
+var ComposrError = function ComposrError (error, description, status) {
   var err = new Error(error)
   Object.setPrototypeOf(err, ComposrError.prototype)
 

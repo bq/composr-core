@@ -1,7 +1,6 @@
 'use strict'
 
 var _ = require('lodash')
-var q = require('q')
 /*
  Proxy that accepts one or multiple items
  returns a function that executes a promise for each item
@@ -29,26 +28,24 @@ function currifiedToArrayPromise (itemOrItems) {
       return itemCb(item)
     })
 
-    return new Promise(function (resolve) {
-      q.allSettled(promises)
-        .then(function (results) {
-          if (cb) {
-            results = results.map(function (result, index) {
-              return cb(result, theItems[index])
-            })
-          } else {
-            results = results.map(function (result) {
-              return result.value
-            })
-          }
+    return Promise.all(promises)
+      .then(function (results) {
+        if (cb) {
+          results = results.map(function (result, index) {
+            return cb(result, theItems[index])
+          })
+        } else {
+          results = results.map(function (result) {
+            return result.value
+          })
+        }
 
-          if (isArray) {
-            resolve(results)
-          } else {
-            resolve(results[0])
-          }
-        })
-    })
+        if (isArray) {
+          return (results)
+        } else {
+          return (results[0])
+        }
+      })
   }
 }
 

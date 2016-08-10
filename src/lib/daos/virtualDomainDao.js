@@ -3,7 +3,7 @@
 var COLLECTION = 'composr:VirtualDomain'
 var BaseDao = require('./BaseDao')
 
-var VirtualDomainDao = function () {}
+var VirtualDomainDao = function VirtualDomainDao () {}
 
 VirtualDomainDao.prototype = new BaseDao({
   collection: COLLECTION

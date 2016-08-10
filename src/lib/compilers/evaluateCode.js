@@ -25,7 +25,6 @@ function __codeOptimization (code) {
       drop_console: false
     }
   })
-
   return optimized.code
 }
 
@@ -46,6 +45,7 @@ function evaluateCode (functionBody, params, debugFilePath) {
   try {
     var optimized = __codeOptimization(functionBody)
 
+    // TODO: We want a named function here http://stackoverflow.com/questions/9479046/is-there-any-non-eval-way-to-create-a-function-with-a-runtime-determined-name
     result.fn = Function.apply(null, functionParams.concat(optimized))
 
     var options = {

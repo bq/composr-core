@@ -125,7 +125,7 @@ PhraseModel.prototype.compile = function (events) {
 }
 
 // Runs VM script mode
-PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout, file) {
+PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout, file, events) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
@@ -135,7 +135,17 @@ PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout,
     options.filename = file
   }
 
-  this.compiled.codes[verb].script.runInNewContext(parameters, options)
+  try {
+    this.compiled.codes[verb].script.runInNewContext(parameters, options)
+  } catch (e) {
+    if (e.message && e.message === 'Script execution timed out.') {
+      // Timeout fired
+      events.emit('warn', 'phrase:timedout', e, this.getUrl())
+      parameters.res.send(503, new ComposrError('error:phrase:timedout:' + this.getUrl(), 'The phrase endpoint is timing out', 503))
+    } else {
+      throw e
+    }
+  }
 }
 
 // Runs function mode (DEPRECATED)

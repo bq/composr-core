@@ -67,6 +67,7 @@ describe('Phrase validator', function() {
       validator(phrase)
         .should.be.rejected
         .then(function(result){
+          console.log(result)
           expect(result.length).to.equals(1);
           expect(result[0]).to.equals('error:phrase:url:syntax');
           done();

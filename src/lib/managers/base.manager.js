@@ -1,6 +1,5 @@
 'use strict'
 
-var q = require('q')
 var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise')
 
 /**
@@ -31,12 +30,12 @@ function BaseManager (options) {
 }
 
 // Reset the stack
-BaseManager.prototype.resetItems = function () {
+BaseManager.prototype.resetItems = function resetItems () {
   this.store.reset()
 }
 
 // Entry point for registering or unregistering items
-BaseManager.prototype.register = function (domain, itemOrItems) {
+BaseManager.prototype.register = function register (domain, itemOrItems) {
   var module = this
 
   if (!domain) {
@@ -49,17 +48,27 @@ BaseManager.prototype.register = function (domain, itemOrItems) {
     return module._register(domain, item)
   },
     function (result, item) {
-      return {
-        registered: result.state === 'fulfilled',
-        id: (result.state === 'fulfilled' ? result.value.getId() : null) || item.id,
-        model: result.state === 'fulfilled' ? result.value : null,
-        error: result.reason ? result.reason : null
+      var response = {
+        registered: false,
+        id: item.id,
+        model: null,
+        error: null
       }
+
+      if (result instanceof module.model) {
+        response.registered = true
+        response.id = result.getId()
+        response.model = result
+      } else {
+        response.error = result
+      }
+
+      return response
     })
 }
 
 // Register an item on the stack
-BaseManager.prototype._register = function (domain, item) {
+BaseManager.prototype._register = function _register (domain, item) {
   var module = this
 
   return this.validate(item)
@@ -87,12 +96,12 @@ BaseManager.prototype._register = function (domain, item) {
     })
     .catch(function (err) {
       module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, item.url, err)
-      throw err
+      return err
     })
 }
 
 // Registers phrases, extracting domain from id (TODO: Test)
-BaseManager.prototype.registerWithoutDomain = function (items) {
+BaseManager.prototype.registerWithoutDomain = function registerWithoutDomain (items) {
   var module = this
 
   var promises = []
@@ -113,11 +122,11 @@ BaseManager.prototype.registerWithoutDomain = function (items) {
     promises.push(module.register(key, itemsHash[key]))
   })
 
-  return q.all(promises)
+  return Promise.all(promises)
 }
 
 // Verifies that a JSON for a item is well formed
-BaseManager.prototype.validate = function (item) {
+BaseManager.prototype.validate = function validate (item) {
   return this.validator(item)
     .then(function () {
       return {

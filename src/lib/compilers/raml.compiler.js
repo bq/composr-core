@@ -2,10 +2,9 @@
 
 var raml = require('raml-parser')
 var YAML = require('yamljs')
-var q = require('q')
 var _ = require('lodash')
 
-var buildPhraseDefinition = function (phrase) {
+function buildPhraseDefinition (phrase) {
   var doc = {}
 
   // convert express URL `path/:param1/:param2` to
@@ -104,21 +103,19 @@ function transform (phrases, urlBase, domain, version) {
  * @param  {Object} phrase
  * @return {String}
  */
-var compile = function (phrases, urlBase, domain, version) {
-  var dfd = q.defer()
+function compileDoc (phrases, urlBase, domain, version) {
+  return new Promise(function (resolve, reject) {
+    urlBase = urlBase || 'http://test.com'
+    domain = domain || 'test-domain'
+    version = version || ''
 
-  urlBase = urlBase || 'http://test.com'
-  domain = domain || 'test-domain'
-  version = version || ''
+    var definition = transform(phrases, urlBase, domain, version)
 
-  var definition = transform(phrases, urlBase, domain, version)
-
-  // Use the raml.load to parse the formed raml
-  raml.load(definition)
-    .then(dfd.resolve, dfd.reject)
-
-  return dfd.promise
+    // Use the raml.load to parse the formed raml
+    raml.load(definition)
+      .then(resolve, reject)
+  })
 }
 
 module.exports.transform = transform
-module.exports.compile = compile
+module.exports.compile = compileDoc

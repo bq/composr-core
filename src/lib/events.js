@@ -10,7 +10,7 @@ var suscribed = {}
 function on (fnNames, originModule, fn, errCb) {
   fnNames = !_.isArray(fnNames) ? [fnNames] : fnNames
 
-  var genericErrorCallback = function (err) {
+  var genericErrorCallback = function genericErrorCallback (err) {
     console.log('Error on module ' + originModule + ', ' + fnNames.join(',') + err)
   }
 
