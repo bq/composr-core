@@ -8,10 +8,9 @@ function MockedResponse (res) {
   this.headers = {}
   this.finished = false
   this.statusCode = DEFAULT_STATUS_CODE
-}
-
-MockedResponse.prototype.callbacks = {
-  end: function () {}
+  this.callbacks = {
+    end: function () {}
+  }
 }
 
 MockedResponse.prototype.on = function (event, cb) {
