@@ -6,25 +6,7 @@ var composr = require('../../../src/composr-core'),
 
 var _ = require('lodash');
 
-function suscribeLogs() {
-  composr.events.on('debug', 'CorbelComposr', function() {
-    console.log.apply(console.log, arguments);
-  });
-
-  composr.events.on('error', 'CorbelComposr', function() {
-    console.log.apply(console.log, arguments);
-  });
-
-  composr.events.on('warn', 'CorbelComposr', function() {
-    console.log.apply(console.log, arguments);
-  });
-
-  composr.events.on('info', 'CorbelComposr', function() {
-    console.log.apply(console.log, arguments);
-  });
-}
-
-describe.only('Race conditions', function(){
+describe('Race conditions', function(){
   this.timeout(30000)
 
   var domain = 'raceconditions';
@@ -57,7 +39,7 @@ describe.only('Race conditions', function(){
     'url': 'status/:status',
     'version' : '5.5.5',
     'get': {
-      'code': 'var parseError = require("snippet-parseError"); setTimeout(function(){ console.log(req.params); parseError({status: parseInt(req.params.status, 10)}, res) }, 100);',
+      'code': 'var parseError = require("snippet-parseError"); setTimeout(function(){ parseError({status: parseInt(req.params.status, 10)}, res) }, 100);',
       'doc': {
 
       }
@@ -65,7 +47,6 @@ describe.only('Race conditions', function(){
   }];
 
   before(function(done){
-    suscribeLogs();
     composr.init({}, false)
       .then(function() {
         return composr.Phrase.register(domain, phrasesToRegister);
@@ -130,7 +111,7 @@ describe.only('Race conditions', function(){
 
     var promises = [];
 
-    function createRequest(theItem){
+    function createRequest(theItem, i){
       return new Promise(function(resolve, reject){
         var options = {
           headers: {
@@ -141,10 +122,9 @@ describe.only('Race conditions', function(){
         };
 
         var verb = theItem.verb || 'get'
-        var path = theItem.path
 
         composr.Phrase.runByPath(domain, theItem.path, verb, options, '5.5.5', function(err, response){
-          console.log(theItem.path, response.body)
+          console.log('> Request', i)
           var validBody = typeof theItem.expected.body !== 'undefined' ?  response.body === theItem.expected.body : true
           if (response.status === theItem.expected.status && validBody){
             resolve()
@@ -155,19 +135,17 @@ describe.only('Race conditions', function(){
       });
     }
 
-    for( var i = 0; i < 10000; i++){
+    for( var i = 0; i < 1000; i++){
       var randomPick = _.sample(candidates);
-        var promise = createRequest(randomPick);
+      var promise = createRequest(randomPick, i);
       promises.push(promise)
     }
 
     Promise.all(promises)
       .then(function(){
-        console.log('ENDED');
         done()
       })
       .catch(function(err){
-        console.log(err);
         done(err);
       });
     

@@ -90,7 +90,7 @@ MockedResponse.prototype.send = function send (maybeCode, maybeBody) {
       params.cookies = this.cookies
     }
 
-    this.callbacks.end.forEach(function (cb) { cb(null, params) })
+    this.callbacks.end.forEach(function (cb) { cb(params) })
   }
 }
 

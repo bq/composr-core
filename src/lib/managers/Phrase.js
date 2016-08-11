@@ -191,7 +191,9 @@ PhraseManager.prototype._run = function _runPhrase (phrase, verb, params, domain
     sandbox.corbelDriver = params.corbelDriver
   }
 
-  sandbox.res.on('end', cb)
+  sandbox.res.on('end', function (resp) {
+    cb(null, resp)
+  })
 
   // Execute the phrase
   if (params.functionMode) {
