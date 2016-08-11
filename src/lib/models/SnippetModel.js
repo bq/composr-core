@@ -41,7 +41,7 @@ SnippetModel.prototype.compile = function (events) {
   this.compiled.code = codeCompiled
 }
 
-SnippetModel.prototype.execute = function executeSnippet(functionMode, cb) {
+SnippetModel.prototype.execute = function executeSnippet (functionMode, cb) {
   if (functionMode) {
     this.compiled.code.fn(function (res) {
       cb(res)

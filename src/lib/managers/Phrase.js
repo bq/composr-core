@@ -113,8 +113,14 @@ function getDefaultPhraseParams (options) {
   var defaultParameters = {
     functionMode: true,
     query: null,
-    params: null
+    params: null,
+    headers: null,
+    corbelDriver: null,
+    domain: null,
+    timeout: null,
+    body: null
   }
+
   return Object.assign({}, defaultParameters, options)
 }
 
@@ -185,20 +191,11 @@ PhraseManager.prototype._run = function _runPhrase (phrase, verb, params, domain
     sandbox.corbelDriver = params.corbelDriver
   }
 
-  var tm
-
-  sandbox.res.on('end', function (resp) {
-    if (tm) {
-      // Remove timeout of function mode
-      clearTimeout(tm)
-    }
-
-    cb(null, Object.assign({}, resp))
-  })
+  sandbox.res.on('end', cb)
 
   // Execute the phrase
   if (params.functionMode) {
-    tm = phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
+    phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
   } else {
     phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file, this.events)
   /* try {

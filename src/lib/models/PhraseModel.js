@@ -81,11 +81,11 @@ PhraseModel.prototype.matchesPath = function (path) {
 /*
  Asume that the path is sanitized without query params.
  */
-PhraseModel.prototype.extractParamsFromPath = function extractParamsFromPath(path) {
+PhraseModel.prototype.extractParamsFromPath = function extractParamsFromPath (path) {
   return paramsExtractor.extract(path, this.getRegexpReference())
 }
 
-PhraseModel.prototype.compile = function compile(events) {
+PhraseModel.prototype.compile = function compile (events) {
   var model = this
 
   this.compiled.codes = {}
@@ -125,7 +125,7 @@ PhraseModel.prototype.compile = function compile(events) {
 }
 
 // Runs VM script mode
-PhraseModel.prototype.__executeScriptMode = function __executeScriptMode(verb, parameters, timeout, file, events) {
+PhraseModel.prototype.__executeScriptMode = function __executeScriptMode (verb, parameters, timeout, file, events) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
@@ -149,7 +149,7 @@ PhraseModel.prototype.__executeScriptMode = function __executeScriptMode(verb, p
 }
 
 // Runs function mode
-PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode(verb, parameters, timeout, file) {
+PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode (verb, parameters, timeout, file) {
   // @TODO: configure timeout
   // @TODO: enable VM if memory bug gets solved
   var url = this.getUrl()
@@ -161,6 +161,10 @@ PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode(ver
     }
     clearTimeout(tm)
   }, timeout || 10000)
+
+  parameters.res.on('end', function () {
+    clearTimeout(tm)
+  })
 
   if (file) {
     var fn = require(file)
@@ -185,8 +189,6 @@ PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode(ver
       parameters.config,
       parameters.metrics)
   }
-
-  return tm
 }
 
 module.exports = PhraseModel

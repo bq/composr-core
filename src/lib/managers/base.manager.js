@@ -144,7 +144,7 @@ BaseManager.prototype.validate = function validate (item) {
 }
 
 // Iterates over the items to compile
-BaseManager.prototype.compile = function compile(domain, itemOrItems) {
+BaseManager.prototype.compile = function compile (domain, itemOrItems) {
   var module = this
 
   var isArray = Array.isArray(itemOrItems)
@@ -161,7 +161,7 @@ BaseManager.prototype.compile = function compile(domain, itemOrItems) {
 }
 
 // Iterates over the items to unregister
-BaseManager.prototype.unregister = function unregister(domain, itemOrItemIds) {
+BaseManager.prototype.unregister = function unregister (domain, itemOrItemIds) {
   var module = this
 
   var isArray = Array.isArray(itemOrItemIds)
@@ -183,16 +183,16 @@ BaseManager.prototype.unregister = function unregister(domain, itemOrItemIds) {
 }
 
 // Extracts the domain from a json item
-BaseManager.prototype._extractDomainFromId = function _extractDomainFromId(id) {
+BaseManager.prototype._extractDomainFromId = function _extractDomainFromId (id) {
   return id.split('!')[0]
 }
 
 // Extracts the virtual domain from a jsonItem
-BaseManager.prototype._extractVirtualDomainFromId = function _extractVirtualDomainFromId(id) {
+BaseManager.prototype._extractVirtualDomainFromId = function _extractVirtualDomainFromId (id) {
   return id.split('!')[1]
 }
 
-BaseManager.prototype._addToStore = function _addToStore(domain, modelInstance) {
+BaseManager.prototype._addToStore = function _addToStore (domain, modelInstance) {
   if (!domain || !modelInstance) {
     return false
   }
@@ -205,17 +205,17 @@ BaseManager.prototype._addToStore = function _addToStore(domain, modelInstance) 
   return true
 }
 
-BaseManager.prototype.getById = function getById(id) {
+BaseManager.prototype.getById = function getById (id) {
   var domain = this._extractDomainFromId(id)
   return this.store.get(domain, id)
 }
 
-BaseManager.prototype.getByVirtualDomain = function getByVirtualDomain() {
+BaseManager.prototype.getByVirtualDomain = function getByVirtualDomain () {
   // TODO: implement
   // call this.store.getByVirtualDomain
 }
 
-BaseManager.prototype.getByDomain = function getByDomain(domain) {
+BaseManager.prototype.getByDomain = function getByDomain (domain) {
   return this.store.getAsList(domain)
 }
 
@@ -223,14 +223,14 @@ BaseManager.prototype.getByDomain = function getByDomain(domain) {
   Mandatory implementations
 ********************************/
 
-BaseManager.prototype._compile = function _compile(domain, item) {
+BaseManager.prototype._compile = function _compile (domain, item) {
   var BaseModel = this.model
   var model = new BaseModel(item, domain)
   return model
 }
 
 // Removes item from memory
-BaseManager.prototype._unregister = function _unregister(domain, id) {
+BaseManager.prototype._unregister = function _unregister (domain, id) {
   if (!domain) {
     this.events.emit('warn', this.itemName + ':unregister:missing:parameters', 'domain')
     return false
@@ -260,7 +260,7 @@ BaseManager.prototype._unregister = function _unregister(domain, id) {
  * @param  string id Item id
  * @return promise    load and register promise
  */
-BaseManager.prototype.load = function load(id) {
+BaseManager.prototype.load = function load (id) {
   var module = this
 
   if (id) {
@@ -286,7 +286,7 @@ BaseManager.prototype.load = function load(id) {
  * - If not, resolves
  * - If it is invalid, rejects
  */
-BaseManager.prototype.save = function save(domain, json, optionalDriver) {
+BaseManager.prototype.save = function save (domain, json, optionalDriver) {
   var BaseModel = this.model
   var item = new BaseModel(json, domain) // Constructs the id
 
@@ -311,16 +311,16 @@ BaseManager.prototype.save = function save(domain, json, optionalDriver) {
   })
 }
 
-BaseManager.prototype.__shouldSave = function __shouldSave(item) {
+BaseManager.prototype.__shouldSave = function __shouldSave (item) {
   return this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== item.getMD5()
 }
 
-BaseManager.prototype.__save = function __save(json, optionalDriver) {
+BaseManager.prototype.__save = function __save (json, optionalDriver) {
   return this.dao.save(json, optionalDriver)
 }
 
 /* Delete interface */
-BaseManager.prototype.delete = function _delete(id, optionalDriver) {
+BaseManager.prototype.delete = function _delete (id, optionalDriver) {
   this.events.emit('debug', 'delete:' + this.itemName, id)
 
   return this.dao.delete(id, optionalDriver)
@@ -331,11 +331,11 @@ BaseManager.prototype.delete = function _delete(id, optionalDriver) {
 ********************************/
 
 // Pre add call
-BaseManager.prototype.__preAdd = function __preAdd() {
+BaseManager.prototype.__preAdd = function __preAdd () {
   this.events.emit('trace', '__preAdd not implemented')
 }
 
-BaseManager.prototype.__postAdd = function __postAdd() {
+BaseManager.prototype.__postAdd = function __postAdd () {
   this.events.emit('trace', '__postAdd not implemented')
 }
 
