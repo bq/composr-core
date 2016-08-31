@@ -64,7 +64,7 @@ describe('Requirer', function() {
   it('Can require all the allowed libraries', function() {
     var requirerMethod = composr.requirer('testDomain');
 
-    var ALLOWED_LIBRARIES = ['q', 'async', 'request', 'corbel-js', 'lodash', 'http', 'ComposrError', 'composrUtils'];
+    var ALLOWED_LIBRARIES = ['corbel-token-verifier', 'async', 'request', 'corbel-js', 'lodash', 'http', 'ComposrError', 'composrUtils'];
 
     var requiredLibraries = ALLOWED_LIBRARIES.map(function(lib) {
       return requirerMethod(lib);
