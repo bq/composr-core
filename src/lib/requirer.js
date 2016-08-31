@@ -3,12 +3,12 @@
 var SNIPPETS_PREFIX = 'snippet-'
 
 var ALLOWED_LIBRARIES = [
-  'q',
   'http',
   'request',
   'async',
   'corbel-js',
-  'lodash'
+  'lodash',
+  'corbel-token-verifier'
 ]
 
 var LOCAL_LIBRARIES = {
