@@ -1,14 +1,11 @@
 'use strict'
 
 var check = require('syntax-error')
-var q = require('q')
 var utils = require('../utils')
 var semver = require('semver')
 var vUtils = utils.values
 
 function validate (snippet) {
-  var dfd = q.defer()
-
   var errors = []
 
   var errorAccumulator = utils.errorAccumulator(errors)
@@ -48,12 +45,10 @@ function validate (snippet) {
   }
 
   if (errors.length > 0) {
-    dfd.reject(errors)
+    return Promise.reject(errors)
   } else {
-    dfd.resolve(snippet)
+    return Promise.resolve(snippet)
   }
-
-  return dfd.promise
 }
 
 module.exports = validate

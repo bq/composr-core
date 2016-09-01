@@ -3,12 +3,12 @@
 var SNIPPETS_PREFIX = 'snippet-'
 
 var ALLOWED_LIBRARIES = [
-  'q',
   'http',
   'request',
   'async',
   'corbel-js',
-  'lodash'
+  'lodash',
+  'corbel-token-verifier'
 ]
 
 var LOCAL_LIBRARIES = {
@@ -16,9 +16,9 @@ var LOCAL_LIBRARIES = {
   'composrUtils': './utils'
 }
 
-function requirer (Snippet) {
-  return function (domain, version, functionMode) {
-    return function (libName) {
+function requirerWrapper (Snippet) {
+  return function requirer (domain, version, functionMode) {
+    return function requirerForDomain (libName) {
       if (!libName || typeof (libName) !== 'string') {
         libName = ''
       }
@@ -50,4 +50,4 @@ function requirer (Snippet) {
   }
 }
 
-module.exports = requirer
+module.exports = requirerWrapper

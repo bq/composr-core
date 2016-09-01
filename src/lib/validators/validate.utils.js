@@ -18,7 +18,7 @@ var isDefined = function (value) {
  * @param  {Mixed}  value
  * @return {Boolean}
  */
-var isNotNull = function (value) {
+var isNotNull = function isNotNull (value) {
   var isNull = value === null
 
   return !isNull
@@ -29,7 +29,7 @@ var isNotNull = function (value) {
  * @param  {Mixed}  value
  * @return {Boolean}
  */
-var isValue = function (value) {
+var isValue = function isValue (value) {
   return isDefined(value) && isNotNull(value)
 }
 
@@ -38,7 +38,7 @@ var isValue = function (value) {
  * @param  {Mixed}  value
  * @return {Boolean}
  */
-var isFalsy = function (value) {
+var isFalsy = function isFalsy (value) {
   return !value
 }
 

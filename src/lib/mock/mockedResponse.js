@@ -8,22 +8,20 @@ function MockedResponse (res) {
   this.headers = {}
   this.finished = false
   this.statusCode = DEFAULT_STATUS_CODE
-  this.callbacks = {
-    end: function () {}
-  }
+  this.callbacks = { end: [] }
 }
 
-MockedResponse.prototype.on = function (event, cb) {
-  this.callbacks[event] = cb
+MockedResponse.prototype.on = function on (event, cb) {
+  this.callbacks[event].push(cb)
 }
 
-MockedResponse.prototype.status = function (statusCode) {
+MockedResponse.prototype.status = function status (statusCode) {
   this.statusCode = parseInt(statusCode, 10)
 
   return this
 }
 
-MockedResponse.prototype.cookie = function (name, value, options) {
+MockedResponse.prototype.cookie = function cookie (name, value, options) {
   this.cookies[name] = value
 
   if (this.res && typeof (this.res.setCookie) === 'function') {
@@ -33,7 +31,7 @@ MockedResponse.prototype.cookie = function (name, value, options) {
   return this
 }
 
-MockedResponse.prototype.setHeader = function (name, value) {
+MockedResponse.prototype.setHeader = function setHeader (name, value) {
   if (this.res) {
     this.res.header(name, value)
   }
@@ -43,7 +41,7 @@ MockedResponse.prototype.setHeader = function (name, value) {
   return this
 }
 
-MockedResponse.prototype.setHeaders = function (headers) {
+MockedResponse.prototype.setHeaders = function setHeaders (headers) {
   this.headers = headers
 
   if (this.res && typeof (this.res.header) === 'function') {
@@ -56,7 +54,7 @@ MockedResponse.prototype.setHeaders = function (headers) {
   return this
 }
 
-MockedResponse.prototype.send = function (maybeCode, maybeBody) {
+MockedResponse.prototype.send = function send (maybeCode, maybeBody) {
   if (!this.finished) {
     var status = this.statusCode || 200
     var data
@@ -92,7 +90,7 @@ MockedResponse.prototype.send = function (maybeCode, maybeBody) {
       params.cookies = this.cookies
     }
 
-    this.callbacks.end(params)
+    this.callbacks.end.forEach(function (cb) { cb(params) })
   }
 }
 

@@ -1,6 +1,5 @@
 'use strict'
 
-var q = require('q')
 var currifiedToArrayPromise = require('../utils/currifiedToArrayPromise')
 
 /**
@@ -31,12 +30,12 @@ function BaseManager (options) {
 }
 
 // Reset the stack
-BaseManager.prototype.resetItems = function () {
+BaseManager.prototype.resetItems = function resetItems () {
   this.store.reset()
 }
 
 // Entry point for registering or unregistering items
-BaseManager.prototype.register = function (domain, itemOrItems) {
+BaseManager.prototype.register = function register (domain, itemOrItems) {
   var module = this
 
   if (!domain) {
@@ -49,17 +48,27 @@ BaseManager.prototype.register = function (domain, itemOrItems) {
     return module._register(domain, item)
   },
     function (result, item) {
-      return {
-        registered: result.state === 'fulfilled',
-        id: (result.state === 'fulfilled' ? result.value.getId() : null) || item.id,
-        model: result.state === 'fulfilled' ? result.value : null,
-        error: result.reason ? result.reason : null
+      var response = {
+        registered: false,
+        id: item.id,
+        model: null,
+        error: null
       }
+
+      if (result instanceof module.model) {
+        response.registered = true
+        response.id = result.getId()
+        response.model = result
+      } else {
+        response.error = result
+      }
+
+      return response
     })
 }
 
 // Register an item on the stack
-BaseManager.prototype._register = function (domain, item) {
+BaseManager.prototype._register = function _register (domain, item) {
   var module = this
 
   return this.validate(item)
@@ -87,12 +96,12 @@ BaseManager.prototype._register = function (domain, item) {
     })
     .catch(function (err) {
       module.events.emit('warn', module.itemName + ':not:registered', module.itemName + ':not:valid', item.id, item.url, err)
-      throw err
+      return err
     })
 }
 
 // Registers phrases, extracting domain from id (TODO: Test)
-BaseManager.prototype.registerWithoutDomain = function (items) {
+BaseManager.prototype.registerWithoutDomain = function registerWithoutDomain (items) {
   var module = this
 
   var promises = []
@@ -113,11 +122,11 @@ BaseManager.prototype.registerWithoutDomain = function (items) {
     promises.push(module.register(key, itemsHash[key]))
   })
 
-  return q.all(promises)
+  return Promise.all(promises)
 }
 
 // Verifies that a JSON for a item is well formed
-BaseManager.prototype.validate = function (item) {
+BaseManager.prototype.validate = function validate (item) {
   return this.validator(item)
     .then(function () {
       return {
@@ -135,7 +144,7 @@ BaseManager.prototype.validate = function (item) {
 }
 
 // Iterates over the items to compile
-BaseManager.prototype.compile = function (domain, itemOrItems) {
+BaseManager.prototype.compile = function compile (domain, itemOrItems) {
   var module = this
 
   var isArray = Array.isArray(itemOrItems)
@@ -152,7 +161,7 @@ BaseManager.prototype.compile = function (domain, itemOrItems) {
 }
 
 // Iterates over the items to unregister
-BaseManager.prototype.unregister = function (domain, itemOrItemIds) {
+BaseManager.prototype.unregister = function unregister (domain, itemOrItemIds) {
   var module = this
 
   var isArray = Array.isArray(itemOrItemIds)
@@ -174,16 +183,16 @@ BaseManager.prototype.unregister = function (domain, itemOrItemIds) {
 }
 
 // Extracts the domain from a json item
-BaseManager.prototype._extractDomainFromId = function (id) {
+BaseManager.prototype._extractDomainFromId = function _extractDomainFromId (id) {
   return id.split('!')[0]
 }
 
 // Extracts the virtual domain from a jsonItem
-BaseManager.prototype._extractVirtualDomainFromId = function (id) {
+BaseManager.prototype._extractVirtualDomainFromId = function _extractVirtualDomainFromId (id) {
   return id.split('!')[1]
 }
 
-BaseManager.prototype._addToStore = function (domain, modelInstance) {
+BaseManager.prototype._addToStore = function _addToStore (domain, modelInstance) {
   if (!domain || !modelInstance) {
     return false
   }
@@ -196,17 +205,17 @@ BaseManager.prototype._addToStore = function (domain, modelInstance) {
   return true
 }
 
-BaseManager.prototype.getById = function (id) {
+BaseManager.prototype.getById = function getById (id) {
   var domain = this._extractDomainFromId(id)
   return this.store.get(domain, id)
 }
 
-BaseManager.prototype.getByVirtualDomain = function () {
+BaseManager.prototype.getByVirtualDomain = function getByVirtualDomain () {
   // TODO: implement
   // call this.store.getByVirtualDomain
 }
 
-BaseManager.prototype.getByDomain = function (domain) {
+BaseManager.prototype.getByDomain = function getByDomain (domain) {
   return this.store.getAsList(domain)
 }
 
@@ -214,14 +223,14 @@ BaseManager.prototype.getByDomain = function (domain) {
   Mandatory implementations
 ********************************/
 
-BaseManager.prototype._compile = function (domain, item) {
+BaseManager.prototype._compile = function _compile (domain, item) {
   var BaseModel = this.model
   var model = new BaseModel(item, domain)
   return model
 }
 
 // Removes item from memory
-BaseManager.prototype._unregister = function (domain, id) {
+BaseManager.prototype._unregister = function _unregister (domain, id) {
   if (!domain) {
     this.events.emit('warn', this.itemName + ':unregister:missing:parameters', 'domain')
     return false
@@ -251,7 +260,7 @@ BaseManager.prototype._unregister = function (domain, id) {
  * @param  string id Item id
  * @return promise    load and register promise
  */
-BaseManager.prototype.load = function (id) {
+BaseManager.prototype.load = function load (id) {
   var module = this
 
   if (id) {
@@ -277,7 +286,7 @@ BaseManager.prototype.load = function (id) {
  * - If not, resolves
  * - If it is invalid, rejects
  */
-BaseManager.prototype.save = function (domain, json, optionalDriver) {
+BaseManager.prototype.save = function save (domain, json, optionalDriver) {
   var BaseModel = this.model
   var item = new BaseModel(json, domain) // Constructs the id
 
@@ -302,16 +311,16 @@ BaseManager.prototype.save = function (domain, json, optionalDriver) {
   })
 }
 
-BaseManager.prototype.__shouldSave = function (item) {
+BaseManager.prototype.__shouldSave = function __shouldSave (item) {
   return this.getById(item.getId()) && this.getById(item.getId()).getMD5() !== item.getMD5()
 }
 
-BaseManager.prototype.__save = function (json, optionalDriver) {
+BaseManager.prototype.__save = function __save (json, optionalDriver) {
   return this.dao.save(json, optionalDriver)
 }
 
 /* Delete interface */
-BaseManager.prototype.delete = function (id, optionalDriver) {
+BaseManager.prototype.delete = function _delete (id, optionalDriver) {
   this.events.emit('debug', 'delete:' + this.itemName, id)
 
   return this.dao.delete(id, optionalDriver)
@@ -322,11 +331,11 @@ BaseManager.prototype.delete = function (id, optionalDriver) {
 ********************************/
 
 // Pre add call
-BaseManager.prototype.__preAdd = function () {
+BaseManager.prototype.__preAdd = function __preAdd () {
   this.events.emit('trace', '__preAdd not implemented')
 }
 
-BaseManager.prototype.__postAdd = function () {
+BaseManager.prototype.__postAdd = function __postAdd () {
   this.events.emit('trace', '__postAdd not implemented')
 }
 

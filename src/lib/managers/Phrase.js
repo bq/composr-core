@@ -4,10 +4,10 @@ var PhraseModel = require('../models/PhraseModel')
 var phraseDao = require('../daos/phraseDao')
 var BaseManager = require('./base.manager')
 var queryString = require('query-string')
-var ComposrError = require('../ComposrError')
+// var ComposrError = require('../ComposrError')
 // var MetricsFirer = require('../MetricsFirer')
 var phrasesStore = require('../stores/phrases.store')
-var parseToComposrError = require('../parseToComposrError')
+// var parseToComposrError = require('../parseToComposrError')
 var WrappedResponse = require('../mock').res
 var WrappedRequest = require('../mock').req
 var corbel = require('corbel-js')
@@ -15,7 +15,7 @@ var utils = require('../utils')
 
 var _ = require('lodash')
 
-var PhraseManager = function (options) {
+var PhraseManager = function PhraseManager (options) {
   this.events = options.events
   this.requirer = options.requirer
   this.config = options.config || {}
@@ -29,13 +29,13 @@ PhraseManager.prototype = new BaseManager({
   validator: phraseValidator
 })
 
-PhraseManager.prototype.configure = function (config) {
+PhraseManager.prototype.configure = function configure (config) {
   this.config = {
     urlBase: config.urlBase
   }
 }
 
-PhraseManager.prototype.__preAdd = function (domain, phraseModel) {
+PhraseManager.prototype.__preAdd = function __preAdd (domain, phraseModel) {
   var phrasesWithTheSamePath = this._filterByRegexp(domain, phraseModel.getRegexp())
 
   if (phrasesWithTheSamePath.length > 0) {
@@ -43,7 +43,7 @@ PhraseManager.prototype.__preAdd = function (domain, phraseModel) {
   }
 }
 
-PhraseManager.prototype._compile = function (domain, phrase) {
+PhraseManager.prototype._compile = function _compile (domain, phrase) {
   try {
     var PhraseModel = this.model
     var phraseInstance = new PhraseModel(phrase, domain)
@@ -62,20 +62,18 @@ PhraseManager.prototype._compile = function (domain, phrase) {
 }
 
 // Executes a phrase by id
-PhraseManager.prototype.runById = function (id, verb, params, cb) {
+PhraseManager.prototype.runById = function runById (id, verb, params, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
   }
 
-  if (!params) {
-    params = {}
-  }
+  var parameters = getDefaultPhraseParams(params)
 
   var phrase = this.getById(id)
 
   if (phrase && phrase.canRun(verb)) {
     var domain = this._extractDomainFromId(id)
-    this._run(phrase, verb, params, domain, cb)
+    this._run(phrase, verb, parameters, domain, cb)
   } else {
     // @TODO: See if we want to return that error directly or a wrappedResponse with 404 status (or invalid VERB)
     cb('phrase:cant:be:runned')
@@ -83,37 +81,47 @@ PhraseManager.prototype.runById = function (id, verb, params, cb) {
 }
 
 // Executes a phrase matching a path
-// TODO: add support for various versions at the same time
-PhraseManager.prototype.runByPath = function (domain, path, verb, params, version, cb) {
+PhraseManager.prototype.runByPath = function runByPath (domain, path, verb, params, version, cb) {
   if (utils.values.isFalsy(verb)) {
     verb = 'get'
   }
 
   var phrase = this.getByMatchingPath(domain, path, verb, version)
-  // TODO: use version too , to get the correct version
 
   if (phrase) {
-    if (!params) {
-      params = {}
-    }
+    var parameters = getDefaultPhraseParams(params)
 
-    var queryParamsString = ''
+    var queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : ''
 
-    if (!params.query && !(params.req && params.req.query && Object.keys(params.req.query).length > 0)) {
+    if (!parameters.query && !(parameters.req && parameters.req.query && Object.keys(parameters.req.query).length > 0)) {
       // If no reqQuery object or req.querty params are sent, extract them
-      queryParamsString = path.indexOf('?') !== -1 ? path.substring(path.indexOf('?'), path.length) : ''
-      params.query = queryString.parse(queryParamsString)
+      parameters.query = queryString.parse(queryParamsString)
     }
 
-    if (!params.params) {
+    if (!parameters.params) {
       // extract params from path
       var sanitizedPath = path.replace(queryParamsString, '')
-      params.params = phrase.extractParamsFromPath(sanitizedPath)
+      parameters.params = phrase.extractParamsFromPath(sanitizedPath)
     }
-    this._run(phrase, verb, params, domain, cb)
+    this._run(phrase, verb, parameters, domain, cb)
   } else {
     cb('phrase:cant:be:runned')
   }
+}
+
+function getDefaultPhraseParams (options) {
+  var defaultParameters = {
+    functionMode: true,
+    query: null,
+    params: null,
+    headers: null,
+    corbelDriver: null,
+    domain: null,
+    timeout: null,
+    body: null
+  }
+
+  return Object.assign({}, defaultParameters, options)
 }
 
 /*
@@ -151,13 +159,8 @@ PhraseManager.prototype.runByPath = function (domain, path, verb, params, versio
   return sb
 }*/
 
-PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
+PhraseManager.prototype._run = function _runPhrase (phrase, verb, params, domain, cb) {
   this.events.emit('debug', 'running:phrase:' + phrase.getId() + ':' + verb)
-
-  // Function mode is the way to go.
-  if (typeof params.functionMode === 'undefined') {
-    params.functionMode = true
-  }
 
   var urlBase = params.config && params.config.urlBase ? params.config.urlBase : this.config.urlBase
 
@@ -188,24 +191,16 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
     sandbox.corbelDriver = params.corbelDriver
   }
 
-  var tm
-
   sandbox.res.on('end', function (resp) {
-    if (tm) {
-      // Remove timeout of function mode
-      clearTimeout(tm)
-    }
-
-    cb(null, Object.assign({}, resp))
+    cb(null, resp)
   })
 
   // Execute the phrase
-  try {
-    if (params.functionMode) {
-      tm = phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
-    } else {
-      phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file)
-    }
+  if (params.functionMode) {
+    phrase.__executeFunctionMode(verb, sandbox, params.timeout, params.file)
+  } else {
+    phrase.__executeScriptMode(verb, sandbox, params.timeout, params.file, this.events)
+  /* try {
   } catch (e) {
     // console.log(e)
     // @TODO this errors can be:
@@ -221,14 +216,13 @@ PhraseManager.prototype._run = function (phrase, verb, params, domain, cb) {
       sandbox.res.send(error.status, error)
     } else {
       // vm throws an error when timedout
-      this.events.emit('warn', 'phrase:timedout', e, phrase.getUrl())
-      sandbox.res.send(503, new ComposrError('error:phrase:timedout:' + phrase.getUrl(), 'The phrase endpoint is timing out', 503))
     }
+  }*/
   }
 }
 
 // Returns a list of elements matching the same regexp
-PhraseManager.prototype._filterByRegexp = function (domain, regexp) {
+PhraseManager.prototype._filterByRegexp = function _filterByRegexp (domain, regexp) {
   var candidates = this.store.getAsList(domain)
 
   return _.filter(candidates, function (candidate) {
@@ -237,7 +231,7 @@ PhraseManager.prototype._filterByRegexp = function (domain, regexp) {
 }
 
 // Get all the phrases, or all the phrases for one domain
-PhraseManager.prototype.getPhrases = function (domain) {
+PhraseManager.prototype.getPhrases = function getPhrases (domain) {
   return this.store.getAsList(domain)
 }
 
@@ -245,7 +239,7 @@ PhraseManager.prototype.getPhrases = function (domain) {
   CORE Entry point. One of the purposes of composr-core is to provide a fast and reliable
   getByMatchingPath method.
  **/
-PhraseManager.prototype.getByMatchingPath = function (domain, path, verb, version) {
+PhraseManager.prototype.getByMatchingPath = function getByMatchingPath (domain, path, verb, version) {
   var candidate = null
 
   if (!verb) {
@@ -294,12 +288,12 @@ PhraseManager.prototype.getByMatchingPath = function (domain, path, verb, versio
 }
 
 // Counts all the loaded phrases
-PhraseManager.prototype.count = function () {
+PhraseManager.prototype.count = function count () {
   return this.store.getAsList().length
 }
 
 // TODO: Remove for using the MD5 check defined in BaseManager
-PhraseManager.prototype.__shouldSave = function () {
+PhraseManager.prototype.__shouldSave = function __shouldSave () {
   return true
 }
 

@@ -81,11 +81,11 @@ PhraseModel.prototype.matchesPath = function (path) {
 /*
  Asume that the path is sanitized without query params.
  */
-PhraseModel.prototype.extractParamsFromPath = function (path) {
+PhraseModel.prototype.extractParamsFromPath = function extractParamsFromPath (path) {
   return paramsExtractor.extract(path, this.getRegexpReference())
 }
 
-PhraseModel.prototype.compile = function (events) {
+PhraseModel.prototype.compile = function compile (events) {
   var model = this
 
   this.compiled.codes = {}
@@ -125,7 +125,7 @@ PhraseModel.prototype.compile = function (events) {
 }
 
 // Runs VM script mode
-PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout, file) {
+PhraseModel.prototype.__executeScriptMode = function __executeScriptMode (verb, parameters, timeout, file, events) {
   var options = {
     timeout: timeout || 10000,
     displayErrors: true
@@ -135,11 +135,21 @@ PhraseModel.prototype.__executeScriptMode = function (verb, parameters, timeout,
     options.filename = file
   }
 
-  this.compiled.codes[verb].script.runInNewContext(parameters, options)
+  try {
+    this.compiled.codes[verb].script.runInNewContext(parameters, options)
+  } catch (e) {
+    if (e.message && e.message === 'Script execution timed out.') {
+      // Timeout fired
+      events.emit('warn', 'phrase:timedout', e, this.getUrl())
+      parameters.res.send(503, new ComposrError('error:phrase:timedout:' + this.getUrl(), 'The phrase endpoint is timing out', 503))
+    } else {
+      throw e
+    }
+  }
 }
 
-// Runs function mode (DEPRECATED)
-PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeout, file) {
+// Runs function mode
+PhraseModel.prototype.__executeFunctionMode = function __executeFunctionMode (verb, parameters, timeout, file) {
   // @TODO: configure timeout
   // @TODO: enable VM if memory bug gets solved
   var url = this.getUrl()
@@ -151,6 +161,10 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
     }
     clearTimeout(tm)
   }, timeout || 10000)
+
+  parameters.res.on('end', function () {
+    clearTimeout(tm)
+  })
 
   if (file) {
     var fn = require(file)
@@ -175,8 +189,6 @@ PhraseModel.prototype.__executeFunctionMode = function (verb, parameters, timeou
       parameters.config,
       parameters.metrics)
   }
-
-  return tm
 }
 
 module.exports = PhraseModel

@@ -2,11 +2,11 @@
 
 var _ = require('lodash')
 
-var BaseStore = function () {
+var BaseStore = function BaseStore () {
   this.reset()
 }
 
-BaseStore.prototype.getAsList = function (domain) {
+BaseStore.prototype.getAsList = function getAsList (domain) {
   var list = []
   var store = this
 
@@ -21,7 +21,7 @@ BaseStore.prototype.getAsList = function (domain) {
   return list
 }
 
-BaseStore.prototype.getItemIndexById = function (domain, id) {
+BaseStore.prototype.getItemIndexById = function getItemIndexById (domain, id) {
   var candidates = this.getAsList(domain)
   var index = -1
 
@@ -34,7 +34,7 @@ BaseStore.prototype.getItemIndexById = function (domain, id) {
   return index
 }
 
-BaseStore.prototype.add = function (domain, model) {
+BaseStore.prototype.add = function add (domain, model) {
   if (!this.item[domain]) {
     this.item[domain] = []
   }
@@ -48,29 +48,29 @@ BaseStore.prototype.add = function (domain, model) {
   }
 }
 
-BaseStore.prototype.remove = function (domain, id) {
+BaseStore.prototype.remove = function remove (domain, id) {
   var index = this.getItemIndexById(domain, id)
   if (index !== -1) {
     this.item[domain].splice(index, 1)
   }
 }
 
-BaseStore.prototype.exists = function (domain, id) {
+BaseStore.prototype.exists = function exists (domain, id) {
   return this.getItemIndexById(domain, id) !== -1
 }
 
-BaseStore.prototype.get = function (domain, id) {
+BaseStore.prototype.get = function get (domain, id) {
   var candidates = this.getAsList(domain)
   var index = this.getItemIndexById(domain, id)
 
   return index !== -1 ? candidates[index] : null
 }
 
-BaseStore.prototype.set = function (items) {
+BaseStore.prototype.set = function set (items) {
   this.item = items
 }
 
-BaseStore.prototype.reset = function () {
+BaseStore.prototype.reset = function reset () {
   this.item = {}
 }
 

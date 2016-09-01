@@ -130,7 +130,7 @@ describe('clientLogin', function() {
       cLogin()
         .should.be.rejected
         .then(function(err) {
-          expect(err).to.be.equals('login:invalid:response');
+          expect(err.message).to.be.equals('login:invalid:response');
           expect(stubEvents.callCount).to.equals(1);
           expect(stubEvents.calledWith('error', 'login:invalid:response')).to.equals(true);
         })

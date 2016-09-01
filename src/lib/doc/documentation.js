@@ -1,6 +1,5 @@
 'use strict'
 
-var q = require('q')
 var _ = require('lodash')
 var semver = require('semver')
 var raml2obj = require('raml2obj')
@@ -29,7 +28,6 @@ function documentation (phrases, snippets, domain, version, basePathDoc) {
     version = semver.maxSatisfying(versions, '*')
   }
 
-  var dfd = q.defer()
   var module = this
 
   var urlBase = this.config.urlBase.replace('{{module}}', 'composr').replace('/v1.0', '')
@@ -64,7 +62,7 @@ function documentation (phrases, snippets, domain, version, basePathDoc) {
 
   var data = ramlCompiler.transform(phrasesToShow, urlBase, domain, version)
 
-  raml2obj.parse(data)
+  return raml2obj.parse(data)
     .then(function (ramlObj) {
       var nunjucks = require('nunjucks')
       var markdown = require('nunjucks-markdown')
@@ -115,14 +113,12 @@ function documentation (phrases, snippets, domain, version, basePathDoc) {
       var html = env.render('./template.nunjucks', ramlObj)
       html = html.replace(/&quot;/g, '"')
       module.events.emit('debug', 'generated:documentation')
-      dfd.resolve(html)
+      return html
     })
     .catch(function (err) {
       module.events.emit('error', 'error:generating:documentation', err)
-      dfd.reject(err)
+      throw err
     })
-
-  return dfd.promise
 }
 
 module.exports = documentation

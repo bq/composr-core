@@ -3,7 +3,7 @@
 var COLLECTION = 'composr:Snippet'
 var BaseDao = require('./BaseDao')
 
-var SnippetDao = function () {}
+var SnippetDao = function SnippetDao () {}
 
 SnippetDao.prototype = new BaseDao({
   collection: COLLECTION

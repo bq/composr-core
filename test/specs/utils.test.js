@@ -59,18 +59,10 @@ describe('utils', function() {
   });
 
   describe('Extract domain', function() {
-    var credentials = {
-      'iss': '1',
-      'domainId': 'test',
-      'aud': '2',
-      'scope': '3'
-    };
-
-    var accesToken = corbel.jwt.generate(credentials, 'secret');
-
+    var accesToken = 'eyJ0eXBlIjoiVE9LRU4iLCJjbGllbnRJZCI6IjU0MzgyMzA3Iiwic3RhdGUiOiIxNDcyNjM2Mjk5MDAwIiwiZG9tYWluSWQiOiJib29xczpudWJpY286ZXMifQ.53cb1bb3d7b17.cvSw0NWicSL7UOuqymAvADHQlWA';
     it('extracts the correct domain', function() {
       var domain = utils.extractDomain(accesToken);
-      expect(domain).to.equals('test');
+      expect(domain).to.equals('booqs:nubico:es');
     });
   });
 

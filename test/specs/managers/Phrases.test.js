@@ -308,6 +308,7 @@ describe('== Phrases ==', function() {
       Phrases.register('mydomain', phrase)
         .should.be.fulfilled
         .then(function(result) {
+          console.log(result);
           expect(result).to.be.an('object');
           expect(result).to.include.keys(
             'registered',
@@ -319,7 +320,7 @@ describe('== Phrases ==', function() {
           expect(result.registered).to.equals(false);
           expect(result.error).not.to.equals(null);
         })
-        .should.be.fulfilled.notify(done);
+        .should.notify(done);
     });
 
     it('should warn when various phrases matches the same regular expression', function(done) {

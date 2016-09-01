@@ -19,7 +19,7 @@ SnippetsManager.prototype = new BaseManager({
 })
 
 // Compilation
-SnippetsManager.prototype._compile = function (domain, snippet) {
+SnippetsManager.prototype._compile = function _compile (domain, snippet) {
   try {
     var SnippetModel = this.model
     var snippetInstance = new SnippetModel(snippet, domain)
@@ -38,7 +38,7 @@ SnippetsManager.prototype._compile = function (domain, snippet) {
 }
 
 // Get all the snippets for a single domain
-SnippetsManager.prototype.getSnippets = function (domain) {
+SnippetsManager.prototype.getSnippets = function getSnippets (domain) {
   if (!domain) {
     return null
   }
@@ -47,7 +47,7 @@ SnippetsManager.prototype.getSnippets = function (domain) {
 }
 
 // Get a single snippet
-SnippetsManager.prototype.getSnippet = function (domain, name, version) {
+SnippetsManager.prototype.getSnippet = function getSnippet (domain, name, version) {
   var snippet = this.store.get(domain, domain + '!' + name + '-' + version)
 
   if (snippet) {
@@ -58,7 +58,7 @@ SnippetsManager.prototype.getSnippet = function (domain, name, version) {
 }
 
 // TODO: Remove for using the MD5 check defined in BaseManager
-SnippetsManager.prototype.__shouldSave = function () {
+SnippetsManager.prototype.__shouldSave = function __shouldSave () {
   return true
 }
 

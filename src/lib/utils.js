@@ -1,6 +1,6 @@
 'use strict'
 
-var corbel = require('corbel-js')
+var tokenVerifier = require('corbel-token-verifier')
 
 /**
  * Recursivelly fetch all the items for a list
@@ -35,7 +35,7 @@ var getAllRecursively = function getAllRecursively (caller, pageNumber, pageSize
 
 /* Extracts a domain from an acces token */
 function extractDomain (accessToken) {
-  return corbel.jwt.decode(accessToken.replace('Bearer ', '')).domainId
+  return tokenVerifier(accessToken).getDomainId()
 }
 
 /* Accumulates results over an array */
