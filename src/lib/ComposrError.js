@@ -11,7 +11,7 @@ var ComposrError = function ComposrError (error, description, status) {
   err.error = error
   err.errorDescription = description
 
-  //Having a body for restify error handlers
+  // Having a body for restify error handlers
   err.body = {
     status: status,
     error: error,
