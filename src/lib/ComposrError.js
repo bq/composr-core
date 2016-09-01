@@ -7,8 +7,16 @@ var ComposrError = function ComposrError (error, description, status) {
 
   // set properties specific to the custom error
   err.status = parseInt(status, 10)
+  err.statusCode = parseInt(status, 10)
   err.error = error
   err.errorDescription = description
+
+  //Having a body for restify error handlers
+  err.body = {
+    status: status,
+    error: error,
+    errorDescription: description
+  }
 
   return err
 }
